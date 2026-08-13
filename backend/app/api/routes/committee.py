@@ -1,0 +1,143 @@
+"""Endpoints that spend the user's tokens. Every one requires a key in the request body."""
+
+from __future__ import annotations
+
+import logging
+
+from fastapi import APIRouter, HTTPException
+
+from app.advisors.registry import AdvisorNotFound
+from app.advisors.selection import select_committee
+from app.analytics.guardrails import evaluate_guardrails
+from app.analytics.portfolio_analytics import analyze_portfolio
+from app.analytics.profile_analytics import analyze_profile
+from app.api import deps
+from app.api.schemas import (
+    AdvisorSummary,
+    DistillRequest,
+    DistillResponse,
+    RunCommitteeRequest,
+    RunCommitteeResponse,
+)
+from app.committee.orchestrator import CommitteeError, CommitteeOrchestrator
+from app.core.run_context import RunContext
+from app.domain.question import UserQuestion
+from app.nuwa.distiller import (
+    DistillationError,
+    DistillationRequest,
+    NuwaDistiller,
+)
+
+router = APIRouter(tags=["llm"])
+logger = logging.getLogger(__name__)
+
+
+@router.post("/committee/analyze", response_model=RunCommitteeResponse)
+async def run_committee(req: RunCommitteeRequest) -> RunCommitteeResponse:
+    credentials = deps.credentials_from(req.anthropic_api_key)
+    registry = deps.registry()
+
+    analytics = analyze_profile(req.profile, req.portfolio)
+    pa = analyze_portfolio(req.portfolio) if req.portfolio else None
+    guardrails = evaluate_guardrails(req.profile, analytics, req.portfolio, pa)
+    intent = UserQuestion(text=req.question).classify()
+
+    manifests = registry.all_manifests()
+    if req.advisor_ids:
+        try:
+            manifests = [registry.manifest(a) for a in req.advisor_ids]
+        except AdvisorNotFound as exc:
+            raise HTTPException(
+                status_code=404,
+                detail={"code": "advisor_not_found", "message": f"Unknown advisor: {exc.args[0]}"},
+            ) from exc
+
+    selection = select_committee(manifests, analytics.need_vector, intent, guardrails, req.depth)
+
+    context = RunContext.create(credentials, depth=req.depth, model=req.model)
+    orchestrator = CommitteeOrchestrator(deps.provider(), registry)
+
+    logger.info(
+        "committee run %s starting: depth=%s advisors=%s key=%s",
+        context.run_id,
+        req.depth.value,
+        selection.advisor_ids,
+        credentials.fingerprint(),
+    )
+
+    try:
+        report = await orchestrator.run(
+            profile=req.profile,
+            analytics=analytics,
+            portfolio_analytics=pa,
+            guardrails=guardrails,
+            selection=selection,
+            question=req.question,
+            context=context,
+        )
+    except CommitteeError as exc:
+        # Return the usage the user already incurred, even on failure — they were billed for it.
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "code": "committee_failed",
+                "message": str(exc),
+                "usage": context.usage_tracker.aggregate().model_dump(mode="json"),
+            },
+        ) from exc
+    except Exception as exc:  # noqa: BLE001 - sanitized before it reaches the client
+        raise deps.provider_error(exc) from exc
+
+    return RunCommitteeResponse(
+        report=report,
+        selection=selection,
+        usage=context.usage_tracker.aggregate(),
+        analytics=analytics,
+        portfolio_analytics=pa,
+    )
+
+
+@router.post("/advisors/distill", response_model=DistillResponse)
+async def distill_advisor(req: DistillRequest) -> DistillResponse:
+    credentials = deps.credentials_from(req.anthropic_api_key)
+    registry = deps.registry()
+
+    context = RunContext.create(credentials, model=req.model)
+    distiller = NuwaDistiller(deps.provider(), registry)
+
+    logger.info(
+        "distillation %s starting: subject=%r depth=%s key=%s",
+        context.run_id,
+        req.subject,
+        req.depth.value,
+        credentials.fingerprint(),
+    )
+
+    try:
+        result = await distiller.distill(
+            DistillationRequest(
+                subject=req.subject,
+                focus_areas=req.focus_areas,
+                depth=req.depth,
+                advisor_id=req.advisor_id,
+            ),
+            context,
+        )
+    except DistillationError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "code": "distillation_failed",
+                "message": str(exc),
+                "usage": context.usage_tracker.aggregate().model_dump(mode="json"),
+            },
+        ) from exc
+    except Exception as exc:  # noqa: BLE001
+        raise deps.provider_error(exc) from exc
+
+    return DistillResponse(
+        advisor=AdvisorSummary(**deps.advisor_summary_payload(result.manifest)),
+        warnings=result.warnings,
+        research_pass_count=result.research_pass_count,
+        usage=context.usage_tracker.aggregate(),
+    )

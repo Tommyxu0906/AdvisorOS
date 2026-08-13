@@ -1,0 +1,49 @@
+[project]
+name = "aifinancialadvisor"
+version = "0.1.0"
+description = "BYOK multi-agent financial decision system"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "pydantic>=2.9",
+    "anthropic>=0.40",
+    "httpx>=0.27",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.7",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["backend"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+# E501: long lines are allowed; prose in docstrings and prompt text reads better unwrapped.
+# UP042: `class X(str, Enum)` is deliberate. StrEnum changes `str(member)` from "X.member" to
+#        the bare value, which would silently alter every f-string that interpolates an enum.
+ignore = ["E501", "UP042"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "evals", "tests"]
+
+[tool.ruff.lint.per-file-ignores]
+# Evaluation harness must extend sys.path before importing the app package.
+"evals/run_eval.py" = ["E402"]

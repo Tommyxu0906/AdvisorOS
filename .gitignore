@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+node_modules/
+frontend/dist/
+.DS_Store
+*.egg-info/
+.env
+.env.*
+!.env.example
+evals/results/
+data/runs/
+backend/app/advisors/custom/

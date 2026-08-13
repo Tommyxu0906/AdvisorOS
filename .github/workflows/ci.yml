@@ -1,0 +1,114 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# CI runs with no Anthropic credentials. Any job that needs one is a bug.
+env:
+  PYTHONPATH: backend:.
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Assert no Anthropic credentials are present
+        run: |
+          if [ -n "${ANTHROPIC_API_KEY:-}" ] || [ -n "${ANTHROPIC_AUTH_TOKEN:-}" ]; then
+            echo "CI must run without Anthropic credentials, but one is set." >&2
+            exit 1
+          fi
+
+      - name: Lint
+        run: ruff check backend evals tests
+
+      - name: Format check
+        run: ruff format --check backend evals tests
+
+      - name: Tests
+        run: pytest -q
+
+      - name: Security tests (explicit, must never be skipped)
+        run: pytest tests/security -q --no-header -p no:randomly
+
+      - name: Evaluation harness (mock provider)
+        run: python evals/run_eval.py --json evals/results/ci.json
+
+      - name: App boots with no credentials
+        run: |
+          python - <<'PY'
+          from fastapi.testclient import TestClient
+          from app.main import app
+          client = TestClient(app)
+          health = client.get("/api/health").json()
+          assert health["status"] == "ok", health
+          assert health["byok_only"] is True, health
+          assert client.get("/api/advisors").status_code == 200
+          print("Booted with no Anthropic key:", health)
+          PY
+
+      - name: Scan repository for leaked keys
+        run: |
+          if grep -rInE 'sk-ant-(api|oat)[0-9]{2}-[A-Za-z0-9_-]{20,}' \
+               --exclude-dir=.git --exclude-dir=.venv --exclude-dir=node_modules . ; then
+            echo "A real-looking Anthropic key is committed to the repository." >&2
+            exit 1
+          fi
+          echo "No leaked keys found."
+
+      - name: Upload eval results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-results-py${{ matrix.python-version }}
+          path: evals/results/
+          if-no-files-found: ignore
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install
+        run: npm ci || npm install
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+
+      - name: Assert the key is never persisted client-side
+        # Matches real member access (localStorage.setItem, document.cookie = ...), not the
+        # prose in comments and UI copy that explains we deliberately avoid them.
+        run: |
+          if grep -rInE '(localStorage|sessionStorage)[[:space:]]*[.[]|document\.cookie[[:space:]]*=' src/ ; then
+            echo "The API key must live in memory only — no browser storage." >&2
+            exit 1
+          fi
+          echo "No browser persistence found."
