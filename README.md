@@ -83,6 +83,37 @@ PYTHONPATH=backend:. .venv/bin/python -m pytest -q
 
 ---
 
+## Deploying
+
+This is two separately deployable services — a Python/FastAPI backend and a static Vite/React
+frontend — not a single app. **Deploying the repo root to Vercel as-is will 404**: Vercel can't
+infer a framework from a monorepo root, and FastAPI's `uvicorn` process doesn't run as a Vercel
+serverless function without separate adaptation.
+
+**Frontend on Vercel:**
+
+1. In the Vercel project's *Settings → General*, set **Root Directory** to `frontend`. Vercel
+   auto-detects Vite from there; no `vercel.json` is needed.
+2. In *Settings → Environment Variables*, add `VITE_API_BASE_URL` pointing at wherever the
+   backend ends up (e.g. `https://your-backend.up.railway.app`, no trailing slash). See
+   `frontend/.env.example`. Locally this is left unset — `vite.config.ts` proxies `/api` to
+   `localhost:8000` instead.
+3. Redeploy.
+
+**Backend** — needs a host that runs a long-lived process (`uvicorn`), not a serverless
+function: Railway, Render, or Fly.io all work with no code changes. Start command:
+
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port $PORT
+```
+
+with `PYTHONPATH=backend` and **no `ANTHROPIC_API_KEY` set** — that's the BYOK invariant, not an
+oversight. Set `AIFA_CORS_ORIGINS` to the frontend's deployed origin (comma-separated if there's
+more than one, e.g. a preview URL and the production domain) so the browser's requests aren't
+blocked by CORS.
+
+---
+
 ## How a run works
 
 ```text

@@ -13,3 +13,4 @@ frontend/dist/
 evals/results/
 data/runs/
 backend/app/advisors/custom/
+*.tsbuildinfo

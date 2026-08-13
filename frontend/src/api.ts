@@ -16,7 +16,11 @@ import type {
   SelectResponse,
 } from "./types";
 
-const BASE = "/api";
+// In dev, vite.config.ts proxies "/api" to localhost:8000. In production (e.g. frontend on
+// Vercel, backend elsewhere), there is no proxy, so the backend origin must be supplied via
+// VITE_API_BASE_URL at build time. Falls back to relative "/api" for same-origin deployments.
+const API_ORIGIN = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ?? "";
+const BASE = `${API_ORIGIN}/api`;
 
 async function request<T>(path: string, body?: unknown): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {

@@ -1,1 +1,0 @@
-{"root":["./src/app.tsx","./src/api.ts","./src/main.tsx","./src/types.ts","./src/components/analysispanel.tsx","./src/components/committeepreview.tsx","./src/components/connectpanel.tsx","./src/components/profileform.tsx","./src/components/reportview.tsx","./src/context/anthropicconnectioncontext.tsx"],"version":"5.9.3"}
