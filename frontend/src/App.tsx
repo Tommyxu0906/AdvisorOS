@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { estimateRun, listAdvisors, runCommittee, selectCommittee } from "./api";
+import { AccountControl } from "./components/AccountControl";
 import { AdvisorsPanel } from "./components/AdvisorsPanel";
 import { AnalysisPanel } from "./components/AnalysisPanel";
 import { CommitteePreview } from "./components/CommitteePreview";
@@ -163,6 +164,7 @@ export function App() {
             <span className="conn-dot" />
             {isConnected ? model : "Not connected"}
           </span>
+          <AccountControl />
         </div>
       </header>
 

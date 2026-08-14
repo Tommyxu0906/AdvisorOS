@@ -40,7 +40,10 @@ app.add_middleware(
     allow_origins=[o.strip() for o in _origins.split(",") if o.strip()],
     allow_credentials=False,
     allow_methods=["GET", "POST"],
-    allow_headers=["Content-Type"],
+    # Authorization carries the Supabase session JWT, not the Anthropic key — that stays in the
+    # request body (see CredentialedRequest). allow_credentials stays False: the JWT is a bearer
+    # header, not a cookie, so no cross-site cookie exposure is introduced by adding it here.
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 app.include_router(auth.router, prefix="/api")

@@ -159,6 +159,25 @@ input[type="number"],
   background: var(--green);
 }
 
+.account-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.account-name {
+  font-family: var(--sans);
+  color: var(--ink-soft);
+  white-space: nowrap;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.error-inline {
+  color: var(--oxblood);
+}
+
 /* ---------- page shell ---------- */
 
 .app {
