@@ -170,17 +170,15 @@ export function App() {
         {view === "analysis" && (
           <>
             <div className="page-head">
-              <h1>Investment committee</h1>
+              <h1>Analysis</h1>
               <p className="lede">
-                Deterministic code reads your situation and computes the analysis below — savings
-                rate, debt pressure, portfolio concentration, and which advisors best cover your
-                gaps. None of that touches an API. When you run the committee, that analysis is
-                handed to a small team of distilled investor personas who reason independently,
-                cross-examine each other, and synthesize a single view.
+                Deterministic code reads what you enter below and computes the analysis — savings
+                rate, debt pressure, portfolio concentration, and a seven-dimension read of where
+                you most need help. None of this touches an API or costs anything. Once it looks
+                right, head to <strong>Advisors</strong> to pick a team and run the committee
+                against it.
               </p>
             </div>
-
-            <ConnectPanel />
 
             <ProfileForm
               profile={profile}
@@ -194,33 +192,19 @@ export function App() {
             {error && <p className="error">{error}</p>}
 
             {selection && (
-              <>
-                <AnalysisPanel
-                  analytics={selection.analytics}
-                  portfolio={selection.portfolio_analytics}
-                  guardrails={selection.guardrails}
-                />
-                <CommitteePreview
-                  selection={selection.selection}
-                  manualSelection={manualSelection}
-                  depth={depth}
-                  estimate={estimate}
-                  onDepth={setDepth}
-                  onRun={onRun}
-                  running={running}
-                  canRun={isConnected}
-                />
-              </>
+              <AnalysisPanel
+                analytics={selection.analytics}
+                portfolio={selection.portfolio_analytics}
+                guardrails={selection.guardrails}
+              />
             )}
-
-            {result && <ReportView result={result} />}
           </>
         )}
 
         {view === "advisors" && (
           <>
             <div className="page-head">
-              <h1>Advisor roster</h1>
+              <h1>Advisors</h1>
               <p className="lede">
                 Each persona was distilled once from a real investor's writing and public track
                 record, then frozen into a reusable profile — mental models, decision rules, and
@@ -240,6 +224,21 @@ export function App() {
             />
 
             {error && <p className="error">{error}</p>}
+
+            {selection && (
+              <CommitteePreview
+                selection={selection.selection}
+                manualSelection={manualSelection}
+                depth={depth}
+                estimate={estimate}
+                onDepth={setDepth}
+                onRun={onRun}
+                running={running}
+                canRun={isConnected}
+              />
+            )}
+
+            {result && <ReportView result={result} />}
           </>
         )}
 
