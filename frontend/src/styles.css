@@ -438,3 +438,75 @@ th:not(:first-child) {
 footer {
   text-align: center;
 }
+
+.advisor-roster {
+  margin: 12px 0;
+}
+
+ul.advisor-checklist {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+ul.advisor-checklist li {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel-2);
+}
+
+.advisor-checkrow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.advisor-checkrow input {
+  margin-top: 3px;
+}
+
+.advisor-checkrow > div {
+  flex: 1;
+}
+
+.distill-toggle {
+  margin-top: 4px;
+}
+
+.distill-form {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.focus-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0 12px;
+}
+
+button.chip {
+  margin: 0;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  font-weight: 400;
+  font-size: 0.85rem;
+}
+
+button.chip.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--panel);
+}

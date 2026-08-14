@@ -96,6 +96,7 @@ export function runCommittee(
   question: string,
   depth: AnalysisDepth,
   model: string,
+  advisorIds: string[] | null,
 ): Promise<RunResponse> {
   return postWithKey<RunResponse>("/committee/analyze", apiKey, {
     profile,
@@ -103,6 +104,7 @@ export function runCommittee(
     question,
     depth,
     model,
+    advisor_ids: advisorIds,
   });
 }
 

@@ -26,7 +26,7 @@ logging.basicConfig(
 install_redaction()
 
 app = FastAPI(
-    title="AIFinancialAdvisor",
+    title="AdvisorOS",
     version="0.1.0",
     description=(
         "A BYOK multi-agent financial decision system. Deterministic analytics and advisor "

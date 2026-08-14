@@ -1,4 +1,4 @@
-import type { AnalysisDepth, CommitteeSelection, EstimateResponse } from "../types";
+import type { AdvisorSummary, AnalysisDepth, CommitteeSelection, EstimateResponse } from "../types";
 
 const DEPTHS: { id: AnalysisDepth; label: string; blurb: string }[] = [
   { id: "quick", label: "Quick", blurb: "Independent analysis, then one synthesis." },
@@ -16,6 +16,7 @@ const DEPTHS: { id: AnalysisDepth; label: string; blurb: string }[] = [
 
 export function CommitteePreview({
   selection,
+  manualSelection,
   depth,
   estimate,
   onDepth,
@@ -24,6 +25,9 @@ export function CommitteePreview({
   canRun,
 }: {
   selection: CommitteeSelection;
+  /** When set, the user hand-picked the team in the Your Team panel — this run uses it instead
+   *  of the deterministic selection above. */
+  manualSelection: AdvisorSummary[] | null;
   depth: AnalysisDepth;
   estimate: EstimateResponse | null;
   onDepth: (d: AnalysisDepth) => void;
@@ -35,7 +39,9 @@ export function CommitteePreview({
     <section className="panel">
       <div className="row-between">
         <h2>Your committee</h2>
-        <span className="badge free">selected deterministically · no API key used</span>
+        <span className="badge free">
+          {manualSelection ? "hand-picked · no API key used" : "selected deterministically · no API key used"}
+        </span>
       </div>
 
       <div className="depth-picker">
@@ -51,37 +57,50 @@ export function CommitteePreview({
         ))}
       </div>
 
-      <ul className="advisors">
-        {selection.selected.map((a) => (
-          <li key={a.advisor_id}>
-            <div className="row-between">
+      {manualSelection ? (
+        <ul className="advisors">
+          {manualSelection.map((a) => (
+            <li key={a.advisor_id}>
               <strong>{a.display_name}</strong>
-              <span className="muted small">score {a.score.toFixed(2)}</span>
-            </div>
-            <div className="muted small">{a.rationale}</div>
-          </li>
-        ))}
-      </ul>
+              <div className="muted small">{a.one_line}</div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <>
+          <ul className="advisors">
+            {selection.selected.map((a) => (
+              <li key={a.advisor_id}>
+                <div className="row-between">
+                  <strong>{a.display_name}</strong>
+                  <span className="muted small">score {a.score.toFixed(2)}</span>
+                </div>
+                <div className="muted small">{a.rationale}</div>
+              </li>
+            ))}
+          </ul>
 
-      {selection.uncovered_dimensions.length > 0 && (
-        <p className="warn-text">
-          No available advisor strongly covers{" "}
-          {selection.uncovered_dimensions.map((d) => d.replace(/_/g, " ")).join(", ")}. Treat
-          conclusions on those dimensions as weakly supported.
-        </p>
+          {selection.uncovered_dimensions.length > 0 && (
+            <p className="warn-text">
+              No available advisor strongly covers{" "}
+              {selection.uncovered_dimensions.map((d) => d.replace(/_/g, " ")).join(", ")}. Treat
+              conclusions on those dimensions as weakly supported.
+            </p>
+          )}
+          {selection.notes.map((n) => (
+            <p className="muted small" key={n}>
+              {n}
+            </p>
+          ))}
+        </>
       )}
-      {selection.notes.map((n) => (
-        <p className="muted small" key={n}>
-          {n}
-        </p>
-      ))}
 
       {estimate && (
         <div className="estimate">
           <h3>Before you spend anything</h3>
           <p>
             This workflow runs <strong>{estimate.stages.join(" → ")}</strong> across{" "}
-            <strong>{selection.selected.length} advisors</strong>, which is{" "}
+            <strong>{(manualSelection ?? selection.selected).length} advisors</strong>, which is{" "}
             <strong>{estimate.expected_llm_calls} LLM calls</strong>.
           </p>
           <p>

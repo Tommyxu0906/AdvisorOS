@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { estimateRun, runCommittee, selectCommittee } from "./api";
+import { estimateRun, listAdvisors, runCommittee, selectCommittee } from "./api";
+import { AdvisorsPanel } from "./components/AdvisorsPanel";
 import { AnalysisPanel } from "./components/AnalysisPanel";
 import { CommitteePreview } from "./components/CommitteePreview";
 import { ConnectPanel } from "./components/ConnectPanel";
@@ -7,6 +8,7 @@ import { ProfileForm } from "./components/ProfileForm";
 import { ReportView } from "./components/ReportView";
 import { useAnthropicConnection } from "./context/AnthropicConnectionContext";
 import type {
+  AdvisorSummary,
   AnalysisDepth,
   EstimateResponse,
   PortfolioInput,
@@ -50,11 +52,40 @@ export function App() {
   );
   const [depth, setDepth] = useState<AnalysisDepth>("balanced");
 
+  const [advisors, setAdvisors] = useState<AdvisorSummary[]>([]);
+  // null = deterministic auto-selection; a non-null set = the user hand-picked the team.
+  const [manualIds, setManualIds] = useState<Set<string> | null>(null);
+
   const [selection, setSelection] = useState<SelectResponse | null>(null);
   const [estimate, setEstimate] = useState<EstimateResponse | null>(null);
   const [result, setResult] = useState<RunResponse | null>(null);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    listAdvisors()
+      .then(setAdvisors)
+      .catch((e) => setError(e instanceof Error ? e.message : "Failed to load advisors."));
+  }, []);
+
+  function toggleAdvisor(advisorId: string) {
+    setManualIds((prev) => {
+      const next = new Set(prev ?? []);
+      if (next.has(advisorId)) next.delete(advisorId);
+      else next.add(advisorId);
+      return next.size === 0 ? null : next;
+    });
+  }
+
+  function onDistilled(advisor: AdvisorSummary) {
+    setAdvisors((prev) => [...prev.filter((a) => a.advisor_id !== advisor.advisor_id), advisor]);
+    // Fold the freshly distilled advisor straight into the active team.
+    setManualIds((prev) => new Set(prev ?? []).add(advisor.advisor_id));
+  }
+
+  const manualSelection = manualIds
+    ? advisors.filter((a) => manualIds.has(a.advisor_id))
+    : null;
 
   // The deterministic half runs eagerly and for free, whether or not a key is connected.
   const refreshAnalysis = useCallback(async () => {
@@ -67,11 +98,12 @@ export function App() {
         depth,
       );
       setSelection(sel);
-      setEstimate(await estimateRun(depth, sel.selection.selected.length, model));
+      const advisorCount = manualSelection ? manualSelection.length : sel.selection.selected.length;
+      setEstimate(await estimateRun(depth, advisorCount, model));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Analysis failed.");
     }
-  }, [profile, portfolio, question, depth, model]);
+  }, [profile, portfolio, question, depth, model, manualSelection]);
 
   useEffect(() => {
     const t = setTimeout(refreshAnalysis, 300);
@@ -91,6 +123,7 @@ export function App() {
           question,
           depth,
           model,
+          manualIds ? Array.from(manualIds) : null,
         ),
       );
       setResult(response);
@@ -104,14 +137,31 @@ export function App() {
   return (
     <div className="app">
       <header>
-        <h1>AIFinancialAdvisor</h1>
+        <h1>AdvisorOS</h1>
         <p className="muted">
-          A committee of distilled investor personas reasons about your finances. The math and
-          the routing are deterministic; the reasoning runs on your own Anthropic key.
+          A committee of distilled investor personas reasons about your finances. Deterministic
+          code does the math — savings rate, guardrails, portfolio risk, advisor selection — for
+          free and without touching an API. When you run the committee, that analysis is handed
+          to a small team of advisor personas who independently reason about it, challenge each
+          other, and synthesize a final view — using your own Anthropic key.
+        </p>
+        <p className="muted small">
+          Each advisor persona is <strong>distilled</strong>, not simulated live: Nuwa runs a
+          one-time research pass over a real investor's writing, letters, and public track
+          record, and compresses it into a reusable profile — their mental models, heuristics,
+          and honest blind spots. Distill anyone you want below and build your own committee.
         </p>
       </header>
 
       <ConnectPanel />
+
+      <AdvisorsPanel
+        advisors={advisors}
+        selectedIds={manualIds}
+        onToggle={toggleAdvisor}
+        onReset={() => setManualIds(null)}
+        onDistilled={onDistilled}
+      />
 
       <ProfileForm
         profile={profile}
@@ -133,6 +183,7 @@ export function App() {
           />
           <CommitteePreview
             selection={selection.selection}
+            manualSelection={manualSelection}
             depth={depth}
             estimate={estimate}
             onDepth={setDepth}
