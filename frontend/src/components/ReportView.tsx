@@ -1,8 +1,7 @@
 import { useState } from "react";
-import type { RunResponse } from "../types";
+import type { CommitteeReport, RunUsage } from "../types";
 
-export function ReportView({ result }: { result: RunResponse }) {
-  const { report, usage } = result;
+export function ReportView({ report, usage }: { report: CommitteeReport; usage: RunUsage }) {
   const [showDetail, setShowDetail] = useState(false);
 
   return (
@@ -120,7 +119,7 @@ function Section({
   );
 }
 
-function CostBreakdown({ usage }: { usage: RunResponse["usage"] }) {
+function CostBreakdown({ usage }: { usage: RunUsage }) {
   const [open, setOpen] = useState(false);
   const cost =
     usage.estimated_cost_usd === null ? "unknown" : `$${usage.estimated_cost_usd.toFixed(4)}`;
@@ -172,7 +171,7 @@ function CostBreakdown({ usage }: { usage: RunResponse["usage"] }) {
   );
 }
 
-function CostTable({ lines }: { lines: RunResponse["usage"]["by_stage"] }) {
+function CostTable({ lines }: { lines: RunUsage["by_stage"] }) {
   return (
     <table>
       <thead>

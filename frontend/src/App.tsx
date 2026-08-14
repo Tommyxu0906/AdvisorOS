@@ -5,6 +5,7 @@ import { AdvisorsPanel } from "./components/AdvisorsPanel";
 import { AnalysisPanel } from "./components/AnalysisPanel";
 import { CommitteePreview } from "./components/CommitteePreview";
 import { ConnectPanel } from "./components/ConnectPanel";
+import { HistoryPanel } from "./components/HistoryPanel";
 import { ProfileForm } from "./components/ProfileForm";
 import { ReportView } from "./components/ReportView";
 import { useAnthropicConnection } from "./context/AnthropicConnectionContext";
@@ -43,11 +44,12 @@ const DEFAULT_PORTFOLIO: PortfolioInput = {
   ],
 };
 
-type View = "analysis" | "advisors" | "about";
+type View = "analysis" | "advisors" | "history" | "about";
 
 const NAV: { id: View; label: string }[] = [
   { id: "analysis", label: "Analysis" },
   { id: "advisors", label: "Advisors" },
+  { id: "history", label: "History" },
   { id: "about", label: "How it works" },
 ];
 
@@ -240,7 +242,21 @@ export function App() {
               />
             )}
 
-            {result && <ReportView result={result} />}
+            {result && <ReportView report={result.report} usage={result.usage} />}
+          </>
+        )}
+
+        {view === "history" && (
+          <>
+            <div className="page-head">
+              <h1>History</h1>
+              <p className="lede">
+                Every committee run you paid for and ran while signed in is saved here — the
+                question, the report, and what it cost. Nothing about your Anthropic key is ever
+                part of it.
+              </p>
+            </div>
+            <HistoryPanel />
           </>
         )}
 

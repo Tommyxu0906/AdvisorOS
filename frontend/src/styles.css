@@ -865,3 +865,79 @@ td .sub {
     grid-template-columns: 130px 1fr 42px;
   }
 }
+
+/* ---------- auth modal ---------- */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(28, 27, 27, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 100;
+}
+
+.modal-panel {
+  background: var(--paper);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 400px;
+  padding: 28px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-panel h2 {
+  margin-bottom: 0;
+}
+
+.mode-toggle {
+  display: flex;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius);
+  margin: 20px 0;
+  overflow: hidden;
+}
+
+.mode-toggle button {
+  flex: 1;
+  background: transparent;
+  color: var(--ink-soft);
+  border: 0;
+  border-radius: 0;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+
+.mode-toggle button:hover:not(:disabled) {
+  background: var(--paper-sunk);
+}
+
+.mode-toggle button.active {
+  background: var(--green-wash);
+  color: var(--green-deep);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  color: var(--ink-faint);
+  font-family: var(--sans);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--hairline);
+}

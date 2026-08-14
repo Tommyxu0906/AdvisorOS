@@ -190,3 +190,41 @@ export interface ProfileInput {
 export interface PortfolioInput {
   holdings: { symbol: string; asset_class: string; market_value: number }[];
 }
+
+/** One row of a signed-in user's run history — see api.ts:listRuns. */
+export interface RunSummary {
+  run_id: string;
+  status: string;
+  created_at: string;
+  depth: AnalysisDepth;
+  model: string;
+  question: string;
+  summary: string;
+  advisor_ids: string[];
+  guardrail_max_severity: string | null;
+  total_calls: number;
+  estimated_cost_usd: number | null;
+}
+
+/**
+ * A saved run, reconstructed from stored JSONB snapshots. `report` is typed as CommitteeReport
+ * for convenience, but it is a stored snapshot from whenever the run happened — an old run
+ * could in principle predate a field this type now expects.
+ */
+export interface RunDetail {
+  run_id: string;
+  status: string;
+  created_at: string;
+  depth: AnalysisDepth;
+  model: string;
+  question: string;
+  summary: string;
+  error_message: string | null;
+  total_calls: number;
+  total_input_tokens: number;
+  total_output_tokens: number;
+  estimated_cost_usd: number | null;
+  pricing_version: string;
+  guardrails: Guardrail[];
+  report: CommitteeReport | null;
+}

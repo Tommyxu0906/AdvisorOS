@@ -12,7 +12,9 @@ import type {
   EstimateResponse,
   PortfolioInput,
   ProfileInput,
+  RunDetail,
   RunResponse,
+  RunSummary,
   SelectResponse,
 } from "./types";
 
@@ -22,13 +24,7 @@ import type {
 const API_ORIGIN = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ?? "";
 const BASE = `${API_ORIGIN}/api`;
 
-async function request<T>(path: string, body?: unknown): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
-    method: body === undefined ? "GET" : "POST",
-    headers: body === undefined ? undefined : { "Content-Type": "application/json" },
-    body: body === undefined ? undefined : JSON.stringify(body),
-  });
-
+async function toResult<T>(res: Response): Promise<T> {
   if (!res.ok) {
     let message = `Request failed (${res.status})`;
     try {
@@ -43,12 +39,32 @@ async function request<T>(path: string, body?: unknown): Promise<T> {
   return (await res.json()) as T;
 }
 
+async function request<T>(path: string, body?: unknown): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    method: body === undefined ? "GET" : "POST",
+    headers: body === undefined ? undefined : { "Content-Type": "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  return toResult<T>(res);
+}
+
 /** Endpoints that require no credentials. */
 const postFree = request;
 
 /** Endpoints that spend the user's tokens. The key is added here and nowhere else. */
 function postWithKey<T>(path: string, apiKey: string, body: Record<string, unknown>): Promise<T> {
   return request<T>(path, { ...body, anthropic_api_key: apiKey });
+}
+
+/**
+ * Endpoints that identify the caller instead of spending their tokens — run history. The
+ * Supabase access token goes in an Authorization header, never in the body or the URL.
+ */
+async function getWithSession<T>(path: string, accessToken: string): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  return toResult<T>(res);
 }
 
 // --- free -----------------------------------------------------------------------------
@@ -106,6 +122,16 @@ export function runCommittee(
     model,
     advisor_ids: advisorIds,
   });
+}
+
+// --- run history (session required, no Anthropic key involved) ------------------------
+
+export function listRuns(accessToken: string): Promise<RunSummary[]> {
+  return getWithSession<RunSummary[]>("/runs", accessToken);
+}
+
+export function getRun(accessToken: string, runId: string): Promise<RunDetail> {
+  return getWithSession<RunDetail>(`/runs/${encodeURIComponent(runId)}`, accessToken);
 }
 
 export function distillAdvisor(
