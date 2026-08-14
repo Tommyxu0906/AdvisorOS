@@ -467,6 +467,10 @@ ul.advisor-checklist li {
 }
 
 .advisor-checkrow input {
+  /* Override the global `input { width: 100% }` rule, which otherwise makes this checkbox
+     claim the row's full flex-basis and squeeze the label text into a sliver. */
+  width: auto;
+  flex: 0 0 auto;
   margin-top: 3px;
 }
 
