@@ -236,3 +236,29 @@ class RunDetail(BaseModel):
     guardrails: list[Any]
     selection: dict[str, Any]
     report: dict[str, Any] | None
+
+
+class Quote(BaseModel):
+    """One delayed price. `as_of` is when the price was true, not when it was fetched — the two
+    can be hours apart for a cached quote pulled outside market hours."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    symbol: str
+    price: float
+    previous_close: float | None
+    change_pct: float | None
+    as_of: str
+    is_delayed: bool
+    source: str
+
+
+class QuotesResponse(BaseModel):
+    """Only the symbols the provider actually priced appear in `quotes`. Anything it could not
+    resolve — a private holding, "CASH", a typo — is listed in `unpriced` instead of failing the
+    request, so a portfolio of mixed market and non-market assets still gets an answer."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    quotes: list[Quote]
+    unpriced: list[str]

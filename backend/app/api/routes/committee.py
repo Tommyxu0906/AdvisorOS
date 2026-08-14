@@ -30,6 +30,7 @@ from app.core.run_context import RunContext
 from app.core.supabase_auth import AuthUser, current_user_optional
 from app.db.repositories.runs import save_run_best_effort
 from app.domain.question import UserQuestion
+from app.market_data import service as market_data
 from app.nuwa.distiller import (
     DistillationError,
     DistillationRequest,
@@ -48,9 +49,14 @@ async def run_committee(
     credentials = deps.credentials_from(req.anthropic_api_key)
     registry = deps.registry()
 
-    analytics = analyze_profile(req.profile, req.portfolio)
-    pa = analyze_portfolio(req.portfolio) if req.portfolio else None
-    guardrails = evaluate_guardrails(req.profile, analytics, req.portfolio, pa)
+    # Real price history is fetched only here, on the paid path. The free deterministic
+    # endpoints are called on every keystroke behind a 300ms debounce, where a network round
+    # trip per symbol would be felt; one run's worth of latency is not.
+    portfolio = await market_data.enrich_portfolio(req.portfolio) if req.portfolio else None
+
+    analytics = analyze_profile(req.profile, portfolio)
+    pa = analyze_portfolio(portfolio) if portfolio else None
+    guardrails = evaluate_guardrails(req.profile, analytics, portfolio, pa)
     intent = UserQuestion(text=req.question).classify()
 
     manifests = registry.all_manifests()
@@ -100,7 +106,7 @@ async def run_committee(
                 status="failed",
                 error_message=str(exc),
                 profile=req.profile,
-                portfolio=req.portfolio,
+                portfolio=portfolio,
                 analytics=analytics,
                 portfolio_analytics=pa,
                 guardrails=guardrails,
@@ -130,7 +136,7 @@ async def run_committee(
             status="succeeded",
             error_message=None,
             profile=req.profile,
-            portfolio=req.portfolio,
+            portfolio=portfolio,
             analytics=analytics,
             portfolio_analytics=pa,
             guardrails=guardrails,

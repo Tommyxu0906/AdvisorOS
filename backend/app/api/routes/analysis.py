@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, Query
 
 from app.advisors.selection import select_committee
 from app.analytics.guardrails import evaluate_guardrails
@@ -16,11 +16,14 @@ from app.api.schemas import (
     AnalyzeProfileResponse,
     EstimateRequest,
     EstimateResponse,
+    Quote,
+    QuotesResponse,
     SelectCommitteeRequest,
     SelectCommitteeResponse,
 )
 from app.domain.question import UserQuestion
 from app.llm.pricing import load_pricing
+from app.market_data import service as market_data
 
 router = APIRouter(tags=["deterministic"])
 
@@ -47,6 +50,52 @@ def analyze_profile_endpoint(req: AnalyzeProfileRequest) -> AnalyzeProfileRespon
 @router.post("/portfolio/analyze", response_model=PortfolioAnalytics)
 def analyze_portfolio_endpoint(req: AnalyzePortfolioRequest) -> PortfolioAnalytics:
     return analyze_portfolio(req.portfolio)
+
+
+MAX_QUOTE_SYMBOLS = 25
+
+
+@router.get("/market/quotes", response_model=QuotesResponse)
+async def quotes_endpoint(
+    symbols: str = Query(description="Comma-separated symbols, e.g. NVDA,VTI"),
+) -> QuotesResponse:
+    """Delayed prices from a free public feed. No key, no account, no cost to the caller.
+
+    Symbols the provider cannot resolve come back under `unpriced` rather than as an error —
+    a portfolio holding a private business alongside NVDA still gets prices for the half that
+    has them.
+    """
+    requested = [s.strip().upper() for s in symbols.split(",") if s.strip()]
+    if not requested:
+        raise HTTPException(
+            status_code=422,
+            detail={"code": "no_symbols", "message": "Provide at least one symbol."},
+        )
+    if len(requested) > MAX_QUOTE_SYMBOLS:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "code": "too_many_symbols",
+                "message": f"At most {MAX_QUOTE_SYMBOLS} symbols per request.",
+            },
+        )
+
+    found = await market_data.get_quotes(requested)
+    return QuotesResponse(
+        quotes=[
+            Quote(
+                symbol=q.symbol,
+                price=q.price,
+                previous_close=q.previous_close,
+                change_pct=q.change_pct,
+                as_of=q.as_of.isoformat(),
+                is_delayed=q.is_delayed,
+                source=q.source,
+            )
+            for q in found.values()
+        ],
+        unpriced=[s for s in requested if s not in found],
+    )
 
 
 @router.get("/advisors", response_model=list[AdvisorSummary])

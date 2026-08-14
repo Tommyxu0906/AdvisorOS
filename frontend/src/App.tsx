@@ -6,6 +6,7 @@ import { AnalysisPanel } from "./components/AnalysisPanel";
 import { CommitteePreview } from "./components/CommitteePreview";
 import { ConnectPanel } from "./components/ConnectPanel";
 import { HistoryPanel } from "./components/HistoryPanel";
+import { LivePrices } from "./components/LivePrices";
 import { ProfileForm } from "./components/ProfileForm";
 import { ReportView } from "./components/ReportView";
 import { useAnthropicConnection } from "./context/AnthropicConnectionContext";
@@ -195,6 +196,10 @@ export function App() {
 
             {error && <p className="error">{error}</p>}
 
+            <LivePrices
+              symbols={portfolio.holdings.map((h) => h.symbol.trim()).filter(Boolean)}
+            />
+
             {selection && (
               <AnalysisPanel
                 analytics={selection.analytics}
@@ -264,7 +269,8 @@ export function App() {
 
         <footer className="panel fineprint">
           Educational analysis only. Not personalized investment advice from a licensed advisor.
-          AdvisorOS does not connect to a brokerage, quote live prices, or place trades.
+          Prices are exchange-delayed and shown for analysis. AdvisorOS does not connect to a
+          brokerage or place trades.
         </footer>
       </div>
     </>

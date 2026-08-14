@@ -12,6 +12,7 @@ import type {
   EstimateResponse,
   PortfolioInput,
   ProfileInput,
+  QuotesResponse,
   RunDetail,
   RunResponse,
   RunSummary,
@@ -92,6 +93,16 @@ export function estimateRun(
     advisor_count: advisorCount,
     model,
   });
+}
+
+/**
+ * Delayed quotes from a free public feed. Free in both senses that matter here: no Anthropic key
+ * and no account. Symbols the provider cannot resolve come back under `unpriced` rather than as
+ * an error, so a portfolio of mixed market and non-market assets still gets an answer.
+ */
+export function getQuotes(symbols: string[]): Promise<QuotesResponse> {
+  const query = encodeURIComponent(symbols.join(","));
+  return postFree<QuotesResponse>(`/market/quotes?symbols=${query}`);
 }
 
 // --- key required ---------------------------------------------------------------------

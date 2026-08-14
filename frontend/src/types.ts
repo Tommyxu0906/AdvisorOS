@@ -191,6 +191,22 @@ export interface PortfolioInput {
   holdings: { symbol: string; asset_class: string; market_value: number }[];
 }
 
+export interface Quote {
+  symbol: string;
+  price: number;
+  previous_close: number | null;
+  change_pct: number | null;
+  as_of: string;
+  is_delayed: boolean;
+  source: string;
+}
+
+/** `unpriced` holds the symbols the provider could not resolve — see api.ts:getQuotes. */
+export interface QuotesResponse {
+  quotes: Quote[];
+  unpriced: string[];
+}
+
 /** One row of a signed-in user's run history — see api.ts:listRuns. */
 export interface RunSummary {
   run_id: string;

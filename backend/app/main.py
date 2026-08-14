@@ -91,6 +91,7 @@ def capabilities() -> dict:
             "POST /api/profiles/analyze",
             "POST /api/portfolio/analyze",
             "GET  /api/advisors",
+            "GET  /api/market/quotes",
             "POST /api/committee/select",
             "POST /api/committee/estimate",
         ],

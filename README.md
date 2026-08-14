@@ -277,11 +277,33 @@ docs/           IMPLEMENTATION_PLAN.md
 | `POST /api/profiles/analyze`        | no  | Analytics + guardrails                    |
 | `POST /api/portfolio/analyze`       | no  | Portfolio metrics                         |
 | `GET  /api/advisors`                | no  | Registry listing                          |
+| `GET  /api/market/quotes`           | no  | Delayed prices for held symbols           |
 | `POST /api/committee/select`        | no  | Deterministic selection + rationale       |
 | `POST /api/committee/estimate`      | no  | Call count and cost estimate per mode     |
 | `POST /api/auth/anthropic/validate` | yes | Returns `{valid}` only                    |
 | `POST /api/committee/analyze`       | yes | Runs the committee                        |
 | `POST /api/advisors/distill`        | yes | Nuwa distillation                         |
+
+## Market data
+
+Prices come from Yahoo Finance's public chart endpoint: no API key, no signup, no operator cost.
+The tradeoff is stated rather than hidden — it is an unofficial endpoint that can change shape
+without notice, and its prices are exchange-delayed, not a live tick feed. Daily bars are enough
+for everything this product computes from price data (annualized volatility, max drawdown,
+correlation); a real-time feed would add cost and a WebSocket ingestion service without changing
+a single number the UI reports.
+
+Responses are cached in Postgres (`instruments`, `daily_bars`, `latest_quotes`) with a 15-minute
+TTL, so one fetch serves every user holding that symbol. `market_data_fetches` records every
+attempt including failures — without it, a provider outage looks identical to "the market did not
+move." With no `DATABASE_URL` present, fetches still work; they simply go uncached.
+
+A fetch is fetched only where it earns its latency: the paid `/api/committee/analyze` path
+enriches the portfolio with real return series before analysis, while the free deterministic
+endpoints (called on every keystroke behind a debounce) stay purely local. Symbols the provider
+cannot resolve are left unpriced rather than failing the request — and deliberately are *not*
+given a synthetic zero-return series, since fake zeros would understate portfolio volatility.
+Cash is the one exception, because cash genuinely does not move.
 
 ## Cost model
 
