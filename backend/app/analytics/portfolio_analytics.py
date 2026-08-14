@@ -87,7 +87,16 @@ def analyze_portfolio(portfolio: Portfolio) -> PortfolioAnalytics:
     if total <= 0 or not portfolio.holdings:
         return PortfolioAnalytics(total_value=total, holding_count=len(portfolio.holdings))
 
-    weights = {h.symbol: h.market_value / total for h in portfolio.holdings}
+    # Weights are aggregated by symbol before anything reads them. The same ticker legitimately
+    # appears more than once — VTI held in both a taxable account and a Roth is ordinary — and
+    # a plain dict comprehension keyed on symbol would keep only the last lot. That silently
+    # broke three things at once: the weights no longer summed to 1, HHI and effective_holdings
+    # were computed from the surviving fragment, and the per-holding loops below double-counted
+    # the duplicated symbol because they looked up a shared weight once per lot.
+    value_by_symbol: dict[str, float] = {}
+    for h in portfolio.holdings:
+        value_by_symbol[h.symbol] = value_by_symbol.get(h.symbol, 0.0) + h.market_value
+    weights = {symbol: value / total for symbol, value in value_by_symbol.items()}
 
     class_weights: dict[str, float] = {}
     for h in portfolio.holdings:
@@ -98,25 +107,23 @@ def analyze_portfolio(portfolio: Portfolio) -> PortfolioAnalytics:
     largest_symbol, largest_weight = max(weights.items(), key=lambda kv: kv[1])
     hhi = sum(w * w for w in weights.values())
 
+    # These sum each holding's own share rather than a per-symbol weight, so a symbol split
+    # across accounts contributes its true total exactly once.
     equity_share = sum(
-        w
-        for h, w in ((h, weights[h.symbol]) for h in portfolio.holdings)
-        if h.asset_class.is_equity_like
+        h.market_value / total for h in portfolio.holdings if h.asset_class.is_equity_like
     )
     defensive_share = sum(
-        w
-        for h, w in ((h, weights[h.symbol]) for h in portfolio.holdings)
-        if h.asset_class.is_defensive
+        h.market_value / total for h in portfolio.holdings if h.asset_class.is_defensive
     )
     taxable_share = sum(
-        weights[h.symbol] for h in portfolio.holdings if not h.account_type.is_tax_advantaged
+        h.market_value / total for h in portfolio.holdings if not h.account_type.is_tax_advantaged
     )
 
     with_er = [h for h in portfolio.holdings if h.expense_ratio is not None]
+    er_weight_total = sum(h.market_value for h in with_er)
     weighted_er = (
-        sum(weights[h.symbol] * (h.expense_ratio or 0.0) for h in with_er)
-        / sum(weights[h.symbol] for h in with_er)
-        if with_er
+        sum(h.market_value * (h.expense_ratio or 0.0) for h in with_er) / er_weight_total
+        if with_er and er_weight_total > 0
         else None
     )
 

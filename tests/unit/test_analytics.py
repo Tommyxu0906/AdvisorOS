@@ -111,6 +111,57 @@ def test_portfolio_weights_and_concentration(concentrated_portfolio) -> None:
     assert pa.unrealized_gain == pytest.approx(48_000)
 
 
+def test_same_symbol_in_two_accounts_is_aggregated_not_overwritten() -> None:
+    """Holding one ticker in two accounts is ordinary and must not corrupt the weights.
+
+    Keying weights on symbol alone used to keep only the last lot, which made the weights stop
+    summing to 1, double-counted the symbol in equity_share, and computed HHI from the surviving
+    fragment — reporting a two-lot portfolio as 6.25 effective holdings.
+    """
+    portfolio = Portfolio(
+        holdings=[
+            Holding(
+                symbol="VTI",
+                asset_class=AssetClass.us_equity,
+                market_value=60_000,
+                account_type=AccountType.taxable,
+            ),
+            Holding(
+                symbol="VTI",
+                asset_class=AssetClass.us_equity,
+                market_value=40_000,
+                account_type=AccountType.roth_ira,
+            ),
+        ]
+    )
+    pa = analyze_portfolio(portfolio)
+
+    assert pa.total_value == 100_000
+    assert pa.holding_count == 2
+    assert sum(pa.weights.values()) == pytest.approx(1.0)
+    # One symbol, therefore fully concentrated, therefore one effective holding.
+    assert pa.weights == {"VTI": pytest.approx(1.0)}
+    assert pa.largest_weight == pytest.approx(1.0)
+    assert pa.hhi == pytest.approx(1.0)
+    assert pa.effective_holdings == pytest.approx(1.0)
+    # Counted once, not twice.
+    assert pa.equity_share == pytest.approx(1.0)
+    # Only the taxable lot is in a taxable account.
+    assert pa.taxable_share == pytest.approx(0.6)
+
+
+def test_weighted_expense_ratio_uses_value_not_deduped_weights() -> None:
+    """The expense-ratio average weights by money, so duplicate symbols cannot skew it."""
+    portfolio = Portfolio(
+        holdings=[
+            Holding(symbol="A", market_value=75_000, expense_ratio=0.04),
+            Holding(symbol="B", market_value=25_000, expense_ratio=0.08),
+        ]
+    )
+    pa = analyze_portfolio(portfolio)
+    assert pa.weighted_expense_ratio == pytest.approx(0.75 * 0.04 + 0.25 * 0.08)
+
+
 def test_empty_portfolio_is_safe() -> None:
     pa = analyze_portfolio(Portfolio())
     assert pa.total_value == 0
