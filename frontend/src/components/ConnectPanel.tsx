@@ -14,28 +14,28 @@ export function ConnectPanel() {
 
   if (isConnected) {
     return (
-      <section className="panel connected">
+      <section className="panel">
         <div className="row-between">
-          <div>
-            <h2>✓ Anthropic connected</h2>
-            <p className="muted">
-              Model: <strong>{model}</strong>. Usage is billed to your own Anthropic account.
-            </p>
-          </div>
-          <button className="secondary" onClick={disconnect}>
-            Disconnect
-          </button>
+          <h2>Claude engine</h2>
+          <span className="badge free">connected</span>
         </div>
+        <p className="muted">
+          Running <strong>{model}</strong>. Every token is billed to your own Anthropic account;
+          this app never holds credentials of its own.
+        </p>
+        <button className="secondary" onClick={disconnect}>
+          Disconnect
+        </button>
       </section>
     );
   }
 
   return (
     <section className="panel">
-      <h2>Connect Claude</h2>
+      <h2>Claude engine</h2>
       <p className="muted">
-        This app runs on your Anthropic API key. Everything below the committee run — the
-        financial analysis, the guardrails, the advisor selection — works without one.
+        Reasoning runs on your key. Everything else on this page — the financial analysis, the
+        guardrails, the advisor selection — is computed without one.
       </p>
 
       <form
@@ -45,37 +45,42 @@ export function ConnectPanel() {
           if (ok) setDraftKey("");
         }}
       >
-        <label htmlFor="apikey">Anthropic API key</label>
-        <input
-          id="apikey"
-          type="password"
-          autoComplete="off"
-          spellCheck={false}
-          placeholder="sk-ant-..."
-          value={draftKey}
-          onChange={(e) => setDraftKey(e.target.value)}
-        />
+        <div className="connect-grid">
+          <div className="field">
+            <label htmlFor="apikey">Anthropic API key</label>
+            <input
+              id="apikey"
+              type="password"
+              autoComplete="off"
+              spellCheck={false}
+              placeholder="sk-ant-..."
+              value={draftKey}
+              onChange={(e) => setDraftKey(e.target.value)}
+            />
+          </div>
 
-        <label htmlFor="model">Model</label>
-        <select id="model" value={draftModel} onChange={(e) => setDraftModel(e.target.value)}>
-          {MODELS.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.label}
-            </option>
-          ))}
-        </select>
+          <div className="field">
+            <label htmlFor="model">Model</label>
+            <select id="model" value={draftModel} onChange={(e) => setDraftModel(e.target.value)}>
+              {MODELS.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <button type="submit" disabled={status === "validating" || draftKey.trim().length < 20}>
-          {status === "validating" ? "Validating…" : "Connect"}
-        </button>
+          <button type="submit" disabled={status === "validating" || draftKey.trim().length < 20}>
+            {status === "validating" ? "Validating…" : "Connect"}
+          </button>
+        </div>
       </form>
 
       {error && <p className="error">{error}</p>}
 
       <p className="fineprint">
-        Your key is held in this page's memory only. It is not written to localStorage, a cookie,
-        or any server-side store, and it is never included in a saved run. Refreshing the page
-        requires re-entering it.
+        The key is held in this page's memory only — never written to localStorage, a cookie, or
+        any server-side store, and never included in a saved run. Refreshing requires re-entry.
       </p>
     </section>
   );

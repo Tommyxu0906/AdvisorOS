@@ -7,10 +7,13 @@ export function ReportView({ result }: { result: RunResponse }) {
 
   return (
     <section className="panel">
-      <h2>Committee report</h2>
+      <div className="row-between">
+        <h2>Committee report</h2>
+        <span className="badge risk">your key was used</span>
+      </div>
 
       {report.guardrail_violations.length > 0 && (
-        <div className="violation">
+        <div className="notice risk">
           <strong>Guardrail check flagged this report.</strong>
           <ul>
             {report.guardrail_violations.map((v) => (
@@ -47,9 +50,9 @@ export function ReportView({ result }: { result: RunResponse }) {
       {showDetail && (
         <div className="advisor-detail">
           {(report.revised_analyses.length ? report.revised_analyses : report.analyses).map((a) => (
-            <article key={a.advisor_id}>
+            <article className="memo" key={a.advisor_id}>
               <div className="row-between">
-                <h4>{a.display_name}</h4>
+                <h3 style={{ marginTop: 0 }}>{a.display_name}</h3>
                 <span className="muted small">confidence {a.confidence.toFixed(2)}</span>
               </div>
               {a.declined ? (

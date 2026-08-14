@@ -58,27 +58,56 @@ export function CommitteePreview({
       </div>
 
       {manualSelection ? (
-        <ul className="advisors">
-          {manualSelection.map((a) => (
-            <li key={a.advisor_id}>
-              <strong>{a.display_name}</strong>
-              <div className="muted small">{a.one_line}</div>
-            </li>
-          ))}
-        </ul>
+        <table>
+          <thead>
+            <tr>
+              <th>Persona</th>
+              <th>Approach</th>
+            </tr>
+          </thead>
+          <tbody>
+            {manualSelection.map((a) => (
+              <tr key={a.advisor_id}>
+                <td>
+                  <strong>{a.display_name}</strong>
+                </td>
+                <td>
+                  <span className="sub" style={{ marginTop: 0 }}>
+                    {a.one_line}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       ) : (
         <>
-          <ul className="advisors">
-            {selection.selected.map((a) => (
-              <li key={a.advisor_id}>
-                <div className="row-between">
-                  <strong>{a.display_name}</strong>
-                  <span className="muted small">score {a.score.toFixed(2)}</span>
-                </div>
-                <div className="muted small">{a.rationale}</div>
-              </li>
-            ))}
-          </ul>
+          <table>
+            <thead>
+              <tr>
+                <th>Persona</th>
+                <th>Why this advisor</th>
+                <th className="num" style={{ width: 80 }}>
+                  Score
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {selection.selected.map((a) => (
+                <tr key={a.advisor_id}>
+                  <td>
+                    <strong>{a.display_name}</strong>
+                  </td>
+                  <td>
+                    <span className="sub" style={{ marginTop: 0 }}>
+                      {a.rationale}
+                    </span>
+                  </td>
+                  <td className="num">{a.score.toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
           {selection.uncovered_dimensions.length > 0 && (
             <p className="warn-text">
@@ -98,19 +127,27 @@ export function CommitteePreview({
       {estimate && (
         <div className="estimate">
           <h3>Before you spend anything</h3>
-          <p>
-            This workflow runs <strong>{estimate.stages.join(" → ")}</strong> across{" "}
-            <strong>{(manualSelection ?? selection.selected).length} advisors</strong>, which is{" "}
-            <strong>{estimate.expected_llm_calls} LLM calls</strong>.
-          </p>
-          <p>
-            Estimated cost:{" "}
-            <strong>
-              {estimate.estimated_cost_usd === null
-                ? "unknown for this model"
-                : `$${estimate.estimated_cost_usd.toFixed(3)}`}
-            </strong>{" "}
-            <span className="muted small">(pricing {estimate.pricing_version})</span>
+          <div className="stats">
+            <div className="stat">
+              <div className="stat-label">Advisors</div>
+              <div className="stat-value">{(manualSelection ?? selection.selected).length}</div>
+            </div>
+            <div className="stat">
+              <div className="stat-label">LLM calls</div>
+              <div className="stat-value">{estimate.expected_llm_calls}</div>
+            </div>
+            <div className="stat">
+              <div className="stat-label">Estimated cost</div>
+              <div className="stat-value">
+                {estimate.estimated_cost_usd === null
+                  ? "—"
+                  : `$${estimate.estimated_cost_usd.toFixed(3)}`}
+              </div>
+            </div>
+          </div>
+          <p className="small muted">
+            Stages: {estimate.stages.join(" → ")}. Billed to your Anthropic account at pricing{" "}
+            {estimate.pricing_version}.
           </p>
           <p className="fineprint">{estimate.caveat}</p>
         </div>

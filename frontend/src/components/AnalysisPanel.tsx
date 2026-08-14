@@ -1,7 +1,7 @@
 import type { Guardrail, PortfolioAnalytics, ProfileAnalytics } from "../types";
 
 const pct = (v: number) => `${(v * 100).toFixed(0)}%`;
-const money = (v: number) => v.toLocaleString(undefined, { maximumFractionDigits: 0 });
+const money = (v: number) => `$${v.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
 export function AnalysisPanel({
   analytics,
@@ -18,7 +18,7 @@ export function AnalysisPanel({
     <section className="panel">
       <div className="row-between">
         <h2>Financial analysis</h2>
-        <span className="badge free">computed locally · no API key used</span>
+        <span className="badge free">computed locally · no key used</span>
       </div>
 
       <div className="stats">
@@ -28,20 +28,20 @@ export function AnalysisPanel({
         <Stat
           label="Emergency fund"
           value={`${analytics.emergency_fund_months.toFixed(1)} mo`}
-          warn={analytics.emergency_fund_months < 3}
+          risk={analytics.emergency_fund_months < 3}
         />
         <Stat label="Debt / income" value={`${analytics.debt_to_income.toFixed(2)}×`} />
         <Stat
           label="Debt service"
           value={pct(analytics.debt_service_ratio)}
-          warn={analytics.debt_service_ratio > 0.36}
+          risk={analytics.debt_service_ratio > 0.36}
         />
         <Stat
           label="High-APR debt"
           value={money(analytics.high_apr_debt_balance)}
-          warn={analytics.high_apr_debt_balance > 0}
+          risk={analytics.high_apr_debt_balance > 0}
         />
-        <Stat label="Annual interest cost" value={money(analytics.annual_interest_cost)} />
+        <Stat label="Annual interest" value={money(analytics.annual_interest_cost)} />
       </div>
 
       {portfolio && portfolio.holding_count > 0 && (
@@ -51,9 +51,9 @@ export function AnalysisPanel({
             <Stat label="Value" value={money(portfolio.total_value)} />
             <Stat label="Positions" value={String(portfolio.holding_count)} />
             <Stat
-              label={`Largest (${portfolio.largest_holding_symbol})`}
+              label={`Largest — ${portfolio.largest_holding_symbol}`}
               value={pct(portfolio.largest_weight)}
-              warn={portfolio.largest_weight > 0.25}
+              risk={portfolio.largest_weight > 0.25}
             />
             <Stat label="Effective positions" value={portfolio.effective_holdings.toFixed(1)} />
             <Stat label="Equity share" value={pct(portfolio.equity_share)} />
@@ -68,12 +68,19 @@ export function AnalysisPanel({
           <div className="need" key={dim}>
             <span className="need-label">{dim.replace(/_/g, " ")}</span>
             <div className="bar">
-              <div className="bar-fill" style={{ width: `${score * 100}%` }} />
+              <div
+                className={`bar-fill${score >= 0.6 ? " hot" : ""}`}
+                style={{ width: `${Math.max(score, 0.015) * 100}%` }}
+              />
             </div>
             <span className="need-score">{score.toFixed(2)}</span>
           </div>
         ))}
       </div>
+      <p className="fineprint">
+        Scored from your numbers alone. The selector matches these against each advisor's
+        expertise vector to assemble the smallest team that covers the top dimensions.
+      </p>
 
       {analytics.notable_findings.length > 0 && (
         <>
@@ -92,7 +99,7 @@ export function AnalysisPanel({
       ) : (
         <ul className="guardrails">
           {guardrails.map((g) => (
-            <li key={g.code} className={`guardrail ${g.severity}`}>
+            <li key={g.code} className={g.severity === "blocking" ? "violation" : g.severity}>
               <span className="severity">{g.severity}</span>
               <div>
                 <strong>{g.message}</strong>
@@ -105,17 +112,17 @@ export function AnalysisPanel({
       <p className="fineprint">
         Guardrails are enforced by code, not by the model. Advisors are told they may not
         recommend anything contradicting a blocking item, and the final report is re-checked
-        against them.
+        against them afterwards.
       </p>
     </section>
   );
 }
 
-function Stat({ label, value, warn }: { label: string; value: string; warn?: boolean }) {
+function Stat({ label, value, risk }: { label: string; value: string; risk?: boolean }) {
   return (
-    <div className={`stat${warn ? " warn" : ""}`}>
+    <div className="stat">
       <div className="stat-label">{label}</div>
-      <div className="stat-value">{value}</div>
+      <div className={`stat-value${risk ? " risk" : ""}`}>{value}</div>
     </div>
   );
 }

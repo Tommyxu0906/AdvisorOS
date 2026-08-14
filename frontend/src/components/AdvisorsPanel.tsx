@@ -3,11 +3,17 @@ import { distillAdvisor } from "../api";
 import { useAnthropicConnection } from "../context/AnthropicConnectionContext";
 import type { AdvisorSummary } from "../types";
 
-const DISTILL_DEPTHS: { id: "quick" | "standard" | "deep"; label: string; blurb: string }[] = [
-  { id: "quick", label: "Quick", blurb: "Cheapest — a single research pass." },
-  { id: "standard", label: "Standard", blurb: "A few research passes plus synthesis." },
-  { id: "deep", label: "Deep", blurb: "Most thorough. Substantially more tokens than a normal committee run." },
+const DISTILL_DEPTHS: { id: "quick" | "standard" | "deep"; label: string }[] = [
+  { id: "quick", label: "Quick" },
+  { id: "standard", label: "Standard" },
+  { id: "deep", label: "Deep" },
 ];
+
+const DEPTH_NOTE: Record<"quick" | "standard" | "deep", string> = {
+  quick: "Two research passes plus synthesis — the cheapest usable distillation.",
+  standard: "Four research passes plus synthesis. The default.",
+  deep: "Seven research passes plus synthesis. Substantially more tokens than a committee run.",
+};
 
 const FOCUS_SUGGESTIONS = [
   "valuation",
@@ -71,154 +77,191 @@ export function AdvisorsPanel({
   const custom = advisors.filter((a) => a.origin !== "builtin");
 
   return (
-    <section className="panel">
-      <div className="row-between">
-        <h2>Your team</h2>
-        {selectedIds && (
-          <button className="secondary small" onClick={onReset}>
-            Reset to automatic selection
-          </button>
-        )}
-      </div>
-      <p className="muted">
-        Every advisor here is a compressed persona distilled once, ahead of time, from a real
-        investor's writing and public track record — not re-researched on every question. By
-        default the committee picks whichever 3–4 advisors best cover your situation. Check
-        advisors below to hand-pick the team instead; leave everything unchecked to let the
-        deterministic selector decide.
-      </p>
+    <>
+      <section className="panel">
+        <div className="row-between">
+          <h2>Committee roster</h2>
+          {selectedIds ? (
+            <button className="ghost" onClick={onReset}>
+              Reset to automatic selection
+            </button>
+          ) : (
+            <span className="badge free">selecting automatically</span>
+          )}
+        </div>
+        <p className="muted">
+          Leave every box unchecked and the deterministic selector assembles the team that best
+          covers your situation. Check advisors to override it and hand-pick the committee.
+        </p>
 
-      <div className="advisor-roster">
-        <h3 className="muted small">Built-in</h3>
-        <ul className="advisor-checklist">
-          {builtin.map((a) => (
-            <AdvisorRow
-              key={a.advisor_id}
-              advisor={a}
-              checked={selectedIds?.has(a.advisor_id) ?? false}
-              onToggle={onToggle}
-            />
-          ))}
-        </ul>
+        <RosterTable
+          caption="Built-in"
+          advisors={builtin}
+          selectedIds={selectedIds}
+          onToggle={onToggle}
+        />
 
         {custom.length > 0 && (
-          <>
-            <h3 className="muted small">Distilled by you</h3>
-            <ul className="advisor-checklist">
-              {custom.map((a) => (
-                <AdvisorRow
-                  key={a.advisor_id}
-                  advisor={a}
-                  checked={selectedIds?.has(a.advisor_id) ?? false}
-                  onToggle={onToggle}
-                />
-              ))}
-            </ul>
-          </>
-        )}
-      </div>
-
-      <div className="distill-toggle">
-        <button className="secondary" onClick={() => setShowDistill((s) => !s)}>
-          {showDistill ? "Cancel" : "+ Distill a new advisor"}
-        </button>
-      </div>
-
-      {showDistill && (
-        <form className="distill-form" onSubmit={onDistill}>
-          <p className="muted small">
-            Name a real investor, economist, or financial writer. Nuwa runs a short research
-            pass on your Anthropic key and produces a reusable advisor persona — done once, then
-            available in every future committee run at no extra distillation cost.
-          </p>
-
-          <label htmlFor="subject">Who should we distill?</label>
-          <input
-            id="subject"
-            placeholder="e.g. Benjamin Graham, Cathie Wood, Jack Bogle"
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            required
+          <RosterTable
+            caption="Distilled by you"
+            advisors={custom}
+            selectedIds={selectedIds}
+            onToggle={onToggle}
           />
+        )}
 
-          <label>Focus (optional)</label>
-          <div className="focus-chips">
-            {FOCUS_SUGGESTIONS.map((f) => (
-              <button
-                type="button"
-                key={f}
-                className={`chip${focusAreas.includes(f) ? " active" : ""}`}
-                onClick={() => toggleFocus(f)}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
-
-          <label>Distillation depth</label>
-          <div className="depth-picker">
-            {DISTILL_DEPTHS.map((d) => (
-              <button
-                type="button"
-                key={d.id}
-                className={`depth${depth === d.id ? " active" : ""}`}
-                onClick={() => setDepth(d.id)}
-              >
-                <strong>{d.label}</strong>
-                <span className="muted small">{d.blurb}</span>
-              </button>
-            ))}
-          </div>
-
-          <p className="fineprint">
-            This is a one-time cost billed to your Anthropic key, separate from — and usually
-            larger than — a single committee run.
+        {lastWarnings.map((w) => (
+          <p className="warn-text" key={w}>
+            {w}
           </p>
+        ))}
+      </section>
 
-          <button type="submit" disabled={!isConnected || distilling}>
-            {distilling ? "Distilling…" : "Start distillation"}
+      <section className="panel">
+        <div className="row-between">
+          <h2>Distill a new advisor</h2>
+          <button className="secondary" onClick={() => setShowDistill((s) => !s)}>
+            {showDistill ? "Cancel" : "New advisor"}
           </button>
-          {!isConnected && (
-            <p className="muted small">Connect an Anthropic API key above to enable this.</p>
-          )}
-          {distillError && <p className="error">{distillError}</p>}
-        </form>
-      )}
-
-      {lastWarnings.map((w) => (
-        <p className="warn-text" key={w}>
-          {w}
+        </div>
+        <p className="muted">
+          Name a real investor, economist, or financial writer. Nuwa plans research questions
+          about how they decide and where they fail, runs those passes concurrently, and
+          synthesizes a reusable profile — once. Every committee run afterwards reuses it.
         </p>
-      ))}
-    </section>
+
+        {showDistill && (
+          <form className="distill-form" onSubmit={onDistill}>
+            <div className="distill-grid">
+              <div>
+                <div className="field">
+                  <label htmlFor="subject">Subject</label>
+                  <input
+                    id="subject"
+                    placeholder="e.g. Benjamin Graham"
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="field" style={{ marginTop: 16 }}>
+                  <label>Focus areas (optional)</label>
+                  <div className="focus-chips">
+                    {FOCUS_SUGGESTIONS.map((f) => (
+                      <label key={f}>
+                        <input
+                          type="checkbox"
+                          checked={focusAreas.includes(f)}
+                          onChange={() => toggleFocus(f)}
+                        />
+                        {f}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div className="field">
+                  <label>Distillation depth</label>
+                  <div className="radio-set">
+                    {DISTILL_DEPTHS.map((d) => (
+                      <label key={d.id}>
+                        <input
+                          type="radio"
+                          name="distill-depth"
+                          checked={depth === d.id}
+                          onChange={() => setDepth(d.id)}
+                        />
+                        {d.label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className={`notice${depth === "deep" ? " risk" : ""}`}>
+                  <p className="small" style={{ margin: 0 }}>
+                    {DEPTH_NOTE[depth]}
+                  </p>
+                </div>
+
+                <p className="fineprint">
+                  Billed to your Anthropic key as a one-time cost, separate from — and usually
+                  larger than — a single committee run.
+                </p>
+
+                <button type="submit" disabled={!isConnected || distilling}>
+                  {distilling ? "Distilling…" : "Start distillation"}
+                </button>
+                {!isConnected && (
+                  <p className="muted small">Connect a key above to enable this.</p>
+                )}
+              </div>
+            </div>
+
+            {distillError && <p className="error">{distillError}</p>}
+          </form>
+        )}
+      </section>
+    </>
   );
 }
 
-function AdvisorRow({
-  advisor,
-  checked,
+function RosterTable({
+  caption,
+  advisors,
+  selectedIds,
   onToggle,
 }: {
-  advisor: AdvisorSummary;
-  checked: boolean;
+  caption: string;
+  advisors: AdvisorSummary[];
+  selectedIds: Set<string> | null;
   onToggle: (advisorId: string) => void;
 }) {
   return (
-    <li>
-      <label className="advisor-checkrow">
-        <input
-          type="checkbox"
-          checked={checked}
-          onChange={() => onToggle(advisor.advisor_id)}
-        />
-        <div>
-          <div className="row-between">
-            <strong>{advisor.display_name}</strong>
-            <span className="muted small">{advisor.origin === "builtin" ? "built-in" : "distilled"}</span>
-          </div>
-          <div className="muted small">{advisor.one_line}</div>
-        </div>
-      </label>
-    </li>
+    <>
+      <h3>{caption}</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style={{ width: 44 }}>Sel</th>
+            <th>Persona</th>
+            <th>Approach</th>
+            <th className="num" style={{ width: 92 }}>
+              Profile
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {advisors.map((a) => (
+            <tr key={a.advisor_id} className="selectable">
+              <td>
+                <input
+                  type="checkbox"
+                  aria-label={`Include ${a.display_name}`}
+                  checked={selectedIds?.has(a.advisor_id) ?? false}
+                  onChange={() => onToggle(a.advisor_id)}
+                />
+              </td>
+              <td>
+                <strong>{a.display_name}</strong>
+                {a.topic_affinity.length > 0 && (
+                  <span className="sub">
+                    {a.topic_affinity.slice(0, 3).map((t) => t.replace(/_/g, " ")).join(" · ")}
+                  </span>
+                )}
+              </td>
+              <td>
+                <span className="sub" style={{ marginTop: 0 }}>
+                  {a.one_line}
+                </span>
+              </td>
+              <td className="num muted">{a.runtime_profile_tokens.toLocaleString()} tok</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
   );
 }
