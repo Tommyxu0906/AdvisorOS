@@ -9,6 +9,9 @@ dependencies = [
     "pydantic>=2.9",
     "anthropic>=0.40",
     "httpx>=0.27",
+    # Storage is optional infrastructure: the app boots and serves its deterministic half with
+    # no DATABASE_URL. asyncpg is imported lazily inside app/db/pool.py, never at startup.
+    "asyncpg>=0.30",
 ]
 
 [project.optional-dependencies]
