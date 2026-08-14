@@ -1,49 +1,16 @@
-import { useEffect, useState } from "react";
-import { getQuotes } from "../api";
-import type { Quote } from "../types";
+import type { QuoteState } from "../lib/useQuotes";
 
 /**
- * Delayed prices for the symbols currently in the portfolio. Costs nothing and needs no account
- * — the backend reads a free public feed and caches it, so this stays open to anonymous users
- * like the rest of the deterministic half.
+ * The full price picture for the symbols in the portfolio. Costs nothing and needs no account —
+ * the backend reads a free public feed and caches it, so this stays open to anonymous users like
+ * the rest of the deterministic half. Prices come in as props rather than being fetched here, so
+ * this panel and the holdings editor share one request.
  */
-export function LivePrices({ symbols }: { symbols: string[] }) {
-  const [quotes, setQuotes] = useState<Quote[]>([]);
-  const [unpriced, setUnpriced] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export function LivePrices({ state }: { state: QuoteState }) {
+  const { quotes, unpriced, loading, error } = state;
+  const rows = Object.values(quotes);
 
-  // Keyed on the joined symbol list rather than the array: a new array with identical contents
-  // is a new reference every render, which would refetch on every keystroke in the form.
-  const key = symbols.join(",");
-
-  useEffect(() => {
-    if (!key) {
-      setQuotes([]);
-      setUnpriced([]);
-      return;
-    }
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-    getQuotes(key.split(","))
-      .then((r) => {
-        if (cancelled) return;
-        setQuotes(r.quotes);
-        setUnpriced(r.unpriced);
-      })
-      .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Could not load prices.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [key]);
-
-  if (!key) return null;
+  if (rows.length === 0 && unpriced.length === 0 && !loading && !error) return null;
 
   return (
     <section className="panel">
@@ -52,10 +19,10 @@ export function LivePrices({ symbols }: { symbols: string[] }) {
         <span className="badge free">delayed · no key used</span>
       </div>
 
-      {loading && quotes.length === 0 && <p className="muted">Loading prices…</p>}
+      {loading && rows.length === 0 && <p className="muted">Loading prices…</p>}
       {error && <p className="error">{error}</p>}
 
-      {quotes.length > 0 && (
+      {rows.length > 0 && (
         <table>
           <thead>
             <tr>
@@ -67,7 +34,7 @@ export function LivePrices({ symbols }: { symbols: string[] }) {
             </tr>
           </thead>
           <tbody>
-            {quotes.map((q) => (
+            {rows.map((q) => (
               <tr key={q.symbol}>
                 <td>
                   <strong>{q.symbol}</strong>
@@ -96,9 +63,10 @@ export function LivePrices({ symbols }: { symbols: string[] }) {
       )}
 
       <p className="fineprint">
-        Exchange-delayed closing data, not a live tick feed, and not a brokerage connection. These
-        prices do not change the market values you entered above; what they do feed is the
-        volatility, drawdown, and correlation the committee sees when you run it.
+        Exchange-delayed closing data, not a live tick feed, and not a brokerage connection. Enter
+        a share count on a holding and its value is computed from the price below; leave it blank
+        and the value stays exactly what you typed. Either way these prices feed the volatility,
+        drawdown, and correlation the committee sees when you run it.
       </p>
     </section>
   );

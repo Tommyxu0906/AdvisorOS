@@ -262,3 +262,23 @@ class QuotesResponse(BaseModel):
 
     quotes: list[Quote]
     unpriced: list[str]
+
+
+class SaveProfileRequest(BaseModel):
+    """What a signed-in user is storing. No Anthropic key field, deliberately — saving a profile
+    costs nothing and spends nothing, so this endpoint never sees a credential."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    profile: FinancialProfile
+    portfolio: Portfolio | None = None
+
+
+class SavedProfileResponse(BaseModel):
+    """`profile` is null when the user has an account but has never saved anything — a normal
+    first-login state, not an error."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    profile: FinancialProfile | None
+    portfolio: Portfolio | None

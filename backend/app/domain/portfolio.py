@@ -42,6 +42,11 @@ class Holding(BaseModel):
     symbol: str = Field(min_length=1, max_length=32)
     name: str = ""
     asset_class: AssetClass = AssetClass.other
+    # Optional, and never the authoritative figure: `market_value` is. A holding with no share
+    # count — a private business, a savings account, a symbol no provider covers — has to keep
+    # working, so quantity is what lets the UI recompute value from a live price when it can,
+    # not a second source of truth for what the position is worth.
+    quantity: float | None = Field(default=None, ge=0)
     market_value: float = Field(ge=0)
     cost_basis: float | None = Field(default=None, ge=0)
     account_type: AccountType = AccountType.taxable

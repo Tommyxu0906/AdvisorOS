@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.advisors.registry import get_registry
-from app.api.routes import analysis, auth, committee, runs
+from app.api.routes import analysis, auth, committee, profile, runs
 from app.core.redaction import install_redaction, redact_text
 from app.llm.pricing import load_pricing
 
@@ -49,6 +49,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api")
 app.include_router(analysis.router, prefix="/api")
 app.include_router(committee.router, prefix="/api")
+app.include_router(profile.router, prefix="/api")
 app.include_router(runs.router, prefix="/api")
 
 
@@ -103,6 +104,8 @@ def capabilities() -> dict:
         "requires_account": [
             "GET /api/runs",
             "GET /api/runs/{run_id}",
+            "GET /api/profile",
+            "PUT /api/profile",
         ],
         "key_storage": "none — held in browser memory and request memory only",
         "account_note": (

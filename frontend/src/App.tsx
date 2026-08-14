@@ -10,40 +10,17 @@ import { LivePrices } from "./components/LivePrices";
 import { ProfileForm } from "./components/ProfileForm";
 import { ReportView } from "./components/ReportView";
 import { useAnthropicConnection } from "./context/AnthropicConnectionContext";
+import type { HoldingDraft, ProfileDraft } from "./lib/draft";
+import { EMPTY_PORTFOLIO, EMPTY_PROFILE, toPortfolioInput, toProfileInput } from "./lib/draft";
+import { useQuotes } from "./lib/useQuotes";
+import { useSavedProfile } from "./lib/useSavedProfile";
 import type {
   AdvisorSummary,
   AnalysisDepth,
   EstimateResponse,
-  PortfolioInput,
-  ProfileInput,
   RunResponse,
   SelectResponse,
 } from "./types";
-
-const DEFAULT_PROFILE: ProfileInput = {
-  age: 34,
-  dependents: 1,
-  income: { annual_gross: 145000, annual_net: null, stability: 0.7, employer_match_pct: 0.04 },
-  expenses: { monthly_essential: 4200, monthly_discretionary: 1500 },
-  debts: [{ name: "credit card", balance: 9000, apr: 0.229, minimum_monthly_payment: 280 }],
-  assets: [
-    { name: "savings", value: 11000, account_type: "cash", is_liquid: true },
-    { name: "401k", value: 88000, account_type: "traditional_401k", is_liquid: false },
-  ],
-  goals: [
-    { name: "house down payment", goal_type: "home_purchase", years_until_needed: 2, priority: 1 },
-  ],
-  risk_tolerance: "moderate_aggressive",
-  self_reported_experience: 0.35,
-  notes: "",
-};
-
-const DEFAULT_PORTFOLIO: PortfolioInput = {
-  holdings: [
-    { symbol: "NVDA", asset_class: "us_equity", market_value: 60000 },
-    { symbol: "VTI", asset_class: "us_equity", market_value: 28000 },
-  ],
-};
 
 type View = "analysis" | "advisors" | "history" | "about";
 
@@ -58,11 +35,9 @@ export function App() {
   const { isConnected, model, withKey } = useAnthropicConnection();
 
   const [view, setView] = useState<View>("analysis");
-  const [profile, setProfile] = useState(DEFAULT_PROFILE);
-  const [portfolio, setPortfolio] = useState(DEFAULT_PORTFOLIO);
-  const [question, setQuestion] = useState(
-    "Should I sell some NVDA right now and pay off my credit card, or keep riding it?",
-  );
+  const [profile, setProfile] = useState<ProfileDraft>(EMPTY_PROFILE);
+  const [holdings, setHoldings] = useState<HoldingDraft[]>(EMPTY_PORTFOLIO.holdings);
+  const [question, setQuestion] = useState("");
   const [depth, setDepth] = useState<AnalysisDepth>("balanced");
 
   const [advisors, setAdvisors] = useState<AdvisorSummary[]>([]);
@@ -100,13 +75,32 @@ export function App() {
     ? advisors.filter((a) => manualIds.has(a.advisor_id))
     : null;
 
+  const quotes = useQuotes(
+    holdings.map((h) => h.symbol.trim().toUpperCase()).filter(Boolean),
+  );
+
+  const saved = useSavedProfile(profile, holdings, (p, h) => {
+    setProfile(p);
+    setHoldings(h);
+  });
+
+  // null until every answer the analysis cannot invent has actually been given.
+  const profileInput = toProfileInput(profile);
+  const portfolioInput = toPortfolioInput(holdings);
+  const ready = profileInput !== null && question.trim() !== "";
+
   // The deterministic half runs eagerly and for free, whether or not a key is connected.
   const refreshAnalysis = useCallback(async () => {
+    if (!profileInput || !question.trim()) {
+      setSelection(null);
+      setEstimate(null);
+      return;
+    }
     setError(null);
     try {
       const sel = await selectCommittee(
-        profile,
-        portfolio.holdings.length ? portfolio : null,
+        profileInput,
+        portfolioInput.holdings.length ? portfolioInput : null,
         question,
         depth,
       );
@@ -116,7 +110,17 @@ export function App() {
     } catch (e) {
       setError(e instanceof Error ? e.message : "Analysis failed.");
     }
-  }, [profile, portfolio, question, depth, model, manualSelection]);
+    // profileInput/portfolioInput are rebuilt every render, so the deps are their JSON rather
+    // than the objects themselves — otherwise this refetches on every keystroke anywhere.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    JSON.stringify(profileInput),
+    JSON.stringify(portfolioInput),
+    question,
+    depth,
+    model,
+    manualSelection,
+  ]);
 
   useEffect(() => {
     const t = setTimeout(refreshAnalysis, 300);
@@ -124,6 +128,7 @@ export function App() {
   }, [refreshAnalysis]);
 
   async function onRun() {
+    if (!profileInput) return;
     setRunning(true);
     setError(null);
     setResult(null);
@@ -131,8 +136,8 @@ export function App() {
       const response = await withKey((key) =>
         runCommittee(
           key,
-          profile,
-          portfolio.holdings.length ? portfolio : null,
+          profileInput,
+          portfolioInput.holdings.length ? portfolioInput : null,
           question,
           depth,
           model,
@@ -187,18 +192,19 @@ export function App() {
 
             <ProfileForm
               profile={profile}
-              portfolio={portfolio}
+              holdings={holdings}
               question={question}
+              quotes={quotes}
+              saveStatus={saved.status}
+              saveError={saved.error}
               onProfile={setProfile}
-              onPortfolio={setPortfolio}
+              onHoldings={setHoldings}
               onQuestion={setQuestion}
             />
 
             {error && <p className="error">{error}</p>}
 
-            <LivePrices
-              symbols={portfolio.holdings.map((h) => h.symbol.trim()).filter(Boolean)}
-            />
+            <LivePrices state={quotes} />
 
             {selection && (
               <AnalysisPanel
@@ -233,6 +239,17 @@ export function App() {
             />
 
             {error && <p className="error">{error}</p>}
+
+            {!ready && (
+              <section className="panel">
+                <h2>Committee</h2>
+                <p className="muted">
+                  Fill in your situation and your question on the <strong>Analysis</strong> page
+                  first. The committee is selected from your actual numbers, so there is nothing
+                  to route on until they exist.
+                </p>
+              </section>
+            )}
 
             {selection && (
               <CommitteePreview

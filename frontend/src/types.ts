@@ -188,7 +188,13 @@ export interface ProfileInput {
 }
 
 export interface PortfolioInput {
-  holdings: { symbol: string; asset_class: string; market_value: number }[];
+  holdings: {
+    symbol: string;
+    asset_class: string;
+    /** Optional share count. `market_value` stays authoritative — see draft.ts. */
+    quantity?: number | null;
+    market_value: number;
+  }[];
 }
 
 export interface Quote {
@@ -205,6 +211,15 @@ export interface Quote {
 export interface QuotesResponse {
   quotes: Quote[];
   unpriced: string[];
+}
+
+/**
+ * What the server has stored for this account. Both fields are null on a first login, before
+ * anything has been saved — see api.ts:getSavedProfile.
+ */
+export interface SavedProfile {
+  profile: ProfileInput | null;
+  portfolio: PortfolioInput | null;
 }
 
 /** One row of a signed-in user's run history — see api.ts:listRuns. */

@@ -16,6 +16,7 @@ import type {
   RunDetail,
   RunResponse,
   RunSummary,
+  SavedProfile,
   SelectResponse,
 } from "./types";
 
@@ -143,6 +144,28 @@ export function listRuns(accessToken: string): Promise<RunSummary[]> {
 
 export function getRun(accessToken: string, runId: string): Promise<RunDetail> {
   return getWithSession<RunDetail>(`/runs/${encodeURIComponent(runId)}`, accessToken);
+}
+
+// --- saved profile (session required, no Anthropic key involved) -----------------------
+
+export function getSavedProfile(accessToken: string): Promise<SavedProfile> {
+  return getWithSession<SavedProfile>("/profile", accessToken);
+}
+
+export async function saveProfile(
+  accessToken: string,
+  profile: ProfileInput,
+  portfolio: PortfolioInput | null,
+): Promise<SavedProfile> {
+  const res = await fetch(`${BASE}/profile`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({ profile, portfolio }),
+  });
+  return toResult<SavedProfile>(res);
 }
 
 export function distillAdvisor(
