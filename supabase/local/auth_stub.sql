@@ -9,6 +9,22 @@
 
 create schema if not exists auth;
 
+-- Supabase's Postgres ships these as first-class roles; a bare instance does not. Needed for
+-- any migration that GRANTs/REVOKEs against them (see 0009_security_hardening.sql).
+do $$
+begin
+  if not exists (select 1 from pg_roles where rolname = 'anon') then
+    create role anon;
+  end if;
+  if not exists (select 1 from pg_roles where rolname = 'authenticated') then
+    create role authenticated;
+  end if;
+  if not exists (select 1 from pg_roles where rolname = 'service_role') then
+    create role service_role;
+  end if;
+end
+$$;
+
 create table if not exists auth.users (
   id                  uuid primary key default gen_random_uuid(),
   email               text,
