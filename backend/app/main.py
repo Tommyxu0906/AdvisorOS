@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.advisors.registry import get_registry
-from app.api.routes import analysis, auth, committee
+from app.api.routes import analysis, auth, committee, runs
 from app.core.redaction import install_redaction, redact_text
 from app.llm.pricing import load_pricing
 
@@ -49,6 +49,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api")
 app.include_router(analysis.router, prefix="/api")
 app.include_router(committee.router, prefix="/api")
+app.include_router(runs.router, prefix="/api")
 
 
 @app.exception_handler(Exception)
@@ -66,6 +67,9 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
 
 @app.get("/api/health")
 def health() -> dict:
+    """Deliberately touches neither the database nor the network — see app/db/pool.py and
+    app/core/supabase_auth.py. Both are read here only as `bool(env var)`, so this route stays
+    truthful about "not configured" even when nothing downstream can be reached at all."""
     pricing = load_pricing()
     return {
         "status": "ok",
@@ -74,6 +78,8 @@ def health() -> dict:
         "models_priced": sorted(pricing.models),
         # True when the server can run without any project-owned key — the BYOK invariant.
         "byok_only": os.environ.get("AIFA_ALLOW_DEV_KEY") != "1",
+        "storage_configured": bool(os.environ.get("DATABASE_URL", "").strip()),
+        "accounts_configured": bool(os.environ.get("SUPABASE_URL", "").strip()),
     }
 
 
@@ -93,5 +99,14 @@ def capabilities() -> dict:
             "POST /api/committee/analyze",
             "POST /api/advisors/distill",
         ],
+        "requires_account": [
+            "GET /api/runs",
+            "GET /api/runs/{run_id}",
+        ],
         "key_storage": "none — held in browser memory and request memory only",
+        "account_note": (
+            "Accounts are independent of the Anthropic key: signing in unlocks saved run "
+            "history, never inference. An anonymous caller can run POST /api/committee/analyze "
+            "exactly as a signed-in one can — it just isn't saved anywhere afterward."
+        ),
     }

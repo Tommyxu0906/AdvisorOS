@@ -1,10 +1,16 @@
-"""Endpoints that spend the user's tokens. Every one requires a key in the request body."""
+"""Endpoints that spend the user's tokens. Every one requires a key in the request body.
+
+Identity (via `current_user_optional`) is orthogonal to that key — see
+app/core/supabase_auth.py. An anonymous caller runs the committee exactly as before; a signed-in
+caller additionally gets the run saved to their history, best-effort, after the response they
+paid for has already been assembled.
+"""
 
 from __future__ import annotations
 
 import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.advisors.registry import AdvisorNotFound
 from app.advisors.selection import select_committee
@@ -21,6 +27,8 @@ from app.api.schemas import (
 )
 from app.committee.orchestrator import CommitteeError, CommitteeOrchestrator
 from app.core.run_context import RunContext
+from app.core.supabase_auth import AuthUser, current_user_optional
+from app.db.repositories.runs import save_run_best_effort
 from app.domain.question import UserQuestion
 from app.nuwa.distiller import (
     DistillationError,
@@ -33,7 +41,10 @@ logger = logging.getLogger(__name__)
 
 
 @router.post("/committee/analyze", response_model=RunCommitteeResponse)
-async def run_committee(req: RunCommitteeRequest) -> RunCommitteeResponse:
+async def run_committee(
+    req: RunCommitteeRequest,
+    user: AuthUser | None = Depends(current_user_optional),
+) -> RunCommitteeResponse:
     credentials = deps.credentials_from(req.anthropic_api_key)
     registry = deps.registry()
 
@@ -76,7 +87,27 @@ async def run_committee(req: RunCommitteeRequest) -> RunCommitteeResponse:
             context=context,
         )
     except CommitteeError as exc:
-        # Return the usage the user already incurred, even on failure — they were billed for it.
+        # The user was billed for whatever ran before the failure — save that spend to their
+        # history too, same as a successful run, so it isn't just lost from their view.
+        if user is not None:
+            await save_run_best_effort(
+                owner_user_id=user.id,
+                run_id=context.run_id,
+                question=req.question,
+                question_topics=[t.value for t in intent.topics],
+                depth=req.depth.value,
+                model=req.model,
+                status="failed",
+                error_message=str(exc),
+                profile=req.profile,
+                portfolio=req.portfolio,
+                analytics=analytics,
+                portfolio_analytics=pa,
+                guardrails=guardrails,
+                selection=selection,
+                report=None,
+                usage=context.usage_tracker.aggregate(),
+            )
         raise HTTPException(
             status_code=502,
             detail={
@@ -87,6 +118,26 @@ async def run_committee(req: RunCommitteeRequest) -> RunCommitteeResponse:
         ) from exc
     except Exception as exc:  # noqa: BLE001 - sanitized before it reaches the client
         raise deps.provider_error(exc) from exc
+
+    if user is not None:
+        await save_run_best_effort(
+            owner_user_id=user.id,
+            run_id=context.run_id,
+            question=req.question,
+            question_topics=[t.value for t in intent.topics],
+            depth=req.depth.value,
+            model=req.model,
+            status="succeeded",
+            error_message=None,
+            profile=req.profile,
+            portfolio=req.portfolio,
+            analytics=analytics,
+            portfolio_analytics=pa,
+            guardrails=guardrails,
+            selection=selection,
+            report=report,
+            usage=context.usage_tracker.aggregate(),
+        )
 
     return RunCommitteeResponse(
         report=report,

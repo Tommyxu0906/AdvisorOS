@@ -183,3 +183,56 @@ class ErrorResponse(BaseModel):
     code: str
     message: str
     detail: dict[str, Any] | None = None
+
+
+class RunSummary(BaseModel):
+    """One row of a signed-in user's run history. No snapshots, no report body — see RunDetail
+    for that. Field types mirror the projection columns on public.committee_runs."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    run_id: str
+    status: str
+    created_at: str
+    depth: str
+    model: str
+    question: str
+    summary: str
+    advisor_ids: list[str]
+    guardrail_max_severity: str | None
+    total_calls: int
+    estimated_cost_usd: float | None
+
+
+class RunDetail(BaseModel):
+    """A saved run, reconstructed from its stored JSONB snapshots.
+
+    Deliberately not typed as CommitteeReport / ProfileAnalytics / etc: those models are
+    `extra="forbid"`, so a snapshot from before a schema change would fail to parse. Returning
+    the stored JSON as-is keeps an old run viewable even if the current Pydantic models have
+    since grown a field.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    run_id: str
+    status: str
+    created_at: str
+    depth: str
+    model: str
+    question: str
+    summary: str
+    error_message: str | None
+    total_calls: int
+    total_input_tokens: int
+    total_output_tokens: int
+    estimated_cost_usd: float | None
+    pricing_version: str
+
+    profile_snapshot: dict[str, Any]
+    portfolio_snapshot: dict[str, Any] | None
+    analytics: dict[str, Any]
+    portfolio_analytics: dict[str, Any] | None
+    guardrails: list[Any]
+    selection: dict[str, Any]
+    report: dict[str, Any] | None

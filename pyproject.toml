@@ -12,6 +12,10 @@ dependencies = [
     # Storage is optional infrastructure: the app boots and serves its deterministic half with
     # no DATABASE_URL. asyncpg is imported lazily inside app/db/pool.py, never at startup.
     "asyncpg>=0.30",
+    # Verifies Supabase session JWTs against the project's JWKS (ES256, asymmetric — no shared
+    # secret to hold). Imported lazily inside app/core/supabase_auth.py, same reasoning as
+    # asyncpg: auth is optional infrastructure, not a boot dependency.
+    "pyjwt[crypto]>=2.9",
 ]
 
 [project.optional-dependencies]
@@ -50,3 +54,7 @@ known-first-party = ["app", "evals", "tests"]
 [tool.ruff.lint.per-file-ignores]
 # Evaluation harness must extend sys.path before importing the app package.
 "evals/run_eval.py" = ["E402"]
+# B008 flags `Depends(...)` as a mutable-default-style bug. It is FastAPI's documented
+# dependency-injection idiom, not a bug — Depends() must be called in the signature for
+# FastAPI to introspect it.
+"backend/app/api/routes/*.py" = ["B008"]
