@@ -35,11 +35,18 @@ app = FastAPI(
 )
 
 _origins = os.environ.get("AIFA_CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")
+
+# Must cover every method the routers actually serve. A method missing here does not fail on the
+# server — the browser refuses the preflight and the caller sees an opaque "Failed to fetch",
+# which looks like the backend being down rather than a config gap. Held as a module constant so
+# tests/unit/test_cors.py can assert it against the real route table.
+CORS_ALLOW_METHODS = ["GET", "POST", "PUT"]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[o.strip() for o in _origins.split(",") if o.strip()],
     allow_credentials=False,
-    allow_methods=["GET", "POST"],
+    allow_methods=CORS_ALLOW_METHODS,
     # Authorization carries the Supabase session JWT, not the Anthropic key — that stays in the
     # request body (see CredentialedRequest). allow_credentials stays False: the JWT is a bearer
     # header, not a cookie, so no cross-site cookie exposure is introduced by adding it here.
