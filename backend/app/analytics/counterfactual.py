@@ -70,6 +70,15 @@ class Counterfactual(BaseModel):
     )
 
     changes: list[MetricChange] = Field(default_factory=list)
+    estimated_tax_usd: float | None = Field(
+        default=None,
+        description=(
+            "Total estimated tax the plan realizes, summed from the actions. None when no "
+            "action could estimate one — unknown, not zero. Deliberately reported rather than "
+            "subtracted: the estimate rests on an assumed blended rate, and folding it into "
+            "net worth would give a guess the authority of a computed balance."
+        ),
+    )
     resolved_guardrails: list[str] = Field(default_factory=list)
     introduced_guardrails: list[str] = Field(default_factory=list)
     ineffective_actions: list[str] = Field(
@@ -97,6 +106,8 @@ class Counterfactual(BaseModel):
             for c in self.changes
             if abs(c.delta) > 1e-9
         ]
+        if self.estimated_tax_usd:
+            lines.append(f"Estimated tax to act: ${self.estimated_tax_usd:,.0f}")
         if self.resolved_guardrails:
             lines.append(f"Resolves: {', '.join(self.resolved_guardrails)}")
         if self.introduced_guardrails:
@@ -143,6 +154,7 @@ def evaluate(
             before_portfolio_analytics,
             after_portfolio_analytics,
         ),
+        estimated_tax_usd=_total_tax(action_set),
         resolved_guardrails=sorted(before_codes - after_codes),
         introduced_guardrails=sorted(newly_blocking),
         ineffective_actions=_ineffective(
@@ -375,9 +387,19 @@ def _changes(
             after=after.annual_interest_cost,
             higher_is_better=False,
         ),
-        # Net worth has no inherent direction here: a sale that realizes tax lowers it on
-        # purpose, and calling that a regression would penalize the right decision.
-        MetricChange(label="net worth", before=before.net_worth, after=after.net_worth),
+        # Both ledgers together. `ProfileAnalytics.net_worth` counts only `profile.assets`, and
+        # the portfolio is a separate list — so a sale moves value from an uncounted ledger into
+        # a counted one and reads as though selling made the holder richer. Summing the two is
+        # the number a person would recognize as theirs, and it correctly stays flat when a
+        # position is merely converted to cash.
+        #
+        # No preferred direction: a sale that realizes tax lowers it on purpose, and scoring
+        # that as a regression would penalize the right decision.
+        MetricChange(
+            label="net worth (incl. portfolio)",
+            before=before.net_worth + (before_pa.total_value if before_pa else 0.0),
+            after=after.net_worth + (after_pa.total_value if after_pa else 0.0),
+        ),
     ]
     if before_pa and after_pa:
         changes.extend(
@@ -403,6 +425,16 @@ def _changes(
             ]
         )
     return changes
+
+
+def _total_tax(action_set: ActionSet) -> float | None:
+    """Summed estimates, or None when nothing could produce one."""
+    estimates = [
+        a.estimated_tax_impact_usd
+        for a in action_set.actions
+        if a.estimated_tax_impact_usd is not None
+    ]
+    return round(sum(estimates), 2) if estimates else None
 
 
 def _ineffective(

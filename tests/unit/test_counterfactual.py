@@ -81,6 +81,46 @@ def test_a_trim_actually_reduces_concentration():
     assert largest.improved is True
 
 
+def test_selling_a_position_does_not_look_like_getting_richer():
+    """`ProfileAnalytics.net_worth` counts only `profile.assets`; the portfolio is a separate
+    ledger. Reporting that field alone made a sale read as a gain, because value moved from an
+    uncounted list into a counted one. The reported figure sums both."""
+    result = counterfactual.evaluate(
+        _profile(), _concentrated(), ActionSet(actions=[_trim("NVDA", 45_000)])
+    )
+
+    worth = next(c for c in result.changes if c.label.startswith("net worth"))
+    assert worth.before == worth.after
+    # And it stays a direction-free measure: converting a holding to cash is neither.
+    assert worth.higher_is_better is None
+
+
+def test_the_tax_cost_of_a_plan_is_totalled_but_not_subtracted():
+    plan = ActionSet(
+        actions=[
+            ProposedAction(
+                action_id="t",
+                kind=ActionKind.trim_position,
+                symbol="NVDA",
+                amount_usd=45_000,
+                estimated_tax_impact_usd=4_500,
+            )
+        ]
+    )
+    result = counterfactual.evaluate(_profile(), _concentrated(), plan)
+    assert result.estimated_tax_usd == 4_500
+    # Reported alongside the balances, never folded into them.
+    worth = next(c for c in result.changes if c.label.startswith("net worth"))
+    assert worth.after == worth.before
+
+
+def test_an_unknown_tax_estimate_totals_to_none_rather_than_zero():
+    result = counterfactual.evaluate(
+        _profile(), _concentrated(), ActionSet(actions=[_trim("NVDA", 1_000)])
+    )
+    assert result.estimated_tax_usd is None
+
+
 def test_an_action_that_does_not_move_its_metric_is_reported():
     """A trim of nothing is a policy bug, not a valid recommendation."""
     result = counterfactual.evaluate(

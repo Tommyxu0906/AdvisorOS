@@ -33,6 +33,73 @@ class EvidenceRef(BaseModel):
     note: str = ""
 
 
+class PolicyParameters(BaseModel):
+    """The persona's decision rules as numbers a policy can execute.
+
+    This is the difference between a voice and a decision procedure. `heuristics` and
+    `reasoning_rules` describe how a subject thinks in prose the model reads and paraphrases;
+    these fields are the same commitments in a form `app/policy/` can act on, so two advisors
+    disagreeing about a position produce two computed portfolios instead of two paragraphs whose
+    difference has to be inferred from tone.
+
+    It is not a new idea bolted onto distillation — the Nuwa charter already asks for decision
+    rules on the grounds that they "transfer to new situations" while past positions do not. A
+    number transfers better than a sentence.
+
+    Defaults are deliberately middle-of-the-road rather than absent: an advisor that declined to
+    commit on concentration still needs *some* cap for the policy to run, and a stated default is
+    more honest than silently skipping the persona.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    max_single_name_weight: float = Field(
+        default=0.20,
+        ge=0.01,
+        le=1.0,
+        description="Largest share of the portfolio one symbol may hold before a trim is proposed",
+    )
+    max_top3_weight: float = Field(
+        default=0.50,
+        ge=0.03,
+        le=1.0,
+        description="Combined cap on the three largest positions",
+    )
+    # Equity share at age 40, from which the glidepath slopes down with age. Named for an age
+    # rather than expressed as "110 minus age" so a persona can decline that rule of thumb
+    # without the parameter becoming meaningless.
+    equity_share_at_40: float = Field(default=0.80, ge=0.0, le=1.0)
+    equity_decline_per_decade: float = Field(default=0.05, ge=0.0, le=0.30)
+    defensive_floor: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=1.0,
+        description="Minimum bonds/TIPS/cash share regardless of age or risk tolerance",
+    )
+    max_expense_ratio: float | None = Field(default=None, ge=0.0, le=0.1)
+    emergency_fund_target_months: float = Field(default=6.0, ge=0.0, le=36.0)
+    allows_concentration_on_conviction: bool = Field(
+        default=False,
+        description=(
+            "Whether this persona accepts a position above the cap when the holder claims "
+            "genuine understanding of the business. Changes the framing of a trim, never "
+            "whether the guardrails apply."
+        ),
+    )
+
+    def equity_target(self, age: int, risk_score: float) -> float:
+        """Target equity share for this age and risk tolerance, within the persona's rules.
+
+        `risk_score` is `RiskTolerance.score` — 0.0 conservative through 1.0 aggressive. It
+        shifts the glidepath by at most ±10 points: someone's stated appetite adjusts an
+        age-appropriate allocation, it does not replace it.
+        """
+        decades_past_40 = (age - 40) / 10.0
+        base = self.equity_share_at_40 - decades_past_40 * self.equity_decline_per_decade
+        adjusted = base + (risk_score - 0.5) * 0.2
+        return max(0.0, min(1.0 - self.defensive_floor, adjusted))
+
+
 class AdvisorManifest(BaseModel):
     """The complete distilled artifact for one advisor persona."""
 
@@ -61,6 +128,8 @@ class AdvisorManifest(BaseModel):
         description="advisor_ids this persona characteristically pushes back on",
     )
 
+    policy: PolicyParameters = Field(default_factory=PolicyParameters)
+
     evidence: list[EvidenceRef] = Field(default_factory=list)
     provenance: str = ""
     distilled_at: datetime | None = None
@@ -80,6 +149,7 @@ class AdvisorManifest(BaseModel):
             evidence_labels=[e.label for e in self.evidence[:4]],
             expertise=self.expertise,
             topic_affinity=list(self.topic_affinity),
+            policy=self.policy,
         )
 
 
@@ -97,8 +167,11 @@ class AdvisorRuntimeProfile(BaseModel):
     blind_spots: list[str] = Field(default_factory=list)
     honest_boundaries: list[str] = Field(default_factory=list)
     evidence_labels: list[str] = Field(default_factory=list)
+    # Carried as data, never rendered into the prompt — same treatment `expertise` gets. The
+    # policy engine reads these; the model sees the actions they produced, not the constants.
     expertise: ExpertiseVector
     topic_affinity: list[QuestionTopic] = Field(default_factory=list)
+    policy: PolicyParameters = Field(default_factory=PolicyParameters)
 
     def render(self) -> str:
         """Stable text block for the system prompt. Deterministic — safe to prompt-cache."""
