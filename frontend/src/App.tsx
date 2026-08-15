@@ -6,12 +6,21 @@ import { AnalysisPanel } from "./components/AnalysisPanel";
 import { CommitteePreview } from "./components/CommitteePreview";
 import { ConnectPanel } from "./components/ConnectPanel";
 import { HistoryPanel } from "./components/HistoryPanel";
+import { HoldingsEditor } from "./components/HoldingsEditor";
+import { IntakePage, IntakeSignInNote } from "./components/IntakePage";
 import { LivePrices } from "./components/LivePrices";
-import { ProfileForm } from "./components/ProfileForm";
 import { ReportView } from "./components/ReportView";
+import { SaveBadge, SettingsPage } from "./components/SettingsPage";
 import { useAnthropicConnection } from "./context/AnthropicConnectionContext";
+import { useAuth } from "./context/AuthContext";
 import type { HoldingDraft, ProfileDraft } from "./lib/draft";
-import { EMPTY_PORTFOLIO, EMPTY_PROFILE, toPortfolioInput, toProfileInput } from "./lib/draft";
+import {
+  EMPTY_PORTFOLIO,
+  EMPTY_PROFILE,
+  missingFields,
+  toPortfolioInput,
+  toProfileInput,
+} from "./lib/draft";
 import { useQuotes } from "./lib/useQuotes";
 import { useSavedProfile } from "./lib/useSavedProfile";
 import type {
@@ -22,19 +31,25 @@ import type {
   SelectResponse,
 } from "./types";
 
-type View = "analysis" | "advisors" | "history" | "about";
+type View = "analysis" | "advisors" | "history" | "settings" | "about";
 
 const NAV: { id: View; label: string }[] = [
   { id: "analysis", label: "Analysis" },
   { id: "advisors", label: "Advisors" },
   { id: "history", label: "History" },
+  { id: "settings", label: "Settings" },
   { id: "about", label: "How it works" },
 ];
 
 export function App() {
   const { isConnected, model, withKey } = useAnthropicConnection();
+  const { user } = useAuth();
 
   const [view, setView] = useState<View>("analysis");
+  // null until we know what the account holds. Decided once, then only the Continue button
+  // clears it: deriving it from the live field check instead would make the intake page vanish
+  // out from under someone the instant they typed the last character.
+  const [intakeDone, setIntakeDone] = useState<boolean | null>(null);
   const [profile, setProfile] = useState<ProfileDraft>(EMPTY_PROFILE);
   const [holdings, setHoldings] = useState<HoldingDraft[]>(EMPTY_PORTFOLIO.holdings);
   const [question, setQuestion] = useState("");
@@ -82,7 +97,22 @@ export function App() {
   const saved = useSavedProfile(profile, holdings, (p, h) => {
     setProfile(p);
     setHoldings(h);
+    // A stored profile means this account has already been through intake.
+    setIntakeDone(true);
   });
+
+  // Wait for `ready` before deciding: mid-load a returning user is indistinguishable from a new
+  // one, and asking them to re-enter a profile the server is about to return would be worse
+  // than a moment of blank screen.
+  useEffect(() => {
+    if (!saved.ready || intakeDone !== null) return;
+    setIntakeDone(missingFields(profile).length === 0);
+    // Deliberately keyed on readiness alone. This answers "did this visitor arrive with a
+    // usable profile", which is a question asked once, not re-asked as they type.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [saved.ready]);
+
+  const needsIntake = intakeDone === false;
 
   // null until every answer the analysis cannot invent has actually been given.
   const profileInput = toProfileInput(profile);
@@ -157,17 +187,21 @@ export function App() {
       <header className="masthead">
         <div className="masthead-inner">
           <p className="wordmark">AdvisorOS</p>
-          <nav>
-            {NAV.map((n) => (
-              <button
-                key={n.id}
-                className={`navlink${view === n.id ? " active" : ""}`}
-                onClick={() => setView(n.id)}
-              >
-                {n.label}
-              </button>
-            ))}
-          </nav>
+          {/* Navigation is hidden during intake: there is nothing worth looking at on the
+              other pages until the situation exists. */}
+          {!needsIntake && (
+            <nav>
+              {NAV.map((n) => (
+                <button
+                  key={n.id}
+                  className={`navlink${view === n.id ? " active" : ""}`}
+                  onClick={() => setView(n.id)}
+                >
+                  {n.label}
+                </button>
+              ))}
+            </nav>
+          )}
           <span className={`conn-pill${isConnected ? " live" : ""}`}>
             <span className="conn-dot" />
             {isConnected ? model : "Not connected"}
@@ -177,30 +211,51 @@ export function App() {
       </header>
 
       <div className="app">
-        {view === "analysis" && (
+        {needsIntake && (
+          <>
+            <IntakePage
+              profile={profile}
+              signedIn={!!user}
+              onProfile={setProfile}
+              onDone={() => setIntakeDone(true)}
+            />
+            <IntakeSignInNote />
+          </>
+        )}
+
+        {!needsIntake && view === "analysis" && (
           <>
             <div className="page-head">
               <h1>Analysis</h1>
               <p className="lede">
-                Deterministic code reads what you enter below and computes the analysis — savings
-                rate, debt pressure, portfolio concentration, and a seven-dimension read of where
-                you most need help. None of this touches an API or costs anything. Once it looks
-                right, head to <strong>Advisors</strong> to pick a team and run the committee
-                against it.
+                Your holdings and your question. Everything else about your situation was
+                collected once and lives under <strong>Settings</strong>. Deterministic code
+                reads it all and computes savings rate, debt pressure, portfolio concentration,
+                and a seven-dimension read of where you most need help — none of which touches an
+                API or costs anything. When it looks right, head to <strong>Advisors</strong> to
+                run a committee against it.
               </p>
             </div>
 
-            <ProfileForm
-              profile={profile}
-              holdings={holdings}
-              question={question}
-              quotes={quotes}
-              saveStatus={saved.status}
-              saveError={saved.error}
-              onProfile={setProfile}
-              onHoldings={setHoldings}
-              onQuestion={setQuestion}
-            />
+            <section className="panel">
+              <div className="row-between">
+                <h2>Your portfolio</h2>
+                <SaveBadge saved={saved} incomplete={missingFields(profile).length > 0} />
+              </div>
+
+              {saved.error && <p className="error">{saved.error}</p>}
+
+              <HoldingsEditor holdings={holdings} quotes={quotes} onHoldings={setHoldings} />
+
+              <label htmlFor="question">Your question</label>
+              <textarea
+                id="question"
+                rows={3}
+                value={question}
+                onChange={(e) => setQuestion(e.target.value)}
+                placeholder="Should I sell some NVDA to pay off my credit card?"
+              />
+            </section>
 
             {error && <p className="error">{error}</p>}
 
@@ -216,7 +271,7 @@ export function App() {
           </>
         )}
 
-        {view === "advisors" && (
+        {!needsIntake && view === "advisors" && (
           <>
             <div className="page-head">
               <h1>Advisors</h1>
@@ -244,9 +299,18 @@ export function App() {
               <section className="panel">
                 <h2>Committee</h2>
                 <p className="muted">
-                  Fill in your situation and your question on the <strong>Analysis</strong> page
-                  first. The committee is selected from your actual numbers, so there is nothing
-                  to route on until they exist.
+                  {missingFields(profile).length > 0 ? (
+                    <>
+                      Your situation is incomplete — fill in{" "}
+                      {missingFields(profile).join(", ")} under <strong>Settings</strong>.
+                    </>
+                  ) : (
+                    <>
+                      Ask a question on the <strong>Analysis</strong> page first. The committee is
+                      selected from your actual numbers and what you are asking about, so there is
+                      nothing to route on until both exist.
+                    </>
+                  )}
                 </p>
               </section>
             )}
@@ -268,7 +332,7 @@ export function App() {
           </>
         )}
 
-        {view === "history" && (
+        {!needsIntake && view === "history" && (
           <>
             <div className="page-head">
               <h1>History</h1>
@@ -282,7 +346,11 @@ export function App() {
           </>
         )}
 
-        {view === "about" && <AboutView />}
+        {!needsIntake && view === "settings" && (
+          <SettingsPage profile={profile} saved={saved} onProfile={setProfile} />
+        )}
+
+        {!needsIntake && view === "about" && <AboutView />}
 
         <footer className="panel fineprint">
           Educational analysis only. Not personalized investment advice from a licensed advisor.

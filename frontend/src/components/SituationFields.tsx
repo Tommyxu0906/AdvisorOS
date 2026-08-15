@@ -1,92 +1,26 @@
-import type { HoldingDraft, ProfileDraft } from "../lib/draft";
-import { missingFields, num, str } from "../lib/draft";
-import type { QuoteState } from "../lib/useQuotes";
-import type { SaveStatus } from "../lib/useSavedProfile";
+import type { ProfileDraft } from "../lib/draft";
+import { num, str } from "../lib/draft";
+import { ACCOUNT_TYPES, Field, GOAL_TYPES, RISK, RowEditor } from "./FormControls";
 
-interface Props {
-  profile: ProfileDraft;
-  holdings: HoldingDraft[];
-  question: string;
-  quotes: QuoteState;
-  saveStatus: SaveStatus;
-  saveError: string | null;
-  onProfile: (p: ProfileDraft) => void;
-  onHoldings: (h: HoldingDraft[]) => void;
-  onQuestion: (q: string) => void;
-}
-
-const ACCOUNT_TYPES = [
-  "cash",
-  "taxable",
-  "traditional_401k",
-  "roth_401k",
-  "traditional_ira",
-  "roth_ira",
-  "hsa",
-  "other",
-];
-
-const ASSET_CLASSES = [
-  "us_equity",
-  "intl_developed_equity",
-  "emerging_equity",
-  "bonds",
-  "tips",
-  "reit",
-  "commodities",
-  "crypto",
-  "cash",
-  "other",
-];
-
-const RISK = [
-  "conservative",
-  "moderate_conservative",
-  "moderate",
-  "moderate_aggressive",
-  "aggressive",
-];
-
-const GOAL_TYPES = [
-  "retirement",
-  "home_purchase",
-  "education",
-  "emergency_fund",
-  "wealth_growth",
-  "income",
-  "debt_payoff",
-  "other",
-];
-
-export function ProfileForm({
+/**
+ * Everything about the person rather than their positions: age, income, expenses, risk
+ * appetite, and the debts, assets, and goals behind them.
+ *
+ * Asked once at intake and edited afterwards on the Settings page, never on Analysis — this
+ * changes when someone's life changes, not between two questions about the same portfolio.
+ */
+export function SituationFields({
   profile,
-  holdings,
-  question,
-  quotes,
-  saveStatus,
-  saveError,
   onProfile,
-  onHoldings,
-  onQuestion,
-}: Props) {
+}: {
+  profile: ProfileDraft;
+  onProfile: (p: ProfileDraft) => void;
+}) {
   const set = <K extends keyof ProfileDraft>(key: K, value: ProfileDraft[K]) =>
     onProfile({ ...profile, [key]: value });
 
-  const missing = missingFields(profile);
-
   return (
-    <section className="panel">
-      <div className="row-between">
-        <h2>Your situation</h2>
-        <SaveBadge status={saveStatus} />
-      </div>
-      <p className="muted">
-        These are your numbers, not an example — nothing is filled in for you, because a guessed
-        figure produces a confident answer to the wrong question. Nothing here is sent to Claude
-        until you run the committee.
-      </p>
-      {saveError && <p className="error">{saveError}</p>}
-
+    <>
       <div className="grid">
         <Field label="Age">
           <input
@@ -145,7 +79,7 @@ export function ProfileForm({
         <Field label="Monthly discretionary">
           <input
             type="number"
-            placeholder="everything else"
+            placeholder="everything else — enter 0 if none"
             min={0}
             value={str(profile.expenses.monthly_discretionary)}
             onChange={(e) =>
@@ -187,6 +121,7 @@ export function ProfileForm({
         rows={profile.debts}
         onChange={(rows) => set("debts", rows)}
         blank={{ name: "", balance: null, apr: null, minimum_monthly_payment: null }}
+        empty="None — leave empty if you have no debt."
         render={(row, update) => (
           <>
             <input
@@ -222,6 +157,7 @@ export function ProfileForm({
         rows={profile.assets}
         onChange={(rows) => set("assets", rows)}
         blank={{ name: "", value: null, account_type: "cash", is_liquid: true }}
+        empty="None yet — cash, savings, and retirement accounts go here."
         render={(row, update) => (
           <>
             <input
@@ -262,6 +198,7 @@ export function ProfileForm({
         rows={profile.goals}
         onChange={(rows) => set("goals", rows)}
         blank={{ name: "", goal_type: "other", years_until_needed: null, priority: null }}
+        empty="None yet — a goal and its horizon change which advisors get selected."
         render={(row, update) => (
           <>
             <input
@@ -297,156 +234,6 @@ export function ProfileForm({
           </>
         )}
       />
-
-      <RowEditor
-        title="Portfolio holdings"
-        rows={holdings}
-        onChange={onHoldings}
-        blank={{ symbol: "", asset_class: "us_equity", quantity: null, market_value: null }}
-        render={(row, update) => {
-          const quote = quotes.quotes[row.symbol.trim().toUpperCase()];
-          return (
-            <>
-              <input
-                placeholder="symbol"
-                value={row.symbol}
-                onChange={(e) => update({ ...row, symbol: e.target.value.toUpperCase() })}
-              />
-              <select
-                value={row.asset_class}
-                onChange={(e) => update({ ...row, asset_class: e.target.value })}
-              >
-                {ASSET_CLASSES.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="number"
-                step="any"
-                placeholder="shares"
-                min={0}
-                value={str(row.quantity)}
-                onChange={(e) => {
-                  const quantity = num(e.target.value);
-                  // With a share count and a live price, the value follows the market instead
-                  // of whatever it was worth the day it was typed in.
-                  update({
-                    ...row,
-                    quantity,
-                    market_value:
-                      quantity !== null && quote
-                        ? Number((quantity * quote.price).toFixed(2))
-                        : row.market_value,
-                  });
-                }}
-              />
-              <input
-                type="number"
-                placeholder="market value"
-                min={0}
-                value={str(row.market_value)}
-                onChange={(e) => update({ ...row, market_value: num(e.target.value) })}
-              />
-              <PriceTag quote={quote} loading={quotes.loading} symbol={row.symbol} />
-            </>
-          );
-        }}
-      />
-
-      <label htmlFor="question">Your question</label>
-      <textarea
-        id="question"
-        rows={3}
-        value={question}
-        onChange={(e) => onQuestion(e.target.value)}
-        placeholder="Should I sell some NVDA to pay off my credit card?"
-      />
-
-      {missing.length > 0 && (
-        <p className="muted small">
-          Still needed before the analysis can run: {missing.join(", ")}.
-        </p>
-      )}
-    </section>
-  );
-}
-
-function SaveBadge({ status }: { status: SaveStatus }) {
-  // Signed out is not a failure state — it is the anonymous tier working as designed, so it
-  // says what would change rather than warning about what is missing.
-  if (status === "anonymous")
-    return <span className="badge free">not saved — sign in to keep this</span>;
-  if (status === "loading") return <span className="badge free">loading your profile…</span>;
-  if (status === "saving") return <span className="badge free">saving…</span>;
-  if (status === "error") return <span className="badge risk">not saved</span>;
-  return <span className="badge free">saved to your account</span>;
-}
-
-function PriceTag({
-  quote,
-  loading,
-  symbol,
-}: {
-  quote: { price: number; change_pct: number | null } | undefined;
-  loading: boolean;
-  symbol: string;
-}) {
-  if (!symbol.trim()) return <span className="muted small" />;
-  if (!quote) return <span className="muted small">{loading ? "…" : "no price"}</span>;
-  return (
-    <span className={`small${quote.change_pct !== null && quote.change_pct < 0 ? " risk" : ""}`}>
-      ${quote.price.toFixed(2)}
-      {quote.change_pct !== null &&
-        ` ${quote.change_pct >= 0 ? "+" : ""}${(quote.change_pct * 100).toFixed(2)}%`}
-    </span>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="field">
-      <label>{label}</label>
-      {children}
-    </div>
-  );
-}
-
-function RowEditor<T>({
-  title,
-  rows,
-  onChange,
-  blank,
-  render,
-}: {
-  title: string;
-  rows: T[];
-  onChange: (rows: T[]) => void;
-  blank: T;
-  render: (row: T, update: (next: T) => void) => React.ReactNode;
-}) {
-  return (
-    <div className="row-editor">
-      <div className="row-between">
-        <h3>{title}</h3>
-        <button className="secondary small" onClick={() => onChange([...rows, { ...blank }])}>
-          + add
-        </button>
-      </div>
-      {rows.length === 0 && <p className="muted small">None.</p>}
-      {rows.map((row, i) => (
-        <div className="editor-row" key={i}>
-          {render(row, (next) => onChange(rows.map((r, j) => (j === i ? next : r))))}
-          <button
-            className="secondary small"
-            onClick={() => onChange(rows.filter((_, j) => j !== i))}
-            aria-label={`remove ${title} row ${i + 1}`}
-          >
-            ×
-          </button>
-        </div>
-      ))}
-    </div>
+    </>
   );
 }
