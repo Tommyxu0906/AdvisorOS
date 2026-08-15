@@ -1,0 +1,264 @@
+"""Applying a plan and measuring what it did.
+
+The load-bearing tests here are `test_a_trim_actually_reduces_concentration` (the claim a
+concentration policy makes must survive arithmetic) and
+`test_spending_the_emergency_fund_is_caught_as_a_new_blocking_guardrail` (the thing the old
+regex check was trying and failing to do).
+"""
+
+from __future__ import annotations
+
+from app.analytics import counterfactual
+from app.domain.action import ActionKind, ActionSet, ProposedAction
+from app.domain.portfolio import AssetClass, Holding, Portfolio
+from app.domain.profile import (
+    AccountType,
+    Asset,
+    Debt,
+    Expenses,
+    FinancialProfile,
+    Income,
+    RiskTolerance,
+)
+
+
+def _profile(**overrides) -> FinancialProfile:
+    base = dict(
+        age=34,
+        dependents=1,
+        income=Income(annual_gross=145_000),
+        expenses=Expenses(monthly_essential=4_200, monthly_discretionary=1_500),
+        debts=[Debt(name="credit card", balance=9_000, apr=0.229, minimum_monthly_payment=280)],
+        assets=[Asset(name="savings", value=30_000, account_type=AccountType.cash, is_liquid=True)],
+        risk_tolerance=RiskTolerance.moderate,
+    )
+    base.update(overrides)
+    return FinancialProfile(**base)
+
+
+def _concentrated() -> Portfolio:
+    return Portfolio(
+        holdings=[
+            Holding(
+                symbol="NVDA",
+                asset_class=AssetClass.us_equity,
+                quantity=400,
+                market_value=90_000,
+                cost_basis=30_000,
+            ),
+            Holding(
+                symbol="VTI", asset_class=AssetClass.us_equity, quantity=26, market_value=10_000
+            ),
+        ]
+    )
+
+
+def _trim(symbol: str, amount: float, **kw) -> ProposedAction:
+    return ProposedAction(
+        action_id=kw.pop("action_id", "trim"),
+        kind=ActionKind.trim_position,
+        symbol=symbol,
+        amount_usd=amount,
+        **kw,
+    )
+
+
+# --- the claims a policy makes must survive arithmetic -------------------------------
+
+
+def test_a_trim_actually_reduces_concentration():
+    result = counterfactual.evaluate(
+        _profile(), _concentrated(), ActionSet(actions=[_trim("NVDA", 45_000)])
+    )
+
+    assert result.feasible
+    assert result.unapplied == []
+    assert result.ineffective_actions == []
+
+    largest = next(c for c in result.changes if c.label == "largest position weight")
+    assert largest.before == 0.9
+    assert largest.after < largest.before
+    assert largest.improved is True
+
+
+def test_an_action_that_does_not_move_its_metric_is_reported():
+    """A trim of nothing is a policy bug, not a valid recommendation."""
+    result = counterfactual.evaluate(
+        _profile(),
+        _concentrated(),
+        ActionSet(actions=[_trim("NVDA", 0.0, action_id="noop")]),
+    )
+    assert result.ineffective_actions == ["noop"]
+    assert result.holds_up is False
+
+
+def test_paying_down_debt_resolves_the_blocking_guardrail():
+    plan = ActionSet(
+        actions=[
+            ProposedAction(
+                action_id="card",
+                kind=ActionKind.pay_down_debt,
+                symbol="credit card",
+                amount_usd=9_000,
+            )
+        ]
+    )
+    result = counterfactual.evaluate(_profile(), _concentrated(), plan)
+
+    assert "HIGH_APR_DEBT" in result.resolved_guardrails
+    assert result.introduced_guardrails == []
+    interest = next(c for c in result.changes if c.label == "annual interest cost")
+    assert interest.after == 0.0
+    assert interest.improved is True
+
+
+# --- what the regex check was trying to do -------------------------------------------
+
+
+def test_spending_the_emergency_fund_is_caught_as_a_new_blocking_guardrail():
+    """No phrase matching involved — the reserve simply drops below three months."""
+    profile = _profile(
+        assets=[Asset(name="savings", value=13_000, account_type=AccountType.cash, is_liquid=True)]
+    )
+    plan = ActionSet(
+        actions=[
+            ProposedAction(
+                action_id="deploy",
+                kind=ActionKind.add_position,
+                symbol="VTI",
+                asset_class=AssetClass.us_equity,
+                amount_usd=12_000,
+            )
+        ]
+    )
+
+    result = counterfactual.evaluate(profile, _concentrated(), plan)
+
+    assert "EMERGENCY_FUND_THIN" in result.introduced_guardrails
+    assert result.introduces_blocking_guardrail is True
+    assert result.holds_up is False
+
+
+def test_the_same_purchase_is_fine_when_the_reserve_can_absorb_it():
+    result = counterfactual.evaluate(
+        _profile(),  # 30k of savings against 4.2k monthly essentials
+        _concentrated(),
+        ActionSet(
+            actions=[
+                ProposedAction(
+                    action_id="deploy",
+                    kind=ActionKind.add_position,
+                    symbol="VTI",
+                    asset_class=AssetClass.us_equity,
+                    amount_usd=5_000,
+                )
+            ]
+        ),
+    )
+    assert result.introduced_guardrails == []
+    assert result.feasible
+
+
+# --- infeasible plans ------------------------------------------------------------------
+
+
+def test_an_infeasible_plan_is_reported_as_such():
+    plan = ActionSet(
+        actions=[
+            ProposedAction(
+                action_id="toobig",
+                kind=ActionKind.add_position,
+                symbol="BND",
+                asset_class=AssetClass.bonds,
+                amount_usd=400_000,
+            )
+        ]
+    )
+    result = counterfactual.evaluate(_profile(), _concentrated(), plan)
+    assert result.feasible is False
+    assert result.infeasibilities
+    assert result.holds_up is False
+
+
+def test_an_unmodellable_action_is_listed_rather_than_guessed():
+    """Rebalancing into an asset class the portfolio does not hold would mean picking a ticker."""
+    plan = ActionSet(
+        actions=[
+            ProposedAction(
+                action_id="bonds",
+                kind=ActionKind.rebalance_to_target,
+                asset_class=AssetClass.bonds,
+                target_weight=1.0,
+            )
+        ]
+    )
+    result = counterfactual.evaluate(_profile(), _concentrated(), plan)
+    assert result.unapplied == ["bonds"]
+    assert result.holds_up is False
+
+
+# --- the applier itself ----------------------------------------------------------------
+
+
+def test_the_originals_are_never_mutated():
+    profile, portfolio = _profile(), _concentrated()
+    counterfactual.apply(profile, portfolio, ActionSet(actions=[_trim("NVDA", 50_000)]))
+    assert portfolio.holdings[0].market_value == 90_000
+    assert profile.assets[0].value == 30_000
+
+
+def test_a_sale_lands_in_liquid_assets_and_scales_the_lot():
+    profile, portfolio = _profile(), _concentrated()
+    after_profile, after_portfolio, unapplied = counterfactual.apply(
+        profile, portfolio, ActionSet(actions=[_trim("NVDA", 45_000)])
+    )
+
+    assert unapplied == []
+    nvda = next(h for h in after_portfolio.holdings if h.symbol == "NVDA")
+    assert nvda.market_value == 45_000
+    # Quantity and basis follow the value down, so cost basis stays meaningful.
+    assert nvda.quantity == 200
+    assert nvda.cost_basis == 15_000
+    assert after_profile.assets[0].value == 75_000
+
+
+def test_a_fully_sold_position_disappears():
+    _, after_portfolio, _ = counterfactual.apply(
+        _profile(), _concentrated(), ActionSet(actions=[_trim("NVDA", 90_000)])
+    )
+    assert [h.symbol for h in after_portfolio.holdings] == ["VTI"]
+
+
+def test_proceeds_create_a_cash_asset_when_the_profile_has_none():
+    profile = _profile(assets=[])
+    after_profile, _, _ = counterfactual.apply(
+        profile, _concentrated(), ActionSet(actions=[_trim("NVDA", 10_000)])
+    )
+    assert len(after_profile.assets) == 1
+    assert after_profile.assets[0].value == 10_000
+    assert after_profile.assets[0].is_liquid is True
+
+
+def test_redirecting_cashflow_raises_the_savings_rate():
+    plan = ActionSet(
+        actions=[
+            ProposedAction(action_id="redirect", kind=ActionKind.redirect_cashflow, amount_usd=500)
+        ]
+    )
+    result = counterfactual.evaluate(_profile(), _concentrated(), plan)
+    savings = next(c for c in result.changes if c.label == "savings rate")
+    assert savings.improved is True
+    assert result.ineffective_actions == []
+
+
+def test_a_hold_changes_nothing_and_is_not_called_ineffective():
+    plan = ActionSet(
+        actions=[
+            ProposedAction(action_id="h", kind=ActionKind.hold, rationale="already appropriate")
+        ]
+    )
+    result = counterfactual.evaluate(_profile(), _concentrated(), plan)
+    assert result.ineffective_actions == []
+    assert result.unapplied == []
+    assert all(abs(c.delta) < 1e-9 for c in result.changes)
+    assert result.holds_up is True
