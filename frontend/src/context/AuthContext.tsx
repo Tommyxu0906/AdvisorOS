@@ -108,6 +108,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function signOut() {
     if (!supabase) return;
     await supabase.auth.signOut();
+    // Reload rather than just dropping the session. Someone's income, debts, holdings, and
+    // Anthropic key all live in React state and in this tab's memory; clearing the session
+    // alone would leave every one of them on screen for whoever sits down next. A reload is
+    // the only way to be sure nothing survives, and it cannot go stale as state is added.
+    window.location.reload();
   }
 
   const value = useMemo<AuthState>(
