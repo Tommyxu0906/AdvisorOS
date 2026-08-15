@@ -134,6 +134,7 @@ def propose(
                     tax=tax,
                     policy_profile=policy_profile,
                     display_name=display_name,
+                    is_house_run=advisor_id == "house",
                 ),
             )
         )
@@ -257,6 +258,7 @@ def _trim_rationale(
     tax: TaxRange | None,
     policy_profile: PolicyProfile,
     display_name: str,
+    is_house_run: bool = False,
 ) -> str:
     """Phrased as what a threshold implies, not as an instruction to trade.
 
@@ -267,7 +269,8 @@ def _trim_rationale(
     """
     parts = [
         f"{symbol} is {weight:.0%} of the portfolio. Under a {cap.value:.0%} single-name "
-        f"threshold — {cap.attribution(display_name)} — this scenario implies reducing it."
+        f"threshold — {cap.attribution(display_name, is_house_run=is_house_run)} — this "
+        f"scenario implies reducing it."
     ]
 
     if cap.is_house_number and cap.direction is not Direction.neutral:

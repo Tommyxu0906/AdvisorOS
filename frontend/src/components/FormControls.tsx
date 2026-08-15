@@ -59,6 +59,7 @@ export function RowEditor<T>({
   blank,
   render,
   empty = "None.",
+  rowClass = "",
 }: {
   title: string;
   rows: T[];
@@ -66,6 +67,8 @@ export function RowEditor<T>({
   blank: T;
   render: (row: T, update: (next: T) => void) => React.ReactNode;
   empty?: string;
+  /** Layout modifier. Debts and assets fit the default four columns; holdings carry more. */
+  rowClass?: string;
 }) {
   return (
     <div className="row-editor">
@@ -77,7 +80,7 @@ export function RowEditor<T>({
       </div>
       {rows.length === 0 && <p className="muted small">{empty}</p>}
       {rows.map((row, i) => (
-        <div className="editor-row" key={i}>
+        <div className={rowClass ? `editor-row ${rowClass}` : "editor-row"} key={i}>
           {render(row, (next) => onChange(rows.map((r, j) => (j === i ? next : r))))}
           <button
             className="secondary small"

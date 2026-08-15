@@ -66,12 +66,91 @@ export interface CommitteeSelection {
   notes: string[];
 }
 
+/** A dollar range, never a point. The gap between the ends is the holding period nobody
+ *  recorded — see TaxRange in backend/app/domain/action.py. */
+export interface TaxRange {
+  low_usd: number;
+  high_usd: number;
+  assumption: string;
+}
+
+export interface ProposedAction {
+  action_id: string;
+  kind: string;
+  symbol: string | null;
+  shares: number | null;
+  amount_usd: number | null;
+  target_weight: number | null;
+  sequence: number;
+  /** "house" for AdvisorOS's own rules, otherwise an advisor_id. Rendered — a debt paydown is
+   *  not an advisor's opinion and must not be shown as one. */
+  proposed_by: string;
+  rationale: string;
+  estimated_tax: TaxRange | null;
+}
+
+export interface MetricChange {
+  label: string;
+  before: number;
+  after: number;
+  higher_is_better: boolean | null;
+  /** null where no direction is inherently good — net worth after a taxable sale. */
+  improved: boolean | null;
+}
+
+export interface Counterfactual {
+  feasible: boolean;
+  changes: MetricChange[];
+  estimated_tax: TaxRange | null;
+  resolved_guardrails: string[];
+  introduced_guardrails: string[];
+  ineffective_actions: string[];
+  unapplied: string[];
+  /** Computed server-side on purpose. Re-deriving "good enough to show" here would put the
+   *  definition in two languages and let them drift. */
+  holds_up: boolean;
+}
+
+export interface SweepPoint {
+  cap: number;
+  acts: boolean;
+  binding: string;
+  proceeds_usd: number;
+  largest_weight_after: number;
+}
+
+export interface Sensitivity {
+  baseline: number;
+  baseline_acts: boolean;
+  binding_at_baseline: string;
+  position_count: number;
+  points: SweepPoint[];
+  flip_at: number | null;
+  declined: boolean;
+  fragile: boolean;
+  /** Authored server-side so the wording is written once. */
+  summary: string[];
+}
+
+export interface PortfolioScenario {
+  action_set: { actions: ProposedAction[] };
+  counterfactual: Counterfactual;
+  sensitivity: Sensitivity | null;
+  policy_owner: string;
+  is_house_policy: boolean;
+  has_actions: boolean;
+  worth_showing: boolean;
+  headline: string;
+}
+
 export interface SelectResponse {
   selection: CommitteeSelection;
   analytics: ProfileAnalytics;
   portfolio_analytics: PortfolioAnalytics | null;
   guardrails: Guardrail[];
   question_topics: string[];
+  /** Deterministic candidate actions. Present on the FREE response — no key required. */
+  scenario: PortfolioScenario | null;
 }
 
 export interface EstimateResponse {
@@ -194,6 +273,8 @@ export interface PortfolioInput {
     /** Optional share count. `market_value` stays authoritative — see draft.ts. */
     quantity?: number | null;
     market_value: number;
+    /** Optional. Absent means the tax estimate reports "unknown", not zero. */
+    cost_basis?: number | null;
   }[];
 }
 

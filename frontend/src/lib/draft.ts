@@ -36,6 +36,9 @@ export interface HoldingDraft {
   asset_class: string;
   quantity: number | null;
   market_value: number | null;
+  /** Optional, and null rather than 0 when unknown — the tax estimate reports "unknown" for a
+   *  missing basis and would report "$0 of gain" for a zero one. Two different claims. */
+  cost_basis: number | null;
 }
 
 export interface ProfileDraft {
@@ -144,6 +147,7 @@ export function toPortfolioInput(holdings: HoldingDraft[]): PortfolioInput {
         asset_class: h.asset_class,
         quantity: h.quantity,
         market_value: h.market_value!,
+        cost_basis: h.cost_basis,
       })),
   };
 }
@@ -194,6 +198,7 @@ export function fromPortfolioInput(portfolio: PortfolioInput | null): HoldingDra
     asset_class: h.asset_class,
     quantity: h.quantity ?? null,
     market_value: h.market_value,
+    cost_basis: h.cost_basis ?? null,
   }));
 }
 

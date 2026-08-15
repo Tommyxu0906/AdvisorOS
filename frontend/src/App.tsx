@@ -4,6 +4,7 @@ import { AccountControl } from "./components/AccountControl";
 import { AdvisorsPanel } from "./components/AdvisorsPanel";
 import { AnalysisPanel } from "./components/AnalysisPanel";
 import { CommitteePreview } from "./components/CommitteePreview";
+import { ScenarioPanel } from "./components/ScenarioPanel";
 import { ConnectPanel } from "./components/ConnectPanel";
 import { HistoryPanel } from "./components/HistoryPanel";
 import { HoldingsEditor } from "./components/HoldingsEditor";
@@ -268,6 +269,10 @@ export function App() {
                 guardrails={selection.guardrails}
               />
             )}
+
+            {/* Directly under the diagnostics: the computed actions those diagnostics imply.
+                Free, deterministic, and rendered before the committee is even selected. */}
+            {selection && <ScenarioPanel scenario={selection.scenario} />}
           </>
         )}
 

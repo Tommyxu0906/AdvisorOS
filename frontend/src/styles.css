@@ -941,3 +941,83 @@ td .sub {
   height: 1px;
   background: var(--hairline);
 }
+
+/* ---------- computed scenario ---------- */
+/* Reuses the ledger grammar already established by .stats and .guardrails: hairline rules, no
+   fills, numbers right-aligned in the tabular face. A computed action should look like a line
+   in a statement, not like a call to action — the restraint is the point. */
+.scenario-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--gap) 0;
+  font-size: 14px;
+}
+.scenario-table th {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  text-align: left;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--hairline-strong);
+}
+.scenario-table td {
+  padding: 10px;
+  border-bottom: 1px solid var(--hairline);
+  vertical-align: top;
+}
+.scenario-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.scenario-table tr.highlight td {
+  background: var(--paper-tint);
+}
+.scenario-action-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.scenario-symbol {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.scenario-block {
+  margin-top: calc(var(--gap) * 1.5);
+}
+.scenario-block h3 {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0;
+}
+@media (max-width: 640px) {
+  /* Wide tables scroll inside their own container rather than pushing the page sideways. */
+  .scenario-block,
+  .scenario-table {
+    overflow-x: auto;
+    display: block;
+  }
+}
+
+/* Holdings carry two more fields than debts or assets: a cost basis, and the live price tag.
+   Basis is what turns the tax estimate from "unknown" into a range, so it earns its column. */
+.editor-row.holding-row {
+  grid-template-columns: 1.1fr 1fr 0.8fr 1fr 1fr auto auto;
+}
+@media (max-width: 900px) {
+  .editor-row.holding-row {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+  .editor-row.holding-row > :last-child {
+    grid-column: 3;
+    justify-self: end;
+  }
+}

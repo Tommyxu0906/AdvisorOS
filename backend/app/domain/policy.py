@@ -160,8 +160,15 @@ class ResolvedParameter(BaseModel):
     def is_house_number(self) -> bool:
         return self.provenance is Provenance.house_default
 
-    def attribution(self, display_name: str) -> str:
-        """One clause naming whose threshold this is. Used verbatim in action rationales."""
+    def attribution(self, display_name: str, *, is_house_run: bool = False) -> str:
+        """One clause naming whose threshold this is. Used verbatim in action rationales.
+
+        `is_house_run` exists because the house-default wording distinguishes an AdvisorOS number
+        from *an advisor's* number, and there is no advisor when the engine runs on its own
+        behalf. Without it the sentence negates itself — "an AdvisorOS threshold ... not
+        AdvisorOS's number" — which is what shipped to the browser before anyone read the
+        rendered output end to end.
+        """
         if self.provenance is Provenance.direct:
             return f"{display_name} states this threshold directly"
         if self.provenance is Provenance.derived:
@@ -170,6 +177,8 @@ class ResolvedParameter(BaseModel):
                 f"read from {display_name}'s documented decisions ({confidence}), "
                 "not a figure they published"
             )
+        if is_house_run:
+            return "an AdvisorOS threshold, applied because no advisor has supplied one"
         return (
             f"an AdvisorOS threshold used so the scenario can be computed, "
             f"not {display_name}'s number"

@@ -21,7 +21,14 @@ export function HoldingsEditor({
       title="Portfolio holdings"
       rows={holdings}
       onChange={onHoldings}
-      blank={{ symbol: "", asset_class: "us_equity", quantity: null, market_value: null }}
+      rowClass="holding-row"
+      blank={{
+        symbol: "",
+        asset_class: "us_equity",
+        quantity: null,
+        market_value: null,
+        cost_basis: null,
+      }}
       empty="No positions yet. Add a ticker and either a share count or what it is worth."
       render={(row, update) => {
         const quote = quotes.quotes[row.symbol.trim().toUpperCase()];
@@ -68,6 +75,15 @@ export function HoldingsEditor({
               min={0}
               value={str(row.market_value)}
               onChange={(e) => update({ ...row, market_value: num(e.target.value) })}
+            />
+            <input
+              type="number"
+              placeholder="cost basis — blank if unknown"
+              min={0}
+              value={str(row.cost_basis)}
+              onChange={(e) => update({ ...row, cost_basis: num(e.target.value) })}
+              title="What you paid. Leave blank if you do not know — the tax estimate says
+unknown rather than guessing, and a guess here changes every number downstream."
             />
             <PriceTag quote={quote} loading={quotes.loading} symbol={row.symbol} />
           </>
