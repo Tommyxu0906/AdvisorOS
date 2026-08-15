@@ -1,256 +1,178 @@
-# AIFinancialAdvisor — Implementation Plan (V2, BYOK)
+# Brokerage Connector — Implementation Delta
 
-> **Status of this document.** The working directory contained no prior code and no
-> `docs/IMPLEMENTATION_PLAN.md` when V2 began, so this file is written fresh rather than edited.
-> There was also no pre-existing "Nuwa" system anywhere on this machine — the distillation layer
-> described in §9 is built as part of this project, not imported. See "Assumptions" at the end.
+Branch: `feature/brokerage-connector`. Base: `1dba0f3`.
 
-## 0. The one-sentence architecture
+This is the delta against what exists today, written after reading the auth, database, and
+deployment code rather than from the feature description. Where the existing system already
+satisfies a requirement, that is said and nothing is built.
 
-**The user brings their own Anthropic API key. Deterministic code does all financial math and all
-routing decisions. Claude is used only where natural language reasoning is genuinely required, and
-every token it costs is billed to the user's own Anthropic account and attributed back to them.**
+---
 
-## 1. Layers
+## Phase A findings — what already exists
 
-```text
-┌──────────────────────────────────────────────────────────┐
-│ Browser                                                  │
-│   AnthropicConnectionContext  (API key in memory only)   │
-│   Profile intake · Portfolio · Question · Depth mode     │
-└───────────────────────┬──────────────────────────────────┘
-                        │  HTTPS, key in request body
-┌───────────────────────▼──────────────────────────────────┐
-│ FastAPI backend                                          │
-│                                                          │
-│  FREE / DETERMINISTIC          PAID / LLM                │
-│  ────────────────────          ──────────                │
-│  ProfileAnalyzer               AdvisorAnalysis           │
-│  PortfolioAnalytics            CrossExamination          │
-│  Guardrails                    RiskChallenge             │
-│  AdvisorRegistry               Synthesis                 │
-│  AdvisorSelector               Nuwa distillation         │
-│  CommitteeOptimizer                                      │
-│  UsageTracker / CostCalculator                           │
-└───────────────────────┬──────────────────────────────────┘
-                        │ per-request AnthropicClientFactory.create(user_key)
-                        ▼
-                  Anthropic API
+### Identity: already sufficient, nothing to add
+
+The requirement is an immutable internal user UUID rather than an email. That exists.
+
+```
+auth.users.id (uuid, Supabase Auth)
+      │  1:1, mirrored by handle_new_user() trigger
+      ▼
+public.app_users.id (uuid, PK, FK on delete cascade)
+      │  carried through the API boundary as
+      ▼
+AuthUser.id  (core/supabase_auth.py, verified ES256 against project JWKS)
 ```
 
-Two things never cross a layer boundary:
+`AuthUser.id` is that UUID as a string, already required on every authenticated route via
+`current_user_required`. **This becomes the SnapTrade `userId` directly.** No new authentication
+layer, no email-keyed identity, no change to the auth boundary.
 
-1. A `SecretStr` API key never reaches a logger, a store, a response body, or a traceback.
-2. An LLM call never happens without an explicit `RunContext` carrying credentials.
+One consequence worth stating: brokerage connections make identity non-optional for this
+feature, while the rest of the product still works signed-out. The connector routes sit behind
+`current_user_required`; everything already built stays reachable without an account.
 
-## 2. Free vs paid — the load-bearing distinction
+### The credential invariant this feature changes
 
-Everything in the left column below runs with **no Anthropic key at all**. The endpoints backing
-them are usable by anyone, including CI.
+`0002_app_users.sql` says, in a comment:
 
-| Deterministic (no key)                                   | LLM (user's key)                  |
-| -------------------------------------------------------- | --------------------------------- |
-| Savings rate, debt ratios, DTI, emergency-fund months     | Question intent extraction        |
-| Need vector (7 dimensions), life-stage inference          | Independent advisor analysis      |
-| Portfolio weights, HHI, concentration, effective N        | Cross-examination / critique      |
-| Return, volatility, max drawdown, correlation matrix      | Risk challenge                    |
-| Hard financial guardrails (§4)                            | Final synthesis                   |
-| Advisor registry load + runtime-profile compilation       | Custom advisor distillation       |
-| Advisor scoring, ranking, committee optimization          |                                   |
-| Token usage aggregation and cost estimation               |                                   |
+> No credential column exists here or anywhere else in this schema.
 
-## 3. Domain model (Phase 1)
+That is true today and this feature makes it false. It is the single most important thing in
+this plan, so it is handled explicitly rather than by quietly adding a column.
 
-`backend/app/domain/`
+The Anthropic BYOK rule is enforced by CI (a grep for `sk-ant-` keys across the tree, a boot
+assertion that no `ANTHROPIC_API_KEY` is present in the backend environment) and by
+`tests/security/test_api_key_handling.py`. **None of that weakens.** The key stays in browser
+memory, travels per request, and is never written down.
 
-- `profile.py` — `FinancialProfile`, `Income`, `Expenses`, `Debt`, `Asset`, `Goal`,
-  `RiskTolerance`, `TimeHorizon`, `LifeStage`.
-- `portfolio.py` — `Holding`, `Portfolio`, `AssetClass`, `PriceSeries`.
-- `question.py` — `UserQuestion`, `QuestionIntent` (deterministic keyword extraction first;
-  LLM extraction only as an optional refinement).
-- `advisor.py` — `AdvisorManifest` (full Nuwa artifact) and `AdvisorRuntimeProfile` (compact
-  derivative actually sent to Claude).
-- `report.py` — `AdvisorAnalysis`, `Critique`, `RiskChallenge`, `CommitteeReport`.
+SnapTrade cannot work that way: the `userSecret` is issued once by the provider, is not
+re-derivable, and is required for every subsequent call on that user's behalf. Losing it means
+the user must re-link every brokerage.
 
-All Pydantic v2 with validation (non-negative amounts, weights that sum, currency consistency).
+So the system will hold two credential policies that must not be confused, and the schema
+comment gets rewritten to say so:
 
-## 4. Deterministic analytics + guardrails (Phase 2, 8)
+| | Anthropic BYOK | SnapTrade |
+|---|---|---|
+| Origin | typed by the user | issued by the provider |
+| Lifetime | one request | until the integration is deleted |
+| Storage | none, ever | encrypted at rest |
+| Reaches browser | yes, it is the user's own | **never** |
+| On loss | user retypes it | user must re-link every brokerage |
 
-`ProfileAnalytics` produces a `NeedVector` — seven scores in `[0,1]`:
+### Database conventions to follow
 
-`liquidity_risk, debt_pressure, concentration_risk, valuation_sensitivity, behavioral_risk,
-tax_complexity, longevity_risk`
+- Migrations are sequential and prose-commented; next is `0011`.
+- `updated_at` maintained by the `touch_updated_at()` trigger, `search_path` pinned to `''`.
+- RLS is enabled on every table, written as `(select auth.uid())` so the planner hoists it into
+  an InitPlan. **RLS is not the primary control** — FastAPI connects with the service-role key
+  and bypasses it; the repository layer's `where user_id = $1` is what actually protects data.
+- Money is `numeric(18,2)`; quantities are `double precision`; enum-ish columns use `check`
+  constraints matching the Python enums.
 
-`Guardrails` are **hard rules that code enforces and the LLM cannot override**. Each returns a
-`Guardrail` with severity and a fixed message, e.g.:
+New tables follow all of that, with one deliberate departure documented below.
 
-- Emergency fund < 3 months → block "invest the cash" style recommendations.
-- Debt at APR > 8% outstanding → prioritize payoff over incremental equity risk.
-- Single-position weight > 25% → concentration warning must appear in the final report.
-- Time horizon < 3 years for a stated goal → equity allocation caution.
+### Analytics the connector must feed, unchanged
 
-Guardrails are injected into every advisor prompt *and* re-checked against the synthesized report.
-Violations are annotated on the report, not silently dropped.
+`analyze_portfolio` already aggregates by symbol across holdings — that was a duplicate-symbol
+corruption bug fixed earlier, and it is exactly the behaviour household view needs. The same
+symbol in a taxable account and a Roth already sums correctly for concentration and HHI. The
+connector must not re-implement that, and must not lose the account attribution on the way in.
 
-`PortfolioAnalytics` computes weights, HHI, effective N, per-asset-class exposure, and — when a
-price series is supplied — annualized return, volatility, max drawdown, and a correlation matrix.
-Pure Python/`statistics`; no numpy dependency for the MVP.
+---
 
-## 5. BYOK credential architecture (Phase 5)
+## Phase B — provider-neutral domain models
 
-```python
-class UserLLMCredentials(BaseModel):
-    anthropic_api_key: SecretStr
-    model_config = ConfigDict(frozen=True)
-    def __repr__(self) -> str: return "UserLLMCredentials(anthropic_api_key=<redacted>)"
-```
+`backend/app/domain/connection.py` (new). No SnapTrade vocabulary anywhere in it.
 
-- `AnthropicClientFactory.create(credentials) -> AsyncAnthropic` — a **new client per request**.
-  There is no module-level client and no `ANTHROPIC_API_KEY` read anywhere in the request path.
-- `RunContext(run_id, credentials, model_config, usage_tracker, depth)` is required by every
-  method that can reach the network. This is enforced by signature, not by convention.
-- `POST /api/auth/anthropic/validate` does one minimal `max_tokens=1` call and returns
-  `{"valid": true}` or `{"valid": false, "error": "<sanitized>"}`. Never echoes the key.
+- `ConnectionStatus` — `active | broken | disabled | pending`. Drives staleness, not value.
+- `DataSource` — where a number came from: `provider_reported | provider_computed |
+  user_supplied | derived`. Extends the provenance principle from persona parameters to
+  portfolio facts.
+- `Freshness` — `provider`, `as_of`, `last_successful_sync`, `status`. Carried on every
+  connected object, never optional. A stale connection is neither a zero portfolio nor current
+  data, and the type must make it impossible to render it as either.
+- `TaxLot` — `quantity`, `cost_basis`, `acquired_at`. All optional. Present only when the
+  provider actually returns lots.
+- `ConnectedAccount`, `ConnectedPosition`, `ConnectedTransaction`, `ConnectedPortfolio` as
+  specified. Every provider-optional field stays `| None`; none get defaulted to zero.
 
-Failure mode when no key is present: `/api/committee/analyze` returns **402-style refusal**
-(`503 llm_unavailable` with a machine-readable code), not a silent fallback to a developer key.
+The rule that governs this whole module: **absent data is `None`, never `0.0`**. The tax work
+already established that unknown and zero are different claims, and a brokerage feed produces
+far more unknowns than a hand-typed form does.
 
-## 6. Provider abstraction + usage (Phase 6)
+## Phase C — `PortfolioConnector` protocol + `MockPortfolioConnector`
 
-```python
-class LLMProvider(Protocol):
-    async def generate(self, messages, context, *, system=None, max_tokens=..., ...) -> LLMResponse
-```
+`backend/app/connectors/` (new): `base.py` (Protocol), `mock.py`, later `snaptrade.py`.
 
-Implementations: `AnthropicBYOKProvider` (real) and `MockLLMProvider` (deterministic canned
-responses, used by every test and by CI). Multi-provider support is explicitly out of scope for V1.
+Mock first, and it is not a stub — it is the fixture CI runs against and the engine behind demo
+mode, so it produces a realistic multi-account household including the awkward cases: the same
+symbol in two accounts, a position with no cost basis, a position with lots, and a broken
+connection returning cached data.
 
-`LLMResponse` carries `text`, `parsed` (when structured output was requested), and `LLMCallUsage`.
-`UsageTracker` aggregates into `RunUsage` with `estimated_cost_usd`.
+## Phase D — `BrokerCredentialStore`
 
-Pricing lives in `config/model_pricing.json`, versioned, with `input/output/cache_read/cache_write`
-per million tokens. The UI always labels the number **"Estimated cost"**.
+`backend/app/core/broker_credentials.py` + migration `0011`.
 
-## 7. Advisor registry, runtime profiles, selection (Phases 3–4)
+Application-level AES-GCM via `cryptography` (already installed; **must be added to
+`pyproject.toml`**, where it is currently an undeclared transitive dependency of `pyjwt[crypto]`).
 
-An advisor ships as a directory:
+Encrypting in the application rather than with `pgcrypto` is deliberate: the database never sees
+plaintext, so a database dump, a Supabase dashboard session, or a replica does not yield the
+secret. The key comes from `AIFA_BROKER_ENCRYPTION_KEY` in the backend environment, alongside the
+service-role key — the same trust domain, not a new one.
 
-```text
-backend/app/advisors/builtin/<advisor_id>/
-  manifest.json     # AdvisorManifest — identity, expertise vector, mental models, evidence refs
-  SKILL.md          # human/Nuwa-readable long form (traceability; NOT sent at runtime)
-```
+The departure from RLS convention: `broker_connections` gets a policy that denies `anon` and
+`authenticated` **everything**, rather than the usual "own row" grant. Every other table is
+readable by its owner because a future direct-from-browser path would be legitimate. For this
+table there is no such future — the browser must never read it — so the policy says that outright
+instead of granting access nobody should use.
 
-At load time the registry compiles `manifest.json` into an `AdvisorRuntimeProfile`: identity,
-mental models, heuristics, expertise, blind spots, reasoning rules, honest boundaries — bounded to
-a target of ~1,200 tokens. `SKILL.md` and any Nuwa research artifacts are **never** sent to Claude
-at committee runtime. This is the single largest cost lever in the system.
+Key rotation is supported by storing a `key_version` column and decrypting against a keyring, so
+rotation is a migration of rows rather than a re-link of every brokerage.
 
-Selection is deterministic:
+## Phase E–G — registration, read-only portal, import
 
-1. Score each advisor as `dot(need_vector, advisor.expertise_vector)` plus question-intent affinity
-   and guardrail-triggered mandatory-coverage bonuses.
-2. Greedily build the smallest team that covers every need dimension above threshold, applying a
-   **diversity penalty** so two advisors with near-identical expertise vectors are not both chosen.
-3. Cap at 3 (quick/balanced) or 4 (deep). Every selection returns a human-readable rationale per
-   advisor — this is what the UI shows before the user spends a token.
+- Register on first connect, store `(user_id, snaptrade_user_id, encrypted_secret)`.
+- Connection Portal requested with `connectionType="read"`, asserted by test.
+- **HTTP via `httpx`, not the SnapTrade SDK.** The SDK bundles trading services; calling the REST
+  API directly means trading code is not merely unused but not present in the dependency tree,
+  which makes `test_trading_service_is_not_wired` a real structural guarantee rather than a
+  naming convention. `httpx` is already a dependency.
+- `BROKERAGE_ACCESS_MODE = "READ_ONLY"` as a module constant, asserted in tests.
 
-## 8. Committee orchestration (Phase 7)
+## Phase H–I — normalize and feed the existing engine
 
-| Mode     | Advisors | Stages                                                        | Calls |
-| -------- | -------- | ------------------------------------------------------------- | ----- |
-| Quick    | 3        | independent ×3 → synthesis                                     | 4     |
-| Balanced | 3        | independent ×3 → cross-exam ×3 → risk challenge → synthesis    | 8     |
-| Deep     | 4        | independent ×4 → cross-exam ×4 → revised memo ×4 → risk → synth| 14    |
+`ConnectedPortfolio` → existing `Portfolio`/`Holding` via an adapter, so `analyze_portfolio`,
+`evaluate_guardrails`, `concentration.propose`, `sensitivity.sweep_concentration`, and
+`counterfactual.evaluate` all run unmodified on connected data.
 
-Independent analyses run concurrently (`asyncio.gather`). Cross-examination gives each advisor the
-*other* advisors' theses only, never the full transcript, to bound tokens. Prompt structure is
-split stable-first (advisor runtime profile, guardrail text) then dynamic (profile, analytics,
-question) so the stable prefix is cacheable.
+Account provenance is preserved by keeping `ConnectedPortfolio` as the source of record and
+treating the flattened `Portfolio` as a *projection* for household analytics. The account view
+reads the former; the household view reads the latter. Nothing aggregates destructively.
 
-## 9. Nuwa distillation (Phase 9)
+Tax handling per the existing `TaxRange`: real lots narrow the range, aggregate basis keeps the
+current long-term-to-ordinary span, neither present means `None`. Better input data must not be
+allowed to reintroduce point estimates.
 
-Nuwa is the **advisor production layer**, run once per advisor, paid for by whoever requests it:
+## Phase J–O — review UI, transactions, webhooks, privacy, goals, security pass
 
-```text
-subject + focus areas + depth
-   → research plan (LLM)
-   → N research passes (LLM)
-   → synthesis into AdvisorManifest + SKILL.md (LLM, structured output)
-   → deterministic validation (schema, expertise vector normalized, boundaries present)
-   → registry write (custom/, private to that install)
-```
+Per the feature description. Webhooks verify HMAC, deduplicate by event id, update state only —
+no LLM call is ever triggered by a webhook.
 
-Built-in advisors ship already distilled — users never pay to *use* them, only to *run* them.
-Distillation is never re-run when an existing advisor joins a committee.
+---
 
-## 10. API surface (Phase 10)
+## Order of work
 
-| Endpoint                          | Key required | Notes                                  |
-| --------------------------------- | ------------ | -------------------------------------- |
-| `POST /api/auth/anthropic/validate` | yes (in body) | Returns `{valid}` only                |
-| `POST /api/profiles/analyze`      | no           | Deterministic analytics + guardrails   |
-| `POST /api/portfolio/analyze`     | no           | Deterministic portfolio metrics        |
-| `GET  /api/advisors`              | no           | Registry listing                       |
-| `POST /api/committee/select`      | no           | Deterministic selection + rationale    |
-| `POST /api/committee/estimate`    | no           | Call-count / token estimate per mode   |
-| `POST /api/committee/analyze`     | **yes**      | Runs the committee                     |
-| `POST /api/advisors/distill`      | **yes**      | Nuwa                                   |
+Connect → fetch → normalize → analyze, end to end, before any UI polish. Phases B and C first
+because they are the contract everything else is written against, and because the mock connector
+is what makes the rest testable without a brokerage login.
 
-## 11. Frontend (Phase 11)
+## What this does not touch
 
-React + Vite + TypeScript. `AnthropicConnectionContext` holds the key in a `useState` in memory
-only — no `localStorage`, no `sessionStorage`, no cookie. Refresh requires re-entry; that is the
-intended tradeoff. Flow mirrors §10 top to bottom, ending in the cost breakdown panel.
-
-## 12. Security posture (Phase 13)
-
-`backend/app/core/redaction.py` provides `redact(value)` handling strings, dicts, lists, and
-exceptions, keyed on field names (`anthropic_api_key`, `x-api-key`, `authorization`, `api_key`,
-`credentials`, `secret`, `token`, `password`) plus a regex for `sk-ant-*` anywhere in free text.
-A logging `Filter` applies it to every record. Mandatory tests (all must pass in CI):
-
-`test_api_key_not_persisted`, `test_api_key_not_logged`, `test_api_key_not_returned`,
-`test_api_key_redacted_from_exception`, `test_invalid_api_key_handling`,
-`test_different_users_use_different_credentials`, `test_no_developer_key_fallback`.
-
-## 13. Evaluation (Phase 12)
-
-Runs against `MockLLMProvider` (correctness, determinism, CI) and optionally against a real key
-(cost/quality). Measures: advisor-selection accuracy vs a labelled fixture set, persona
-differentiation (lexical overlap between advisor outputs), guardrail coverage, structured-output
-reliability, and — per depth mode — LLM calls, tokens, estimated cost, latency, advisor context
-size.
-
-## 14. Build order
-
-```text
-0  repo scaffold                          ✔ prerequisite
-1  domain models
-2  profile analytics + guardrails
-3  advisor registry + runtime profiles
-4  deterministic selection / optimizer
-5  BYOK credentials + RunContext
-6  provider + usage tracker + pricing
-7  committee orchestration
-8  portfolio analytics
-9  Nuwa distillation (BYOK)
-10 FastAPI
-11 frontend + BYOK UX
-12 evaluation harness
-13 security tests + redaction
-14 CI + README + demo
-```
-
-## Assumptions
-
-1. **No pre-existing Nuwa.** The V2 brief refers to Nuwa as if it exists; nothing by that name was
-   present in this repository, the parent directories, or anywhere under `~/Desktop`, `~/Documents`,
-   or `~/Developer`. It is therefore built here as `backend/app/nuwa/`. If an external Nuwa was
-   intended, the importer in `nuwa/importer.py` is the seam to point at it.
-2. **No prior V1 code to refactor.** The instruction to "refactor anything that assumes a global
-   application-owned Anthropic API key" found nothing to refactor; BYOK is designed in from the
-   first commit instead.
-3. **Local git repository.** The project directory sat inside an accidental git repository rooted at
-   the user's home folder. `git init` was run here so this project has its own history and does not
-   commit into that repository.
+House/persona policy separation, parameter provenance, policy scopes, sanitized runtime
+profiles, the no-impersonation rule, `ProposedAction`, `ActionSet` feasibility, `TaxRange`,
+sensitivity, counterfactual validation, and Anthropic BYOK all stay exactly as they are. This
+feature supplies better facts to them. The 253 existing tests must stay green throughout, and
+the manual portfolio entry path must keep working for users who never connect an account.
