@@ -1,25 +1,30 @@
-"""What to do about a position that has grown too large.
+"""What a persona's view of concentration implies for an oversized position.
 
 The narrowest genuinely quantitative decision in the product, and the one the flagship question
-asks: *"Should I sell some NVDA right now and pay off my credit card, or keep riding it?"* Until
-now six personas answered that in prose and nobody checked the arithmetic. Here the answer is a
-share count, sequenced against the blocking guardrails, with the tax cost of getting there
+asks: *"Should I sell some NVDA right now and pay off my credit card, or keep riding it?"* Six
+personas used to answer that in prose and nobody checked the arithmetic. Here the answer is a
+share count, sequenced behind the house's blocking constraints, with the tax of getting there
 stated rather than omitted.
 
-Three things this module is careful about:
+Three things this module is careful about.
 
-**Whose cap.** The threshold is `PolicyParameters.max_single_name_weight`, which comes from the
-advisor. Bogle trims at 5%, Buffett tolerates 25% — the disagreement that used to live in tone
-now lives in a number, and both answers can be costed.
+**Whose threshold.** Every number resolves through `PolicyProfile.resolve`, which reports
+whether the value came from the subject or from AdvisorOS. Distillation can establish that
+Buffett tolerates concentration; it cannot establish that his cap for a retail investor is 25%.
+When a persona has no evidence-backed number the policy still runs, on a house threshold that
+the rationale names as a house threshold. The alternative — a hand-authored cap presented as the
+subject's rule — manufactures precision exactly where the evidence thins out.
 
-**Where the money goes.** Proceeds are not left as an exercise. A blocking guardrail claims them
-first, in the order the guardrails themselves are ranked: high-APR debt before a thin emergency
-reserve before anything discretionary. That sequencing is the actual answer to the flagship
-question, and it is arithmetic rather than judgment.
+**Whether to speak at all.** A persona whose scopes exclude concentration produces nothing.
+Bogle declining to size an individual security is a real position, not a gap to be filled by
+computing one anyway.
 
-**What it costs to act.** Selling an appreciated position realizes gain. The estimate here is
-position-level, because that is the only basis the data model carries — see
-`estimate_tax_impact`. It is reported as an estimate and never silently treated as zero.
+**What it costs to act.** Selling an appreciated position realizes gain. The estimate is
+position-level, because that is the only basis the data model carries — see `estimate_tax_impact`.
+It is reported as an estimate and never silently treated as zero.
+
+House constraints — clearing high-APR debt, rebuilding a thin reserve — are not here. They are
+in `policy/house.py`, because they are this product's rules rather than any advisor's view.
 """
 
 from __future__ import annotations
@@ -27,21 +32,26 @@ from __future__ import annotations
 from app.analytics.portfolio_analytics import PortfolioAnalytics
 from app.analytics.profile_analytics import ProfileAnalytics
 from app.domain.action import ActionKind, ProposedAction
-from app.domain.advisor import PolicyParameters
+from app.domain.policy import (
+    Direction,
+    PolicyParameterName,
+    PolicyProfile,
+    PolicyScope,
+    ResolvedParameter,
+)
 from app.domain.portfolio import Holding, Portfolio
 from app.domain.profile import FinancialProfile
-from app.domain.report import Guardrail, GuardrailSeverity
+from app.domain.report import Guardrail
+from app.policy import house
 
 # Long-term capital gains rate assumed when estimating the cost of trimming. A single blended
-# rate is a simplification and is labelled as one wherever the number surfaces; the alternative
-# is holding period, filing status, and state tax, none of which the profile collects.
+# rate is a simplification, labelled as one wherever the number surfaces; the alternative needs
+# holding period, filing status, and state, none of which the profile collects.
 ASSUMED_CAPITAL_GAINS_RATE = 0.15
 
-# Sequence bands. Blocking guardrails are resolved before anything optional, and the trim that
-# funds them has to happen first of all.
-SEQ_RAISE_CASH = 0
-SEQ_RESOLVE_BLOCKING = 1
-SEQ_DISCRETIONARY = 2
+# Used when a persona carries no evidence-backed concentration threshold. An AdvisorOS number,
+# and described as one everywhere it appears.
+HOUSE_SINGLE_NAME_CAP = 0.20
 
 
 def propose(
@@ -50,26 +60,31 @@ def propose(
     portfolio: Portfolio | None,
     portfolio_analytics: PortfolioAnalytics | None,
     guardrails: list[Guardrail],
-    params: PolicyParameters,
+    policy_profile: PolicyProfile,
     *,
-    advisor_id: str = "policy",
+    advisor_id: str = "house",
+    display_name: str = "AdvisorOS",
 ) -> list[ProposedAction]:
-    """Trim over-weight positions, and put the proceeds where the guardrails demand.
+    """Trim over-weight positions, then hand the proceeds to the house rules.
 
-    Returns an empty list when there is nothing to do — an explicit `hold` is the caller's
-    decision to make, since "no action from this policy" and "this policy recommends inaction"
-    are different claims.
+    Returns an empty list when this persona does not opine on concentration, or when nothing
+    exceeds the applicable threshold. An explicit `hold` is the caller's decision to make:
+    "this policy produced nothing" and "this policy recommends inaction" are different claims.
     """
+    if not policy_profile.covers(PolicyScope.concentration):
+        return []
     if portfolio is None or portfolio_analytics is None:
         return []
     total = portfolio_analytics.total_value
     if total <= 0:
         return []
 
-    value_by_symbol = {s: w * total for s, w in portfolio_analytics.weights.items()}
-    targets, effective_cap = solve_trim_targets(
-        value_by_symbol, total, params.max_single_name_weight
+    cap = policy_profile.resolve(
+        PolicyParameterName.single_name_concentration, HOUSE_SINGLE_NAME_CAP
     )
+
+    value_by_symbol = {s: w * total for s, w in portfolio_analytics.weights.items()}
+    targets, effective_cap = solve_trim_targets(value_by_symbol, total, cap.value)
     if not targets:
         return []
 
@@ -96,23 +111,25 @@ def propose(
                 # enters at a broker. Fall back to dollars when any lot lacks a quantity.
                 shares=shares,
                 amount_usd=None if shares is not None else round(amount, 2),
-                sequence=SEQ_RAISE_CASH,
+                sequence=house.SEQ_RAISE_CASH,
                 proposed_by=advisor_id,
                 estimated_tax_impact_usd=tax,
                 rationale=_trim_rationale(
-                    symbol,
-                    portfolio_analytics.weights[symbol],
-                    params,
-                    effective_cap,
-                    len(value_by_symbol),
-                    tax,
+                    symbol=symbol,
+                    weight=portfolio_analytics.weights[symbol],
+                    cap=cap,
+                    effective_cap=effective_cap,
+                    holding_count=len(value_by_symbol),
+                    tax=tax,
+                    policy_profile=policy_profile,
+                    display_name=display_name,
                 ),
             )
         )
         proceeds += amount
 
-    actions.extend(_deploy_proceeds(profile, analytics, guardrails, proceeds, advisor_id))
-    return actions
+    claimed, _ = house.claim_proceeds(profile, analytics, guardrails, proceeds)
+    return actions + claimed
 
 
 def solve_trim_targets(
@@ -206,102 +223,62 @@ def _shares_for(lots: list[Holding], amount: float) -> float | None:
     return round(amount / (value / shares), 4)
 
 
-def _deploy_proceeds(
-    profile: FinancialProfile,
-    analytics: ProfileAnalytics,
-    guardrails: list[Guardrail],
-    proceeds: float,
-    advisor_id: str,
-) -> list[ProposedAction]:
-    """Claim the proceeds against blocking guardrails, most expensive problem first.
-
-    High-APR debt outranks the emergency reserve because it compounds against the holder every
-    day it stands, while a thin reserve is a risk that may never be realized. Anything left over
-    is deliberately left unallocated: this policy's remit is concentration, and inventing a
-    destination for surplus cash is the allocation policy's job.
-    """
-    blocking = {g.code for g in guardrails if g.severity is GuardrailSeverity.blocking}
-    actions: list[ProposedAction] = []
-    remaining = proceeds
-
-    if "HIGH_APR_DEBT" in blocking and remaining > 0:
-        for debt in sorted(profile.debts, key=lambda d: d.apr, reverse=True):
-            if remaining <= 0:
-                break
-            if debt.apr <= 0.08:
-                continue
-            pay = min(debt.balance, remaining)
-            actions.append(
-                ProposedAction(
-                    action_id=f"pay_{_slug(debt.name)}",
-                    kind=ActionKind.pay_down_debt,
-                    symbol=debt.name,
-                    amount_usd=round(pay, 2),
-                    sequence=SEQ_RESOLVE_BLOCKING,
-                    proposed_by=advisor_id,
-                    rationale=(
-                        f"{debt.name} costs {debt.apr:.1%} a year — "
-                        f"${debt.balance * debt.apr:,.0f} on the current balance. Clearing it is "
-                        "a guaranteed return no position in the portfolio can promise."
-                    ),
-                )
-            )
-            remaining -= pay
-
-    if "EMERGENCY_FUND_THIN" in blocking and remaining > 0:
-        monthly = profile.expenses.monthly_essential
-        shortfall = max(0.0, monthly * 3 - analytics.liquid_assets)
-        if shortfall > 0:
-            top_up = min(shortfall, remaining)
-            actions.append(
-                ProposedAction(
-                    action_id="build_reserve",
-                    kind=ActionKind.build_emergency_fund,
-                    amount_usd=round(top_up, 2),
-                    sequence=SEQ_RESOLVE_BLOCKING,
-                    proposed_by=advisor_id,
-                    rationale=(
-                        f"Holding ${top_up:,.0f} of the proceeds takes the reserve to "
-                        f"{(analytics.liquid_assets + top_up) / monthly:.1f} months of essential "
-                        "expenses, above the three-month floor."
-                    ),
-                )
-            )
-            remaining -= top_up
-
-    return actions
-
-
 def _trim_rationale(
+    *,
     symbol: str,
     weight: float,
-    params: PolicyParameters,
+    cap: ResolvedParameter,
     effective_cap: float,
     holding_count: int,
     tax: float | None,
+    policy_profile: PolicyProfile,
+    display_name: str,
 ) -> str:
-    cap = params.max_single_name_weight
-    lead = f"{symbol} is {weight:.0%} of the portfolio against a {cap:.0%} single-name cap."
-    if effective_cap > cap + 1e-9:
-        lead += (
-            f" With {holding_count} positions the most any one can be trimmed to is "
-            f"{effective_cap:.0%} — reaching {cap:.0%} means holding more names, which is an "
-            "allocation decision rather than a sale."
+    """Phrased as what a threshold implies, not as an instruction to trade.
+
+    "Sell 40 shares" is an instruction. "Under a 5% concentration policy this would imply
+    reducing about 40 shares" is a scenario, which is what this product produces and what its
+    disclaimer says it produces. The distinction costs nothing and is the difference between
+    educational analysis and a personalized recommendation.
+    """
+    parts = [
+        f"{symbol} is {weight:.0%} of the portfolio. Under a {cap.value:.0%} single-name "
+        f"threshold — {cap.attribution(display_name)} — this scenario implies reducing it."
+    ]
+
+    if cap.is_house_number and cap.direction is not Direction.neutral:
+        # The persona has a documented lean but no number. Say both, separately.
+        leaning = (
+            "is willing to hold concentrated positions"
+            if cap.direction is Direction.tolerates
+            else "avoids concentrated positions"
         )
-    if params.allows_concentration_on_conviction:
-        lead += (
-            " Concentration is acceptable where the holder genuinely understands the business, "
-            "so treat this as the size the cap implies rather than an instruction to sell."
+        scope = f" ({'; '.join(cap.applicable_scope)})" if cap.applicable_scope else ""
+        parts.append(
+            f"{display_name} {leaning}{scope}, though no threshold of theirs is on record."
         )
+
+    if effective_cap > cap.value + 1e-9:
+        parts.append(
+            f"With {holding_count} positions the most any one can be trimmed to is "
+            f"{effective_cap:.0%}; reaching {cap.value:.0%} means holding more names, which is "
+            "an allocation decision rather than a sale."
+        )
+
+    if policy_profile.allows_concentration_on_conviction:
+        parts.append(
+            "Concentration is acceptable on this view where the holder genuinely understands "
+            "the business, so read this as the size the threshold implies rather than a verdict "
+            "on the position."
+        )
+
     if tax is None:
-        lead += " Tax cost is unknown — no cost basis is recorded for this position."
+        parts.append("Tax cost is unknown — no cost basis is recorded for this position.")
     elif tax > 0:
-        lead += (
-            f" Trimming realizes an estimated ${tax:,.0f} in tax at a blended {ASSUMED_CAPITAL_GAINS_RATE:.0%} "
-            "long-term rate; the real figure depends on holding period and where you file."
+        parts.append(
+            f"Acting would realize an estimated ${tax:,.0f} in tax at a blended "
+            f"{ASSUMED_CAPITAL_GAINS_RATE:.0%} long-term rate; the real figure depends on "
+            "holding period and where you file."
         )
-    return lead
 
-
-def _slug(name: str) -> str:
-    return "".join(c if c.isalnum() else "_" for c in name.lower()).strip("_") or "debt"
+    return " ".join(parts)

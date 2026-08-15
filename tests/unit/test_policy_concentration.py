@@ -15,7 +15,14 @@ from app.analytics.guardrails import evaluate_guardrails
 from app.analytics.portfolio_analytics import analyze_portfolio
 from app.analytics.profile_analytics import analyze_profile
 from app.domain.action import ActionKind, ActionSet
-from app.domain.advisor import PolicyParameters
+from app.domain.policy import (
+    Direction,
+    PolicyParameter,
+    PolicyParameterName,
+    PolicyProfile,
+    PolicyScope,
+    Provenance,
+)
 from app.domain.portfolio import AssetClass, Holding, Portfolio
 from app.domain.profile import (
     AccountType,
@@ -68,6 +75,32 @@ def _portfolio() -> Portfolio:
 _UNSET = object()
 
 
+def _profile_with_cap(
+    cap: float | None, *, conviction: bool = False, scopes: list[PolicyScope] | None = None
+) -> PolicyProfile:
+    """A persona carrying an evidence-backed cap, or none at all.
+
+    `cap=None` is the common real case: the subject has a documented direction on concentration
+    but never published a threshold, so the policy runs on the house number.
+    """
+    parameters = {}
+    if cap is not None:
+        parameters[PolicyParameterName.single_name_concentration] = PolicyParameter(
+            name=PolicyParameterName.single_name_concentration,
+            value=cap,
+            direction=Direction.avoids if cap < 0.15 else Direction.tolerates,
+            provenance=Provenance.derived,
+            confidence=0.8,
+            source_labels=["test evidence"],
+            as_of="2026-08",
+        )
+    return PolicyProfile(
+        parameters=parameters,
+        scopes=scopes if scopes is not None else list(PolicyScope),
+        allows_concentration_on_conviction=conviction,
+    )
+
+
 def _diversified() -> Portfolio:
     """Five names, one of them oversized — where a cap below 1/n is actually reachable."""
     return Portfolio(
@@ -81,7 +114,7 @@ def _diversified() -> Portfolio:
     )
 
 
-def _run(params: PolicyParameters, profile=None, portfolio=_UNSET):
+def _run(params: PolicyProfile, profile=None, portfolio=_UNSET):
     profile = profile or _profile()
     portfolio = _portfolio() if portfolio is _UNSET else portfolio
     analytics = analyze_profile(profile, portfolio)
@@ -95,7 +128,7 @@ def _run(params: PolicyParameters, profile=None, portfolio=_UNSET):
 
 
 def test_it_answers_sell_nvda_or_pay_the_card_with_a_sequence():
-    _, _, actions = _run(PolicyParameters(max_single_name_weight=0.20))
+    _, _, actions = _run(_profile_with_cap(0.20))
 
     kinds = [(a.kind, a.sequence) for a in actions]
     assert (ActionKind.trim_position, 0) in kinds
@@ -115,7 +148,7 @@ def test_the_trim_is_solved_against_the_post_trim_total():
     where NVDA is 39% — nowhere near the cap it was sold to reach. The target has to be solved
     against what the portfolio becomes.
     """
-    _, portfolio, actions = _run(PolicyParameters(max_single_name_weight=0.20))
+    _, portfolio, actions = _run(_profile_with_cap(0.20))
     trim = next(a for a in actions if a.symbol == "NVDA")
 
     # Two holdings cannot both sit under 20%, so the reachable floor is 50%: NVDA goes to 28k,
@@ -126,7 +159,7 @@ def test_the_trim_is_solved_against_the_post_trim_total():
 
 
 def test_the_tax_cost_of_acting_is_stated():
-    _, _, actions = _run(PolicyParameters(max_single_name_weight=0.20))
+    _, _, actions = _run(_profile_with_cap(0.20))
     trim = next(a for a in actions if a.symbol == "NVDA")
 
     # $32,000 sold from a position two-thirds gain, at a blended 15%.
@@ -138,8 +171,8 @@ def test_the_tax_cost_of_acting_is_stated():
 
 
 def test_two_advisors_produce_different_trims_from_the_same_portfolio():
-    strict = PolicyParameters(max_single_name_weight=0.10)
-    loose = PolicyParameters(max_single_name_weight=0.25)
+    strict = _profile_with_cap(0.10)
+    loose = _profile_with_cap(0.25)
 
     _, _, strict_actions = _run(strict, portfolio=_diversified())
     _, _, loose_actions = _run(loose, portfolio=_diversified())
@@ -149,15 +182,13 @@ def test_two_advisors_produce_different_trims_from_the_same_portfolio():
     assert strict_trim.shares > loose_trim.shares
 
     # And a cap above the actual weight produces nothing rather than a token gesture.
-    _, _, none_needed = _run(
-        PolicyParameters(max_single_name_weight=0.70), portfolio=_diversified()
-    )
+    _, _, none_needed = _run(_profile_with_cap(0.70), portfolio=_diversified())
     assert none_needed == []
 
 
 def test_a_reachable_cap_is_actually_reached():
     """Five holdings can satisfy a 20% cap, and the solved trim lands exactly on it."""
-    params = PolicyParameters(max_single_name_weight=0.20)
+    params = _profile_with_cap(0.20)
     profile, portfolio, actions = _run(params, portfolio=_diversified())
 
     _, after_portfolio, _ = counterfactual.apply(profile, portfolio, ActionSet(actions=actions))
@@ -166,9 +197,7 @@ def test_a_reachable_cap_is_actually_reached():
 
 
 def test_a_conviction_tolerant_persona_frames_the_same_number_differently():
-    _, _, actions = _run(
-        PolicyParameters(max_single_name_weight=0.25, allows_concentration_on_conviction=True)
-    )
+    _, _, actions = _run(_profile_with_cap(0.25, conviction=True))
     trim = next(a for a in actions if a.symbol == "NVDA")
     assert "genuinely understands the business" in trim.rationale
     # The framing softens; the arithmetic does not.
@@ -180,7 +209,7 @@ def test_a_conviction_tolerant_persona_frames_the_same_number_differently():
 
 @pytest.mark.parametrize("cap", [0.05, 0.10, 0.20, 0.25, 0.40])
 def test_every_advisors_plan_survives_its_own_counterfactual(cap: float):
-    profile, portfolio, actions = _run(PolicyParameters(max_single_name_weight=cap))
+    profile, portfolio, actions = _run(_profile_with_cap(cap))
     if not actions:
         return
 
@@ -196,7 +225,7 @@ def test_every_advisors_plan_survives_its_own_counterfactual(cap: float):
 @pytest.mark.parametrize("cap", [0.05, 0.10, 0.20, 0.25, 0.40])
 def test_the_plan_never_leaves_a_position_above_what_trimming_can_reach(cap: float):
     """Either the cap is met, or the arithmetic floor of 1/n is — never something in between."""
-    params = PolicyParameters(max_single_name_weight=cap)
+    params = _profile_with_cap(cap)
     for portfolio in (_portfolio(), _diversified()):
         profile, portfolio, actions = _run(params, portfolio=portfolio)
         if not actions:
@@ -208,7 +237,7 @@ def test_the_plan_never_leaves_a_position_above_what_trimming_can_reach(cap: flo
 
 
 def test_clearing_the_card_resolves_the_blocking_guardrail():
-    profile, portfolio, actions = _run(PolicyParameters(max_single_name_weight=0.20))
+    profile, portfolio, actions = _run(_profile_with_cap(0.20))
     result = counterfactual.evaluate(profile, portfolio, ActionSet(actions=actions))
     assert "HIGH_APR_DEBT" in result.resolved_guardrails
 
@@ -217,7 +246,7 @@ def test_clearing_the_card_resolves_the_blocking_guardrail():
 
 
 def test_no_portfolio_means_no_actions():
-    _, _, actions = _run(PolicyParameters(), portfolio=None)
+    _, _, actions = _run(_profile_with_cap(None), portfolio=None)
     assert actions == []
 
 
@@ -228,7 +257,7 @@ def test_a_position_without_a_share_count_is_sized_in_dollars():
             Holding(symbol="VTI", quantity=20, market_value=20_000),
         ]
     )
-    _, _, actions = _run(PolicyParameters(max_single_name_weight=0.20), portfolio=portfolio)
+    _, _, actions = _run(_profile_with_cap(0.20), portfolio=portfolio)
     trim = next(a for a in actions if a.symbol == "PRIVATECO")
     assert trim.shares is None
     assert trim.amount_usd == 60_000
@@ -241,7 +270,7 @@ def test_an_unknown_cost_basis_is_reported_as_unknown_not_zero():
             Holding(symbol="VTI", quantity=73, market_value=28_000),
         ]
     )
-    _, _, actions = _run(PolicyParameters(max_single_name_weight=0.20), portfolio=portfolio)
+    _, _, actions = _run(_profile_with_cap(0.20), portfolio=portfolio)
     trim = next(a for a in actions if a.symbol == "NVDA")
     assert trim.estimated_tax_impact_usd is None
     assert "Tax cost is unknown" in trim.rationale
@@ -260,7 +289,7 @@ def test_a_position_held_in_a_roth_incurs_no_estimated_tax():
             Holding(symbol="VTI", quantity=73, market_value=28_000, cost_basis=24_000),
         ]
     )
-    _, _, actions = _run(PolicyParameters(max_single_name_weight=0.20), portfolio=portfolio)
+    _, _, actions = _run(_profile_with_cap(0.20), portfolio=portfolio)
     trim = next(a for a in actions if a.symbol == "NVDA")
     assert trim.estimated_tax_impact_usd == 0.0
 
@@ -271,5 +300,5 @@ def test_proceeds_beyond_the_blocking_guardrails_are_left_unallocated():
         debts=[],
         assets=[Asset(name="savings", value=60_000, account_type=AccountType.cash, is_liquid=True)],
     )
-    _, _, actions = _run(PolicyParameters(max_single_name_weight=0.20), profile=profile)
+    _, _, actions = _run(_profile_with_cap(0.20), profile=profile)
     assert {a.kind for a in actions} == {ActionKind.trim_position}
