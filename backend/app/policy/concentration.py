@@ -31,7 +31,7 @@ from __future__ import annotations
 
 from app.analytics.portfolio_analytics import PortfolioAnalytics
 from app.analytics.profile_analytics import ProfileAnalytics
-from app.domain.action import ActionKind, ProposedAction
+from app.domain.action import ActionKind, ProposedAction, TaxRange
 from app.domain.policy import (
     Direction,
     PolicyParameterName,
@@ -44,10 +44,21 @@ from app.domain.profile import FinancialProfile
 from app.domain.report import Guardrail
 from app.policy import house
 
-# Long-term capital gains rate assumed when estimating the cost of trimming. A single blended
-# rate is a simplification, labelled as one wherever the number surfaces; the alternative needs
-# holding period, filing status, and state, none of which the profile collects.
-ASSUMED_CAPITAL_GAINS_RATE = 0.15
+# The two ends of the tax range. Neither is a computed rate, and the distance between them is
+# the point: `Holding` carries no acquisition date, so a sale is either a long-term gain or
+# ordinary income and nothing in the data says which. Filing status and state are not collected
+# either, so the upper end is a mid-to-upper federal marginal bracket rather than this person's
+# bracket. Deriving that properly means a bracket table with a stated year and filing status —
+# worth doing, and worth doing as configuration with provenance rather than a constant here.
+ASSUMED_LONG_TERM_RATE = 0.15
+ASSUMED_ORDINARY_RATE = 0.32
+
+RATE_ASSUMPTION = (
+    "The low end treats the whole sale as a long-term gain and the high end as ordinary income. "
+    "Nothing recorded says which applies, because holding dates are not collected. Choosing which "
+    "lots to sell can move the real figure outside this range in either direction."
+)
+NO_TAX_ASSUMPTION = "Held in a tax-advantaged account, so a sale realizes nothing to tax."
 
 # Used when a persona carries no evidence-backed concentration threshold. An AdvisorOS number,
 # and described as one everywhere it appears.
@@ -113,7 +124,7 @@ def propose(
                 amount_usd=None if shares is not None else round(amount, 2),
                 sequence=house.SEQ_RAISE_CASH,
                 proposed_by=advisor_id,
-                estimated_tax_impact_usd=tax,
+                estimated_tax=tax,
                 rationale=_trim_rationale(
                     symbol=symbol,
                     weight=portfolio_analytics.weights[symbol],
@@ -180,36 +191,49 @@ def solve_trim_targets(
     return {}, effective_cap
 
 
-def estimate_tax_impact(lots: list[Holding], amount: float) -> float | None:
-    """Estimated tax on selling `amount` worth of these lots.
+def estimate_tax_impact(lots: list[Holding], amount: float) -> TaxRange | None:
+    """Estimated tax on selling `amount` worth of these lots, as a range.
 
     Position-level, not lot-level: the domain model carries one `cost_basis` per holding, so
-    this assumes the sale realizes gain in the same proportion the whole position carries. Real
-    tax depends on which lots are sold, how long they were held, and where the seller lives.
+    this assumes the sale realizes gain in the same proportion the whole position carries.
+
+    The range spans the two tax treatments the data cannot distinguish between — see `TaxRange`.
+    `Holding` records no acquisition date, so whether a sale is a long-term gain or ordinary
+    income is genuinely unknown, and that gap is far wider than any rounding.
 
     Returns None when no lot declares a basis — unknown, which is not the same as zero. Sales
-    from tax-advantaged accounts contribute nothing, which is the one part of this that is
-    exactly right rather than approximate.
+    from tax-advantaged accounts contribute nothing, and that is the one case where the two ends
+    of the range legitimately coincide, because there is no uncertainty left to express.
     """
     taxable = [h for h in lots if not h.account_type.is_tax_advantaged]
     with_basis = [h for h in taxable if h.cost_basis is not None]
     if not with_basis:
-        return None if any(h.cost_basis is None for h in taxable) else 0.0
+        if any(h.cost_basis is None for h in taxable):
+            return None
+        return TaxRange(low_usd=0.0, high_usd=0.0, assumption=NO_TAX_ASSUMPTION)
 
     taxable_value = sum(h.market_value for h in with_basis)
     if taxable_value <= 0:
-        return 0.0
+        return TaxRange(low_usd=0.0, high_usd=0.0, assumption=NO_TAX_ASSUMPTION)
 
     gain_fraction = (
         sum((h.market_value - (h.cost_basis or 0.0)) for h in with_basis) / taxable_value
     )
     if gain_fraction <= 0:
-        return 0.0
+        return TaxRange(
+            low_usd=0.0,
+            high_usd=0.0,
+            assumption="This position is not showing a gain, so a sale realizes nothing to tax.",
+        )
 
     # Only the share of the sale coming from taxable lots is exposed.
     taxable_share = taxable_value / sum(h.market_value for h in lots)
     realized_gain = amount * taxable_share * gain_fraction
-    return round(realized_gain * ASSUMED_CAPITAL_GAINS_RATE, 2)
+    return TaxRange(
+        low_usd=round(realized_gain * ASSUMED_LONG_TERM_RATE, 2),
+        high_usd=round(realized_gain * ASSUMED_ORDINARY_RATE, 2),
+        assumption=RATE_ASSUMPTION,
+    )
 
 
 def _shares_for(lots: list[Holding], amount: float) -> float | None:
@@ -230,7 +254,7 @@ def _trim_rationale(
     cap: ResolvedParameter,
     effective_cap: float,
     holding_count: int,
-    tax: float | None,
+    tax: TaxRange | None,
     policy_profile: PolicyProfile,
     display_name: str,
 ) -> str:
@@ -274,11 +298,7 @@ def _trim_rationale(
 
     if tax is None:
         parts.append("Tax cost is unknown — no cost basis is recorded for this position.")
-    elif tax > 0:
-        parts.append(
-            f"Acting would realize an estimated ${tax:,.0f} in tax at a blended "
-            f"{ASSUMED_CAPITAL_GAINS_RATE:.0%} long-term rate; the real figure depends on "
-            "holding period and where you file."
-        )
+    elif tax.high_usd > 0:
+        parts.append(f"Acting would realize roughly {tax.render()} in tax. {tax.assumption}")
 
     return " ".join(parts)

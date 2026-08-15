@@ -158,13 +158,23 @@ def test_the_trim_is_solved_against_the_post_trim_total():
     assert "the most any one can be trimmed to is 50%" in trim.rationale
 
 
-def test_the_tax_cost_of_acting_is_stated():
+def test_the_tax_cost_of_acting_is_stated_as_a_range():
+    """$32,000 sold from a position two-thirds gain. Whether that is a long-term gain or ordinary
+    income is genuinely unknown — no acquisition date is recorded — and the spread between those
+    two treatments is far too wide to collapse into a single figure printed to the dollar."""
     _, _, actions = _run(_profile_with_cap(0.20))
     trim = next(a for a in actions if a.symbol == "NVDA")
+    gain = 32_000 * (2 / 3)
 
-    # $32,000 sold from a position two-thirds gain, at a blended 15%.
-    assert trim.estimated_tax_impact_usd == pytest.approx(32_000 * (2 / 3) * 0.15, rel=0.01)
-    assert "$3,200" in trim.rationale
+    assert trim.estimated_tax is not None
+    assert trim.estimated_tax.low_usd == pytest.approx(gain * 0.15, rel=0.01)
+    assert trim.estimated_tax.high_usd == pytest.approx(gain * 0.32, rel=0.01)
+    assert not trim.estimated_tax.is_certain
+
+    assert "$3,200-$6,827" in trim.rationale
+    assert "holding dates are not collected" in trim.rationale
+    # The lot-selection caveat travels with the number rather than living in a footnote.
+    assert "outside this range" in trim.rationale
 
 
 # --- the disagreement is now a number ----------------------------------------------------
@@ -272,7 +282,7 @@ def test_an_unknown_cost_basis_is_reported_as_unknown_not_zero():
     )
     _, _, actions = _run(_profile_with_cap(0.20), portfolio=portfolio)
     trim = next(a for a in actions if a.symbol == "NVDA")
-    assert trim.estimated_tax_impact_usd is None
+    assert trim.estimated_tax is None
     assert "Tax cost is unknown" in trim.rationale
 
 
@@ -291,7 +301,10 @@ def test_a_position_held_in_a_roth_incurs_no_estimated_tax():
     )
     _, _, actions = _run(_profile_with_cap(0.20), portfolio=portfolio)
     trim = next(a for a in actions if a.symbol == "NVDA")
-    assert trim.estimated_tax_impact_usd == 0.0
+    assert trim.estimated_tax is not None
+    assert trim.estimated_tax.low_usd == 0.0
+    # The one case where both ends legitimately coincide: no uncertainty left to express.
+    assert trim.estimated_tax.is_certain
 
 
 def test_proceeds_beyond_the_blocking_guardrails_are_left_unallocated():

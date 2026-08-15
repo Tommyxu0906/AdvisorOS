@@ -9,7 +9,7 @@ regex check was trying and failing to do).
 from __future__ import annotations
 
 from app.analytics import counterfactual
-from app.domain.action import ActionKind, ActionSet, ProposedAction
+from app.domain.action import ActionKind, ActionSet, ProposedAction, TaxRange
 from app.domain.portfolio import AssetClass, Holding, Portfolio
 from app.domain.profile import (
     AccountType,
@@ -103,22 +103,47 @@ def test_the_tax_cost_of_a_plan_is_totalled_but_not_subtracted():
                 kind=ActionKind.trim_position,
                 symbol="NVDA",
                 amount_usd=45_000,
-                estimated_tax_impact_usd=4_500,
+                estimated_tax=TaxRange(low_usd=4_500, high_usd=9_600),
             )
         ]
     )
     result = counterfactual.evaluate(_profile(), _concentrated(), plan)
-    assert result.estimated_tax_usd == 4_500
+    assert result.estimated_tax == TaxRange(low_usd=4_500, high_usd=9_600)
     # Reported alongside the balances, never folded into them.
     worth = next(c for c in result.changes if c.label.startswith("net worth"))
     assert worth.after == worth.before
+
+
+def test_the_ends_of_a_plans_tax_range_are_summed_independently():
+    """Every action in a plan settles in the same year for the same filer, so the treatments move
+    together. Narrowing the total would claim a diversification that does not exist."""
+    plan = ActionSet(
+        actions=[
+            ProposedAction(
+                action_id="a",
+                kind=ActionKind.trim_position,
+                symbol="NVDA",
+                amount_usd=20_000,
+                estimated_tax=TaxRange(low_usd=1_000, high_usd=2_000),
+            ),
+            ProposedAction(
+                action_id="b",
+                kind=ActionKind.trim_position,
+                symbol="VTI",
+                amount_usd=5_000,
+                estimated_tax=TaxRange(low_usd=300, high_usd=700),
+            ),
+        ]
+    )
+    total = counterfactual.evaluate(_profile(), _concentrated(), plan).estimated_tax
+    assert total == TaxRange(low_usd=1_300, high_usd=2_700)
 
 
 def test_an_unknown_tax_estimate_totals_to_none_rather_than_zero():
     result = counterfactual.evaluate(
         _profile(), _concentrated(), ActionSet(actions=[_trim("NVDA", 1_000)])
     )
-    assert result.estimated_tax_usd is None
+    assert result.estimated_tax is None
 
 
 def test_an_action_that_does_not_move_its_metric_is_reported():

@@ -87,6 +87,63 @@ class Infeasibility(BaseModel):
         return f"[{self.reason.value}] {self.message}"
 
 
+class TaxRange(BaseModel):
+    """What selling would cost in tax, expressed as the range the data can actually support.
+
+    The previous version of this was a single float, and it rendered as "an estimated $3,200".
+    That figure is wrong in a specific and misleading way: it is not a computed amount with some
+    error around it, it is one arbitrary point inside a wide band, printed to the dollar.
+
+    Two things are unknown and neither is a rounding error.
+
+    **The rate.** `Holding` records no acquisition date, so nothing says whether a sale is a
+    long-term gain or a short-term one taxed as ordinary income. That is not a missing field to
+    be added later — brokerages report it per lot, and this product deliberately does not ask
+    users to key in their lot history. The gap between those two treatments is most of the range.
+
+    **Which lots.** Basis is recorded per position, so the estimate assumes a sale realizes gain
+    in the same proportion the whole position carries. A seller who specifies their highest-basis
+    lots could owe far less than `low`; one who sells the oldest shares could owe more than
+    `high`. Lot selection can move the answer outside this range entirely, which is why the
+    range is presented as a range of *assumptions* rather than a confidence interval.
+
+    So the honest output is a span with its assumptions named, and a UI that shows "$3,200 –
+    $6,800, depending on holding period" rather than a number that looks computed.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    low_usd: float = Field(ge=0, description="Whole sale treated as a long-term gain")
+    high_usd: float = Field(ge=0, description="Whole sale treated as ordinary income")
+    assumption: str = Field(
+        default="",
+        description="Why the range is this wide, in the user's terms — rendered beside it",
+    )
+
+    @model_validator(mode="after")
+    def _ordered(self) -> TaxRange:
+        if self.low_usd > self.high_usd:
+            raise ValueError(f"tax range low {self.low_usd} exceeds high {self.high_usd}")
+        return self
+
+    @property
+    def is_certain(self) -> bool:
+        """True only where the answer genuinely has no spread — a tax-advantaged account."""
+        return self.low_usd == self.high_usd
+
+    def render(self) -> str:
+        if self.is_certain:
+            return f"${self.low_usd:,.0f}"
+        return f"${self.low_usd:,.0f}-${self.high_usd:,.0f}"
+
+    def __add__(self, other: TaxRange) -> TaxRange:
+        return TaxRange(
+            low_usd=self.low_usd + other.low_usd,
+            high_usd=self.high_usd + other.high_usd,
+            assumption=self.assumption or other.assumption,
+        )
+
+
 class ProposedAction(BaseModel):
     """One concrete step, sized in exactly one way.
 
@@ -117,9 +174,8 @@ class ProposedAction(BaseModel):
     proposed_by: str = "policy"
     rationale: str = ""
 
-    # Estimated from position-level cost basis, so approximate — a real figure needs tax lots.
-    # None means "not estimable", never "zero".
-    estimated_tax_impact_usd: float | None = None
+    # A range, never a point. None means "not estimable", never "zero". See TaxRange.
+    estimated_tax: TaxRange | None = None
 
     @model_validator(mode="after")
     def _one_sizing_form(self) -> ProposedAction:

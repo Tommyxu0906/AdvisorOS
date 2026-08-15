@@ -26,7 +26,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.analytics.guardrails import evaluate_guardrails
 from app.analytics.portfolio_analytics import PortfolioAnalytics, analyze_portfolio
 from app.analytics.profile_analytics import ProfileAnalytics, analyze_profile
-from app.domain.action import ActionKind, ActionSet, Infeasibility, ProposedAction
+from app.domain.action import ActionKind, ActionSet, Infeasibility, ProposedAction, TaxRange
 from app.domain.portfolio import AssetClass, Holding, Portfolio
 from app.domain.profile import AccountType, Asset, FinancialProfile
 from app.domain.report import GuardrailSeverity
@@ -70,13 +70,13 @@ class Counterfactual(BaseModel):
     )
 
     changes: list[MetricChange] = Field(default_factory=list)
-    estimated_tax_usd: float | None = Field(
+    estimated_tax: TaxRange | None = Field(
         default=None,
         description=(
             "Total estimated tax the plan realizes, summed from the actions. None when no "
             "action could estimate one — unknown, not zero. Deliberately reported rather than "
-            "subtracted: the estimate rests on an assumed blended rate, and folding it into "
-            "net worth would give a guess the authority of a computed balance."
+            "subtracted: the estimate rests on assumed rates, and folding it into net worth "
+            "would give a guess the authority of a computed balance."
         ),
     )
     resolved_guardrails: list[str] = Field(default_factory=list)
@@ -106,8 +106,8 @@ class Counterfactual(BaseModel):
             for c in self.changes
             if abs(c.delta) > 1e-9
         ]
-        if self.estimated_tax_usd:
-            lines.append(f"Estimated tax to act: ${self.estimated_tax_usd:,.0f}")
+        if self.estimated_tax and self.estimated_tax.high_usd > 0:
+            lines.append(f"Estimated tax to act: {self.estimated_tax.render()}")
         if self.resolved_guardrails:
             lines.append(f"Resolves: {', '.join(self.resolved_guardrails)}")
         if self.introduced_guardrails:
@@ -154,7 +154,7 @@ def evaluate(
             before_portfolio_analytics,
             after_portfolio_analytics,
         ),
-        estimated_tax_usd=_total_tax(action_set),
+        estimated_tax=_total_tax(action_set),
         resolved_guardrails=sorted(before_codes - after_codes),
         introduced_guardrails=sorted(newly_blocking),
         ineffective_actions=_ineffective(
@@ -427,14 +427,21 @@ def _changes(
     return changes
 
 
-def _total_tax(action_set: ActionSet) -> float | None:
-    """Summed estimates, or None when nothing could produce one."""
-    estimates = [
-        a.estimated_tax_impact_usd
-        for a in action_set.actions
-        if a.estimated_tax_impact_usd is not None
-    ]
-    return round(sum(estimates), 2) if estimates else None
+def _total_tax(action_set: ActionSet) -> TaxRange | None:
+    """Summed estimates, or None when nothing could produce one.
+
+    Summing the ends independently is the right conservative move rather than a modelling
+    shortcut: the actions in a plan are all settled in the same tax year by the same filer, so
+    the treatments move together. Treating them as independent draws and narrowing the total
+    would claim a diversification that does not exist.
+    """
+    estimates = [a.estimated_tax for a in action_set.actions if a.estimated_tax is not None]
+    if not estimates:
+        return None
+    total = estimates[0]
+    for estimate in estimates[1:]:
+        total = total + estimate
+    return total
 
 
 def _ineffective(
