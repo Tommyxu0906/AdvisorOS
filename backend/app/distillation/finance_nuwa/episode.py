@@ -40,6 +40,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from app.distillation.finance_nuwa.disclosure import DisclosureScope
 from app.distillation.finance_nuwa.drift import ActionBasis, ObservedAction
 
 
@@ -178,6 +179,14 @@ class DecisionEpisode(BaseModel):
     )
     magnitude_high: float | None = Field(default=None, ge=0)
 
+    # The decision happened somewhere inside this window, not on a known day. A quarterly filing
+    # says a position existed at the period end; it never says when it was bought.
+    decision_window_start: date | None = None
+    decision_window_end: date | None = None
+    disclosure: DisclosureScope | None = Field(
+        default=None, description="The source, its reporting delay, and what it cannot show"
+    )
+
     attribution: AttributionBasis = AttributionBasis.entity_filing
     attribution_confidence: float = Field(default=0.5, ge=0.0, le=1.0)
 
@@ -211,7 +220,34 @@ class DecisionEpisode(BaseModel):
                 f"personally decided this, which {self.attribution_confidence:.0%} confidence "
                 "does not support"
             )
+        self._inputs_predate_the_window()
         return self
+
+    def _inputs_predate_the_window(self) -> None:
+        """Inputs must be knowable before the decision window *opens*, not before it closes.
+
+        This is the conservative end on purpose, and it costs real information. A quarterly
+        filing places a purchase somewhere in a three-month range; allowing inputs up to the
+        period end would mean that a position bought in the first week is scored against nearly
+        a quarter of news the buyer never saw. Since the actual trade date is unknowable from
+        the filing, the only safe assumption is the earliest one.
+        """
+        if self.decision_window_start is None:
+            return
+        if self.inputs.as_of > self.decision_window_start:
+            raise ValueError(
+                f"{self.episode_id}: inputs are dated {self.inputs.as_of} but the decision "
+                f"window opens {self.decision_window_start}. The trade may have happened on the "
+                "first day of that window, so anything later is information the investor may "
+                "not have had"
+            )
+
+    @property
+    def decision_window_days(self) -> int | None:
+        """How uncertain the timing is. A wide window is weaker evidence than a narrow one."""
+        if self.decision_window_start is None or self.decision_window_end is None:
+            return None
+        return (self.decision_window_end - self.decision_window_start).days
 
     def for_replay(self) -> EpisodeInputs:
         """The only supported way to build actor input.
