@@ -32,6 +32,16 @@ SENSITIVE_FIELD_MARKERS: tuple[str, ...] = (
     "password",
     "passwd",
     "private_key",
+    # Brokerage provider credentials. "secret" already catches `userSecret`, but the
+    # application-level consumer key and client id share no substring with anything above,
+    # and a consumer key leaked into a log is a compromise of every connected user at once
+    # rather than of one.
+    "consumer_key",
+    "consumerkey",
+    "client_secret",
+    "user_secret",
+    "usersecret",
+    "snaptrade",
 )
 
 #: Anthropic keys look like `sk-ant-api03-...`. Match the family broadly, plus generic bearer

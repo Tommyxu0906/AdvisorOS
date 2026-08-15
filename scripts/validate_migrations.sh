@@ -166,6 +166,63 @@ echo "==> every table has RLS enabled"
   || { echo "    FAIL: some public table has RLS disabled" >&2; exit 1; }
 echo "    ok: RLS on for all public tables"
 
+echo "==> brokerage: the secret table is unreachable, not merely filtered"
+# Every other table grants its owner access, because a future browser-side read of your own
+# data would be legitimate. There is no such future for a provider secret, so the table has RLS
+# enabled and NO permissive policy — which denies anon and authenticated outright. If someone
+# later adds a policy here "for consistency", this check fails and asks them why.
+"${PSQL[@]}" -d "$DB" -t -c \
+  "select count(*) from pg_policies
+   where schemaname = 'public' and tablename = 'brokerage_provider_users'" \
+  | grep -qE '^\s*0\s*$' \
+  || { echo "    FAIL: brokerage_provider_users has a policy; the browser must never read it" >&2; exit 1; }
+echo "    ok: brokerage_provider_users has no permissive policy"
+
+"${PSQL[@]}" -d "$DB" -t -c \
+  "select count(*) from information_schema.role_table_grants
+   where table_name = 'brokerage_provider_users' and grantee in ('anon', 'authenticated')" \
+  | grep -qE '^\s*0\s*$' \
+  || { echo "    FAIL: anon or authenticated holds a grant on brokerage_provider_users" >&2; exit 1; }
+echo "    ok: no anon/authenticated grants on brokerage_provider_users"
+
+echo "==> brokerage: constraints"
+"${PSQL[@]}" -d "$DB" >/dev/null <<'SQL'
+insert into public.brokerage_provider_users
+  (user_id, provider, provider_user_id, secret_ciphertext, key_version)
+values
+  ('11111111-1111-1111-1111-111111111111', 'snaptrade', 'user-uuid', 'Y2lwaGVy', 1);
+insert into public.brokerage_connections
+  (user_id, provider, provider_connection_id, institution, status)
+values
+  ('11111111-1111-1111-1111-111111111111', 'snaptrade', 'conn-1', 'Fidelity', 'active');
+SQL
+
+assert_rejects "an unknown connection status" \
+  "insert into public.brokerage_connections (user_id, provider, provider_connection_id, status)
+   values ('11111111-1111-1111-1111-111111111111', 'snaptrade', 'conn-2', 'kind-of-working')"
+
+assert_rejects "a duplicate institution link for one user" \
+  "insert into public.brokerage_connections (user_id, provider, provider_connection_id)
+   values ('11111111-1111-1111-1111-111111111111', 'snaptrade', 'conn-1')"
+
+assert_rejects "a non-positive key version" \
+  "insert into public.brokerage_provider_users
+     (user_id, provider, provider_user_id, secret_ciphertext, key_version)
+   values ('11111111-1111-1111-1111-111111111111', 'snaptrade', 'u', 'Y2lwaGVy', 0)"
+
+assert_rejects "an unknown brokerage provider" \
+  "insert into public.brokerage_connections (user_id, provider, provider_connection_id)
+   values ('11111111-1111-1111-1111-111111111111', 'etrade-direct', 'conn-3')"
+
+echo "==> brokerage: deleting a user takes their provider secret with them"
+"${PSQL[@]}" -d "$DB" >/dev/null -c \
+  "delete from auth.users where id = '11111111-1111-1111-1111-111111111111'"
+"${PSQL[@]}" -d "$DB" -t -c \
+  "select count(*) from public.brokerage_provider_users" \
+  | grep -qE '^\s*0\s*$' \
+  || { echo "    FAIL: a deleted user left their provider secret behind" >&2; exit 1; }
+echo "    ok: cascade removes provider secrets and connections"
+
 echo
 echo "All migration checks passed."
 dropdb "$DB"

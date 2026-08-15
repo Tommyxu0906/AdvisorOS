@@ -16,6 +16,10 @@ dependencies = [
     # secret to hold). Imported lazily inside app/core/supabase_auth.py, same reasoning as
     # asyncpg: auth is optional infrastructure, not a boot dependency.
     "pyjwt[crypto]>=2.9",
+    # Encrypts provider-issued brokerage secrets at rest (AES-GCM). Previously present only
+    # as a transitive dependency of pyjwt[crypto]; declared explicitly because application
+    # code now depends on it directly. Imported lazily inside core/broker_credentials.py.
+    "cryptography>=43.0",
 ]
 
 [project.optional-dependencies]
