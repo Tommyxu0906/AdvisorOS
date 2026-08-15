@@ -61,6 +61,12 @@ def is_configured() -> bool:
     return bool(os.environ.get(SUPABASE_URL_ENV, "").strip())
 
 
+def _jwks_url() -> str:
+    return (
+        f"{os.environ.get(SUPABASE_URL_ENV, '').strip().rstrip('/')}/auth/v1/.well-known/jwks.json"
+    )
+
+
 def _get_jwks_client() -> jwt.PyJWKClient:
     """Lazily build (and periodically rebuild) the JWKS client.
 
@@ -80,8 +86,7 @@ def _get_jwks_client() -> jwt.PyJWKClient:
 
     import jwt
 
-    jwks_url = f"{base_url.rstrip('/')}/auth/v1/.well-known/jwks.json"
-    _jwks_client = jwt.PyJWKClient(jwks_url, cache_keys=True)
+    _jwks_client = jwt.PyJWKClient(_jwks_url(), cache_keys=True)
     _jwks_client_created_at = now
     return _jwks_client
 
@@ -99,6 +104,22 @@ def _verify(token: str) -> AuthUser:
             audience=_EXPECTED_AUDIENCE,
             options={"require": ["exp", "sub", "aud"]},
         )
+    except jwt.PyJWKClientError as exc:
+        # The JWKS could not be fetched, or held no key matching this token's `kid`. That is a
+        # server-side problem — almost always a wrong SUPABASE_URL — and the user's token may
+        # be perfectly good. Reporting it as an expired session sends whoever is debugging it
+        # after the user's credentials instead of the deployment's configuration, so it gets its
+        # own status and a log line naming the URL that failed. The URL is public (the frontend
+        # bundle carries it); the token is not, and still is not logged.
+        logger.warning("JWKS lookup failed for %s: %s", _jwks_url(), exc)
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "code": "auth_unavailable",
+                "message": "Accounts are temporarily unavailable. This is not a problem with "
+                "your sign-in — try again shortly.",
+            },
+        ) from exc
     except jwt.PyJWTError as exc:
         # Do not echo exc's text back to the client — token internals are not for the wire.
         logger.info("Rejected session token: %s", type(exc).__name__)
