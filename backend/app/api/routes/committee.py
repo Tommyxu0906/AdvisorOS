@@ -36,6 +36,7 @@ from app.nuwa.distiller import (
     DistillationRequest,
     NuwaDistiller,
 )
+from app.policy.engine import compute_scenario
 
 router = APIRouter(tags=["llm"])
 logger = logging.getLogger(__name__)
@@ -151,6 +152,7 @@ async def run_committee(
         usage=context.usage_tracker.aggregate(),
         analytics=analytics,
         portfolio_analytics=pa,
+        scenario=compute_scenario(req.profile, analytics, portfolio, pa, guardrails),
     )
 
 

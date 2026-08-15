@@ -34,7 +34,7 @@ from __future__ import annotations
 
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, computed_field
 
 from app.analytics import counterfactual
 from app.analytics.portfolio_analytics import PortfolioAnalytics, analyze_portfolio
@@ -122,6 +122,9 @@ class Sensitivity(BaseModel):
             return None
         return abs(self.flip_at - self.baseline)
 
+    @computed_field(
+        description="Would a threshold a reasonable person might pick instead reverse this?"
+    )
     @property
     def fragile(self) -> bool:
         """The conclusion would reverse under a threshold a reasonable person might pick.
@@ -135,6 +138,12 @@ class Sensitivity(BaseModel):
         """
         distance = self.distance_to_flip
         return distance is not None and distance <= FRAGILE_BAND
+
+    @computed_field(description="Plain sentences for the report, ready to render")
+    @property
+    def summary(self) -> list[str]:
+        """Serialized so the wording is authored once, here, rather than reimplemented in TSX."""
+        return self.summary_lines()
 
     def summary_lines(self) -> list[str]:
         """Plain sentences for the report. This is the part the user actually reads."""

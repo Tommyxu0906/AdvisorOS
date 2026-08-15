@@ -8,7 +8,10 @@ regex check was trying and failing to do).
 
 from __future__ import annotations
 
+import pytest
+
 from app.analytics import counterfactual
+from app.analytics.portfolio_analytics import analyze_portfolio
 from app.domain.action import ActionKind, ActionSet, ProposedAction, TaxRange
 from app.domain.portfolio import AssetClass, Holding, Portfolio
 from app.domain.profile import (
@@ -327,3 +330,47 @@ def test_a_hold_changes_nothing_and_is_not_called_ineffective():
     assert result.unapplied == []
     assert all(abs(c.delta) < 1e-9 for c in result.changes)
     assert result.holds_up is True
+
+
+def test_a_trim_is_judged_on_the_position_not_on_the_portfolio_percentages():
+    """Weight was the obvious metric for a trim and it is wrong.
+
+    A water-filling plan trims several positions onto the same target, so the whole portfolio
+    shrinks by exactly what was sold and every weight comes out unchanged. Judging on weight
+    called a $20,000 -> $19,000 trim ineffective, which blamed one action for what the rest of
+    the plan did — and, because `holds_up` gates whether a scenario is shown at all, silently
+    suppressed correct multi-position plans. Only running the wired engine surfaced it.
+    """
+    portfolio = Portfolio(
+        holdings=[
+            Holding(symbol="AAPL", quantity=100, market_value=22_000, cost_basis=15_000),
+            Holding(symbol="VTI", quantity=26, market_value=20_000, cost_basis=18_000),
+            Holding(symbol="BND", quantity=26, market_value=20_000, cost_basis=20_000),
+            Holding(symbol="VXUS", quantity=26, market_value=19_000),
+            Holding(symbol="VNQ", quantity=26, market_value=19_000),
+        ]
+    )
+    plan = ActionSet(
+        actions=[
+            _trim("AAPL", 3_000, action_id="trim_aapl"),
+            _trim("VTI", 1_000, action_id="trim_vti"),
+            _trim("BND", 1_000, action_id="trim_bnd"),
+        ]
+    )
+    result = counterfactual.evaluate(_profile(), portfolio, plan)
+
+    assert result.ineffective_actions == []
+    assert result.holds_up
+
+    # Every position lands on 20%, so not one weight moved — which is exactly the trap.
+    after = analyze_portfolio(counterfactual.apply(_profile(), portfolio, plan)[1])
+    assert after.weights["VTI"] == pytest.approx(0.20)
+    assert after.weights["AAPL"] == pytest.approx(0.20)
+
+
+def test_a_trim_that_really_does_nothing_is_still_caught():
+    """The fix must not turn the check off — a zero-sized trim is still a policy bug."""
+    result = counterfactual.evaluate(
+        _profile(), _concentrated(), ActionSet(actions=[_trim("NVDA", 0.0, action_id="noop")])
+    )
+    assert result.ineffective_actions == ["noop"]

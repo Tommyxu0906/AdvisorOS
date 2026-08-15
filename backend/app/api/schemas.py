@@ -20,6 +20,7 @@ from app.domain.profile import FinancialProfile
 from app.domain.report import AnalysisDepth, CommitteeReport, Guardrail
 from app.llm.usage import RunUsage
 from app.nuwa.distiller import DistillationDepth
+from app.policy.engine import PortfolioScenario
 
 
 class CredentialedRequest(BaseModel):
@@ -110,6 +111,10 @@ class SelectCommitteeResponse(BaseModel):
     guardrails: list[Guardrail]
     question_topics: list[str]
     requires_api_key: bool = False
+    # The deterministic decision layer. Present on the FREE path on purpose: candidate actions
+    # and their arithmetic cost nothing to compute and need no API key, so the paid tier buys
+    # the argument about them rather than the actions themselves.
+    scenario: PortfolioScenario | None = None
 
 
 class EstimateRequest(BaseModel):
@@ -159,6 +164,10 @@ class RunCommitteeResponse(BaseModel):
     usage: RunUsage
     analytics: ProfileAnalytics
     portfolio_analytics: PortfolioAnalytics | None
+    # Sits beside the report rather than inside it. The scenario is deterministic and is
+    # computed before any model runs; folding it into CommitteeReport would blur the one
+    # distinction this architecture is built on — what code decided versus what Claude wrote.
+    scenario: PortfolioScenario | None = None
 
 
 class DistillRequest(CredentialedRequest):

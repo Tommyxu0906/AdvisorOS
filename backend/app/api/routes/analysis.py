@@ -24,6 +24,7 @@ from app.api.schemas import (
 from app.domain.question import UserQuestion
 from app.llm.pricing import load_pricing
 from app.market_data import service as market_data
+from app.policy.engine import compute_scenario
 
 router = APIRouter(tags=["deterministic"])
 
@@ -120,6 +121,7 @@ def select_committee_endpoint(req: SelectCommitteeRequest) -> SelectCommitteeRes
         portfolio_analytics=pa,
         guardrails=guardrails,
         question_topics=[t.value for t in intent.topics],
+        scenario=compute_scenario(req.profile, analytics, req.portfolio, pa, guardrails),
     )
 
 
