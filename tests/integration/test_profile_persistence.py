@@ -131,9 +131,7 @@ async def test_saving_twice_updates_rather_than_accumulating(owner_id):
 
 async def test_notes_are_scrubbed_before_they_reach_the_database(owner_id):
     planted_key = "sk-ant-api03-" + "P" * 60
-    await profiles_repo.save(
-        owner_id, _profile(notes=f"remember my key {planted_key}"), None
-    )
+    await profiles_repo.save(owner_id, _profile(notes=f"remember my key {planted_key}"), None)
 
     stored = await pool.fetchval(
         "select notes from public.financial_profiles where user_id = $1", owner_id

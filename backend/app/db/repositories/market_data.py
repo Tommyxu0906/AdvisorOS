@@ -125,9 +125,7 @@ async def upsert_quote(
     *, symbol: str, price: float, previous_close: float | None, as_of: datetime, source: str
 ) -> None:
     change_pct = (
-        (price - previous_close) / previous_close
-        if previous_close and previous_close > 0
-        else None
+        (price - previous_close) / previous_close if previous_close and previous_close > 0 else None
     )
     await pool.execute(
         """

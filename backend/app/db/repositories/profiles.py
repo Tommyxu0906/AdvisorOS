@@ -221,7 +221,15 @@ async def save(user_id: str, profile: FinancialProfile, portfolio: Portfolio | N
                 values ($1, $2, $3, $4, $5, $6, $7)
                 """,
                 [
-                    (profile_id, i, d.name, d.balance, d.apr, d.minimum_monthly_payment, d.is_secured)
+                    (
+                        profile_id,
+                        i,
+                        d.name,
+                        d.balance,
+                        d.apr,
+                        d.minimum_monthly_payment,
+                        d.is_secured,
+                    )
                     for i, d in enumerate(profile.debts)
                 ],
             )
