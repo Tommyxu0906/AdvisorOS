@@ -78,12 +78,46 @@ def test_trading_service_is_not_wired(path: Path):
     )
 
 
-def test_no_vendor_sdk_that_bundles_trading_is_imported():
-    """Keeping trading out of the dependency tree is what makes the guarantee structural."""
-    banned = {"snaptrade_client", "snaptrade", "alpaca", "ib_insync", "plaid"}
-    for path in SOURCES:
-        imported = _identifiers(path)
-        assert not (imported & banned), f"{path.name} imports a vendor SDK: {imported & banned}"
+BANNED_DISTRIBUTIONS = frozenset(
+    {"snaptrade", "snaptrade_client", "snaptrade-python-sdk", "alpaca", "alpaca-py", "ib_insync"}
+)
+
+
+def _imported_roots(path: Path) -> set[str]:
+    """Top-level package of every absolute import in a module.
+
+    Roots rather than identifiers: `from app.connectors import snaptrade` binds the *name*
+    `snaptrade` to our own module, which a name-based check cannot tell apart from the PyPI
+    package of the same name. The distinction that matters is where the code comes from, and
+    the import root is what carries it.
+    """
+    tree = ast.parse(path.read_text())
+    roots: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            roots.update(alias.name.split(".")[0] for alias in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+            roots.add(node.module.split(".")[0])
+    return roots
+
+
+@pytest.mark.parametrize("path", SOURCES, ids=lambda p: p.name)
+def test_no_vendor_sdk_that_bundles_trading_is_imported(path: Path):
+    """Keeping trading out of the dependency tree is what makes the guarantee structural.
+
+    The SnapTrade SDK ships order placement beside the read calls. `app/connectors/snaptrade.py`
+    speaks HTTP to named endpoints instead, so there is no `place_order` anywhere to be called
+    by accident — which is a stronger claim than "we don't call it".
+    """
+    offending = _imported_roots(path) & BANNED_DISTRIBUTIONS
+    assert not offending, f"{path.name} imports a vendor SDK: {sorted(offending)}"
+
+
+def test_no_vendor_sdk_is_declared_as_a_dependency():
+    """The check above only sees today's imports. This one closes the door on adding one."""
+    pyproject = (Path(base.__file__).parents[3] / "pyproject.toml").read_text().lower()
+    for banned in BANNED_DISTRIBUTIONS:
+        assert f'"{banned}' not in pyproject, f"{banned} is declared as a dependency"
 
 
 def test_the_protocol_exposes_no_write_method():
