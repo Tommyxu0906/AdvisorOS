@@ -42,6 +42,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.distillation.finance_nuwa.disclosure import DisclosureScope
 from app.distillation.finance_nuwa.drift import ActionBasis, ObservedAction
+from app.distillation.finance_nuwa.identity import SecurityKey
 
 
 class AttributionBasis(str, Enum):
@@ -95,7 +96,7 @@ class EpisodeInputs(BaseModel):
 
     as_of: date
 
-    symbol: str = Field(min_length=1)
+    security: SecurityKey
     starting_weight: float | None = Field(default=None, ge=0, le=1)
     starting_value: float | None = Field(default=None, ge=0)
 

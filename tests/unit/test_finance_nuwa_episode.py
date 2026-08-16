@@ -22,6 +22,7 @@ from app.distillation.finance_nuwa.episode import (
     EpisodeOutcome,
     Observation,
 )
+from app.distillation.finance_nuwa.identity import SecurityKey
 
 DECISION_DATE = date(2016, 3, 31)
 
@@ -33,7 +34,7 @@ def obs(label: str, when: date, **kw) -> Observation:
 def inputs(**overrides) -> EpisodeInputs:
     base = dict(
         as_of=DECISION_DATE,
-        symbol="AAPL",
+        security=SecurityKey(cusip="037833100", title_of_class="COM"),
         starting_weight=0.0,
         market_context=[obs("10y treasury 1.78%", date(2016, 3, 31))],
         fundamentals=[obs("FY2015 revenue $233.7B", date(2015, 10, 27))],

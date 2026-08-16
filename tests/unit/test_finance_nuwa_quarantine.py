@@ -11,6 +11,7 @@ from datetime import date
 
 from app.distillation.finance_nuwa.audit import DatasetAudit
 from app.distillation.finance_nuwa.corporate_actions import ActionCandidate, CorporateActionKind
+from app.distillation.finance_nuwa.identity import SecurityKey
 from app.distillation.finance_nuwa.quarantine import (
     EpisodeExclusion,
     ExclusionRegistry,
@@ -19,17 +20,24 @@ from app.distillation.finance_nuwa.quarantine import (
     quarantine_unresolved,
 )
 
-LIBERTY_A, LIBERTY_B, LIBERTY_C = "531229102", "531229607", "531229409"
-UNRELATED = "037833100"
+
+def key(cusip: str, title: str = "COM") -> SecurityKey:
+    return SecurityKey(cusip=cusip, title_of_class=title)
+
+
+LIBERTY_A, LIBERTY_B, LIBERTY_C = key("531229102"), key("531229607"), key("531229409")
+UNRELATED = key("037833100")
 Q2_2016, Q3_2016 = date(2016, 6, 30), date(2016, 9, 30)
 
 
-def candidate(from_cusip: str, to_cusip: str, period_end: date = Q2_2016) -> ActionCandidate:
+def candidate(
+    from_security: SecurityKey, to_security: SecurityKey, period_end: date = Q2_2016
+) -> ActionCandidate:
     return ActionCandidate(
         period_end=period_end,
         suspected=CorporateActionKind.cusip_change,
-        from_cusip=from_cusip,
-        to_cusip=to_cusip,
+        from_security=from_security,
+        to_security=to_security,
         reason="issuer names match",
     )
 
@@ -48,8 +56,8 @@ def liberty_registry() -> ExclusionRegistry:
 def test_an_unresolved_one_to_many_transition_cannot_produce_labels():
     registry = liberty_registry()
 
-    for cusip in (LIBERTY_A, LIBERTY_B, LIBERTY_C):
-        assert registry.is_excluded(period_end=Q2_2016, cusip=cusip)
+    for security in (LIBERTY_A, LIBERTY_B, LIBERTY_C):
+        assert registry.is_excluded(period_end=Q2_2016, security=security)
 
 
 def test_the_one_to_many_shape_is_recognised_and_recorded():
@@ -65,7 +73,9 @@ def test_the_one_to_many_shape_is_recognised_and_recorded():
 
 
 def test_a_plain_unresolved_candidate_is_not_called_one_to_many():
-    registry = quarantine_unresolved([candidate("111111111", "222222222")], dataset_version="v")
+    registry = quarantine_unresolved(
+        [candidate(key("111111111"), key("222222222"))], dataset_version="v"
+    )
     assert registry.exclusions[0].status is ExclusionStatus.unresolved_unknown
 
 
@@ -75,7 +85,7 @@ def test_a_plain_unresolved_candidate_is_not_called_one_to_many():
 def test_unrelated_securities_in_the_same_quarter_stay_usable():
     """The event touched Liberty, not Apple. Excluding the quarter would discard real decisions
     that had nothing to do with it."""
-    assert not liberty_registry().is_excluded(period_end=Q2_2016, cusip=UNRELATED)
+    assert not liberty_registry().is_excluded(period_end=Q2_2016, security=UNRELATED)
 
 
 def test_the_same_security_is_usable_again_once_its_identity_is_stable():
@@ -83,8 +93,8 @@ def test_the_same_security_is_usable_again_once_its_identity_is_stable():
     a blocklist, and it is worth eleven years of behaviour."""
     registry = liberty_registry()
 
-    assert registry.is_excluded(period_end=Q2_2016, cusip=LIBERTY_B)
-    assert not registry.is_excluded(period_end=Q3_2016, cusip=LIBERTY_B)
+    assert registry.is_excluded(period_end=Q2_2016, security=LIBERTY_B)
+    assert not registry.is_excluded(period_end=Q3_2016, security=LIBERTY_B)
 
 
 def test_both_conditions_are_required_never_one():
@@ -92,22 +102,22 @@ def test_both_conditions_are_required_never_one():
     alone removes positions that had nothing to do with the event."""
     exclusion = liberty_registry().exclusions[0]
 
-    assert exclusion.covers(period_end=Q2_2016, cusip=LIBERTY_A)
-    assert not exclusion.covers(period_end=Q3_2016, cusip=LIBERTY_A)
-    assert not exclusion.covers(period_end=Q2_2016, cusip=UNRELATED)
+    assert exclusion.covers(period_end=Q2_2016, security=LIBERTY_A)
+    assert not exclusion.covers(period_end=Q3_2016, security=LIBERTY_A)
+    assert not exclusion.covers(period_end=Q2_2016, security=UNRELATED)
 
 
 def test_a_whole_quarter_exclusion_exists_but_is_not_the_default():
     """Reserved for corruption, not ambiguity — ambiguity is scoped."""
     whole = EpisodeExclusion(
         transition_period_end=Q2_2016,
-        cusips=(LIBERTY_A,),
+        securities=(LIBERTY_A,),
         detected_kind=CorporateActionKind.unknown,
         reason="quarter unreadable",
         evidence="test",
         scope=ExclusionScope.whole_quarter,
     )
-    assert whole.covers(period_end=Q2_2016, cusip=UNRELATED)
+    assert whole.covers(period_end=Q2_2016, security=UNRELATED)
 
 
 # --- the audit must not confuse withheld with resolved ------------------------------------------
@@ -125,6 +135,8 @@ def test_a_quarantined_transition_is_withheld_not_resolved():
         quarantined_securities=6,
         episodes_removed_by_quarantine=8,
         unresolved_reaching_modelling=0,
+        artifact_verified=True,
+        split_manifest_matches=True,
     )
 
     assert audit.passes  # nothing unresolved reached the data
@@ -153,6 +165,6 @@ def test_an_unresolved_action_that_escapes_quarantine_still_blocks():
 
 def test_an_empty_registry_excludes_nothing():
     registry = ExclusionRegistry()
-    assert not registry.is_excluded(period_end=Q2_2016, cusip=LIBERTY_A)
+    assert not registry.is_excluded(period_end=Q2_2016, security=LIBERTY_A)
     assert registry.transitions == 0
     assert registry.securities == 0

@@ -29,7 +29,12 @@ from datetime import date
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.distillation.finance_nuwa.identity import SecurityKey
 from app.distillation.finance_nuwa.lineage import PublicQuarterView
+
+# Bumped when a feature is added, removed, or redefined. Two datasets with different values
+# here are not comparable, however similar their columns look.
+FEATURE_SCHEMA_VERSION = "pit-features-v1"
 
 
 class PositionFeatures(BaseModel):
@@ -41,7 +46,7 @@ class PositionFeatures(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    cusip: str
+    security: SecurityKey
     as_of: date = Field(description="Cutoff these were computed at; nothing later contributed")
     source_period_end: date = Field(description="Period end of the book they came from")
 
@@ -81,17 +86,17 @@ class PositionFeatures(BaseModel):
         }
 
 
-def implied_price(quarter: PublicQuarterView, cusip: str) -> float | None:
+def implied_price(quarter: PublicQuarterView, security: SecurityKey) -> float | None:
     """Value over shares, which is the price the filing implies for that security."""
     for position in quarter.positions:
-        if position.identity.cusip == cusip and position.shares > 0:
+        if position.identity.key == security and position.shares > 0:
             return position.market_value / position.shares
     return None
 
 
 def build_features(
     visible_history: list[PublicQuarterView],
-    cusip: str,
+    security: SecurityKey,
     *,
     as_of: date,
 ) -> PositionFeatures:
@@ -105,34 +110,36 @@ def build_features(
     inspects episode inputs.
     """
     if not visible_history:
-        return PositionFeatures(cusip=cusip, as_of=as_of, source_period_end=as_of)
+        return PositionFeatures(security=security, as_of=as_of, source_period_end=as_of)
 
     latest = visible_history[-1]
     ordered = sorted(latest.positions, key=lambda p: p.market_value, reverse=True)
     total = sum(p.market_value for p in ordered)
 
-    held = next((p for p in ordered if p.identity.cusip == cusip), None)
+    held = next((p for p in ordered if p.identity.key == security), None)
     weight = held.market_value / total if held is not None and total > 0 else None
     rank = next(
-        (i + 1 for i, p in enumerate(ordered) if p.identity.cusip == cusip),
+        (i + 1 for i, p in enumerate(ordered) if p.identity.key == security),
         None,
     )
 
     prices = [
-        price for quarter in visible_history if (price := implied_price(quarter, cusip)) is not None
+        price
+        for quarter in visible_history
+        if (price := implied_price(quarter, security)) is not None
     ]
 
     return PositionFeatures(
-        cusip=cusip,
+        security=security,
         as_of=as_of,
         source_period_end=latest.period_end,
         weight=weight,
         rank=rank,
-        quarters_held=_consecutive_tail(visible_history, cusip) or None,
+        quarters_held=_consecutive_tail(visible_history, security) or None,
         trailing_return_1q=_return_over(prices, 1),
         trailing_return_4q=_return_over(prices, 4),
         drawdown_from_peak=_drawdown(prices),
-        relative_return_4q=_relative_return(visible_history, cusip, 4),
+        relative_return_4q=_relative_return(visible_history, security, 4),
         portfolio_positions=len(ordered) or None,
         top5_concentration=(
             sum(p.market_value for p in ordered[:5]) / total if total > 0 else None
@@ -160,13 +167,15 @@ def _drawdown(prices: list[float]) -> float | None:
     return prices[-1] / peak - 1.0 if peak > 0 else None
 
 
-def _relative_return(history: list[PublicQuarterView], cusip: str, quarters: int) -> float | None:
+def _relative_return(
+    history: list[PublicQuarterView], security: SecurityKey, quarters: int
+) -> float | None:
     """Position return less the book's own return, so a rising tide is netted out.
 
     Holding through a 30% fall means something different when everything fell 30% and when
     nothing else did, and the absolute figure cannot distinguish them.
     """
-    prices = [p for q in history if (p := implied_price(q, cusip)) is not None]
+    prices = [p for q in history if (p := implied_price(q, security)) is not None]
     position = _return_over(prices, quarters)
     if position is None or len(history) <= quarters:
         return None
@@ -182,16 +191,16 @@ def _book_return(then: PublicQuarterView, now: PublicQuarterView) -> float | Non
     Restricted to the intersection on purpose: comparing total values would mostly measure
     positions opening and closing, which is turnover rather than performance.
     """
-    shared = {p.identity.cusip for p in then.positions} & {p.identity.cusip for p in now.positions}
+    shared = {p.identity.key for p in then.positions} & {p.identity.key for p in now.positions}
     if not shared:
         return None
 
     weighted, weight_total = 0.0, 0.0
     for position in then.positions:
-        cusip = position.identity.cusip
-        if cusip not in shared:
+        security = position.identity.key
+        if security not in shared:
             continue
-        start, end = implied_price(then, cusip), implied_price(now, cusip)
+        start, end = implied_price(then, security), implied_price(now, security)
         if start is None or end is None or start <= 0:
             continue
         weighted += position.market_value * (end / start - 1.0)
@@ -200,7 +209,7 @@ def _book_return(then: PublicQuarterView, now: PublicQuarterView) -> float | Non
     return weighted / weight_total if weight_total > 0 else None
 
 
-def _consecutive_tail(history: list[PublicQuarterView], cusip: str) -> int:
+def _consecutive_tail(history: list[PublicQuarterView], security: SecurityKey) -> int:
     """How many consecutive recent quarters this has been held.
 
     Counted backwards from the latest book and stopping at the first gap, because a position
@@ -209,7 +218,7 @@ def _consecutive_tail(history: list[PublicQuarterView], cusip: str) -> int:
     """
     count = 0
     for quarter in reversed(history):
-        if any(p.identity.cusip == cusip for p in quarter.positions):
+        if any(p.identity.key == security for p in quarter.positions):
             count += 1
         else:
             break

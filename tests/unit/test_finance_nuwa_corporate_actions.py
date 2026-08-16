@@ -14,21 +14,27 @@ from app.distillation.finance_nuwa.corporate_actions import (
     CorporateActionKind,
     LineageTable,
     SecurityLineage,
-    blocked_cusips,
+    blocked_securities,
     detect_candidates,
     split_factors_for,
 )
-from app.distillation.finance_nuwa.identity import SecurityIdentity
+from app.distillation.finance_nuwa.identity import SecurityIdentity, SecurityKey
 from app.distillation.finance_nuwa.lineage import CanonicalPosition, CanonicalQuarter
 from app.distillation.finance_nuwa.sec_13f import ParsedPosition
 
 Q1, Q2 = date(2015, 3, 31), date(2015, 6, 30)
 
 
-def pos(cusip: str, issuer: str, value: float, shares: float) -> CanonicalPosition:
+def key(cusip: str, title: str = "COM") -> SecurityKey:
+    return SecurityKey(cusip=cusip, title_of_class=title)
+
+
+def pos(
+    cusip: str, issuer: str, value: float, shares: float, title: str = "COM"
+) -> CanonicalPosition:
     return CanonicalPosition(
         position=ParsedPosition(
-            identity=SecurityIdentity(cusip=cusip, issuer_name=issuer, title_of_class="COM"),
+            identity=SecurityIdentity(cusip=cusip, issuer_name=issuer, title_of_class=title),
             market_value=value,
             raw_value=value,
             shares=shares,
@@ -74,8 +80,8 @@ def test_an_established_split_is_not_re_flagged():
     table = LineageTable(
         entries=[
             SecurityLineage(
-                from_cusip="92826C839",
-                to_cusip="92826C839",
+                from_security=key("92826C839"),
+                to_security=key("92826C839"),
                 kind=CorporateActionKind.split,
                 effective_date=date(2015, 5, 12),
                 share_ratio=4.0,
@@ -87,7 +93,7 @@ def test_an_established_split_is_not_re_flagged():
     after = quarter(Q2, [pos("92826C839", "VISA INC", 0.98e9, 39_400_000)])
 
     assert detect_candidates(before, after, table=table) == []
-    assert split_factors_for(before, after, table) == {"92826C839": 4.0}
+    assert split_factors_for(before, after, table) == {key("92826C839"): 4.0}
 
 
 # --- identity changes ---------------------------------------------------------------------------
@@ -157,14 +163,17 @@ def test_a_merger_candidate_does_not_block_because_the_detector_is_unreliable():
 
     candidate = detect_candidates(before, after)[0]
     assert not candidate.blocks_episode
-    assert blocked_cusips([candidate]) == set()
+    assert blocked_securities([candidate]) == set()
 
 
 def test_blocking_covers_both_sides_of_a_reliable_candidate():
     before = quarter(Q1, [pos("531229102", "LIBERTY MEDIA CORP DELAWARE", 1e9, 1_000_000)])
     after = quarter(Q2, [pos("531229607", "LIBERTY MEDIA CORP DELAWARE", 1.02e9, 1_000_000)])
 
-    assert blocked_cusips(detect_candidates(before, after)) == {"531229102", "531229607"}
+    assert blocked_securities(detect_candidates(before, after)) == {
+        key("531229102"),
+        key("531229607"),
+    }
 
 
 # --- the table is a fact about securities, not about a manager ---------------------------------------
@@ -176,7 +185,7 @@ def test_the_lineage_table_is_entity_agnostic():
     table = LineageTable(
         entries=[
             SecurityLineage(
-                from_cusip="92826C839",
+                from_security=key("92826C839"),
                 kind=CorporateActionKind.split,
                 effective_date=date(2015, 5, 12),
                 share_ratio=4.0,
@@ -186,18 +195,20 @@ def test_the_lineage_table_is_entity_agnostic():
     fields = set(SecurityLineage.model_fields)
 
     assert not fields & {"manager", "entity", "cik", "advisor_id"}
-    assert table.split_ratio("92826C839", during=(Q1, Q2)) == 4.0
+    assert table.split_ratio(key("92826C839"), during=(Q1, Q2)) == 4.0
     # Windows are bounded by the two period ends, so an action outside them belongs to a
     # different transition and must not be applied to this one.
-    assert table.split_ratio("92826C839", during=(date(2020, 1, 1), date(2020, 12, 31))) is None
+    assert (
+        table.split_ratio(key("92826C839"), during=(date(2020, 1, 1), date(2020, 12, 31))) is None
+    )
 
 
 def test_an_established_successor_suppresses_the_candidate():
     table = LineageTable(
         entries=[
             SecurityLineage(
-                from_cusip="25490A309",
-                to_cusip="00206R102",
+                from_security=key("25490A309"),
+                to_security=key("00206R102"),
                 kind=CorporateActionKind.merger,
                 effective_date=date(2015, 5, 12),
                 evidence="hand-verified",

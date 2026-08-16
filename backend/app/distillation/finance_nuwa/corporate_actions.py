@@ -46,6 +46,7 @@ from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.distillation.finance_nuwa.identity import SecurityKey
 from app.distillation.finance_nuwa.lineage import CanonicalPosition, CanonicalQuarter
 
 # A share ratio this close to a whole number, with the position's value roughly intact, is the
@@ -83,6 +84,14 @@ class CorporateActionKind(str, Enum):
     class_change = "class_change"
     """One share class became another. Not two decisions."""
 
+    class_relabel = "class_relabel"
+    """The same security, with the filer's class text rewritten and nothing else changed.
+
+    Only visible once identity includes the share class. `titleOfClass` is free text, and a filer
+    who corrects or restyles it produces an identical position under a new key — which reads as a
+    full exit and a full entry. Berkshire's filings do this twice in eleven years.
+    """
+
     delisting = "delisting"
     unknown = "unknown"
 
@@ -93,13 +102,23 @@ class CorporateActionKind(str, Enum):
         return self is not CorporateActionKind.unknown
 
 
+SUCCESSION_KINDS = (
+    CorporateActionKind.merger,
+    CorporateActionKind.cusip_change,
+    CorporateActionKind.class_change,
+    CorporateActionKind.class_relabel,
+)
+
+
 class SecurityLineage(BaseModel):
     """One established identity change. A fact about a security, reusable across managers."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    from_cusip: str
-    to_cusip: str | None = Field(default=None, description="None for a delisting with no successor")
+    from_security: SecurityKey
+    to_security: SecurityKey | None = Field(
+        default=None, description="None for a delisting with no successor"
+    )
     kind: CorporateActionKind
     effective_date: date
 
@@ -110,6 +129,24 @@ class SecurityLineage(BaseModel):
     )
     evidence: str = Field(default="", description="Where this was established — never inferred")
     confidence: float = Field(default=1.0, ge=0.0, le=1.0)
+
+    @property
+    def matches_any_class(self) -> bool:
+        """Whether this entry was written without naming a share class.
+
+        Most curated entries were, because the event they record is a change of issuer identifier
+        that applies to whatever classes the holder had. That is a deliberate widening rather than
+        an oversight, so it is inspectable: an entry that must apply to exactly one class states
+        that class and this returns False.
+        """
+        return not self.from_security.title_of_class
+
+    def matches(self, security: SecurityKey) -> bool:
+        if security.cusip != self.from_security.cusip:
+            return False
+        return self.matches_any_class or (
+            security.title_of_class == self.from_security.title_of_class
+        )
 
 
 class LineageTable(BaseModel):
@@ -123,28 +160,26 @@ class LineageTable(BaseModel):
 
     entries: list[SecurityLineage] = Field(default_factory=list)
 
-    def for_cusip(
-        self, cusip: str, *, during: tuple[date, date] | None = None
+    def for_security(
+        self, security: SecurityKey, *, during: tuple[date, date] | None = None
     ) -> list[SecurityLineage]:
-        matches = [e for e in self.entries if e.from_cusip == cusip]
+        matches = [e for e in self.entries if e.matches(security)]
         if during is None:
             return matches
         start, end = during
         return [e for e in matches if start <= e.effective_date <= end]
 
-    def successor_of(self, cusip: str, *, during: tuple[date, date]) -> SecurityLineage | None:
+    def successor_of(
+        self, security: SecurityKey, *, during: tuple[date, date]
+    ) -> SecurityLineage | None:
         """The entry that renames or replaces this security within a window, if one exists."""
-        for entry in self.for_cusip(cusip, during=during):
-            if entry.kind in (
-                CorporateActionKind.merger,
-                CorporateActionKind.cusip_change,
-                CorporateActionKind.class_change,
-            ):
+        for entry in self.for_security(security, during=during):
+            if entry.kind in SUCCESSION_KINDS:
                 return entry
         return None
 
-    def split_ratio(self, cusip: str, *, during: tuple[date, date]) -> float | None:
-        for entry in self.for_cusip(cusip, during=during):
+    def split_ratio(self, security: SecurityKey, *, during: tuple[date, date]) -> float | None:
+        for entry in self.for_security(security, during=during):
             if entry.kind in (CorporateActionKind.split, CorporateActionKind.reverse_split):
                 return entry.share_ratio
         return None
@@ -157,8 +192,8 @@ class ActionCandidate(BaseModel):
 
     period_end: date
     suspected: CorporateActionKind
-    from_cusip: str
-    to_cusip: str | None = None
+    from_security: SecurityKey
+    to_security: SecurityKey | None = None
 
     share_ratio: float | None = None
     value_ratio: float | None = None
@@ -208,17 +243,17 @@ def detect_candidates(
     table = table or LineageTable()
     window = (previous.period_end, current.period_end)
 
-    before = {p.identity.cusip: p for p in previous.positions}
-    after = {p.identity.cusip: p for p in current.positions}
+    before = {p.identity.key: p for p in previous.positions}
+    after = {p.identity.key: p for p in current.positions}
 
     candidates: list[ActionCandidate] = []
 
     # --- share counts that moved like a split -----------------------------------------
-    for cusip, start in before.items():
-        end = after.get(cusip)
+    for security, start in before.items():
+        end = after.get(security)
         if end is None or start.shares <= 0 or end.shares <= 0:
             continue
-        if table.split_ratio(cusip, during=window) is not None:
+        if table.split_ratio(security, during=window) is not None:
             continue
 
         share_ratio = end.shares / start.shares
@@ -240,8 +275,8 @@ def detect_candidates(
                     if share_ratio > 1
                     else CorporateActionKind.reverse_split
                 ),
-                from_cusip=cusip,
-                to_cusip=cusip,
+                from_security=security,
+                to_security=security,
                 share_ratio=round(share_ratio, 4),
                 value_ratio=round(value_ratio, 4),
                 reason=(
@@ -251,11 +286,54 @@ def detect_candidates(
             )
         )
 
-    # --- one position vanishing as another of similar size appears ---------------------
-    vanished = [c for c in before if c not in after]
-    appeared = [c for c in after if c not in before]
+    # --- the same CUSIP wearing a different class label --------------------------------
+    # Invisible while identity was a bare CUSIP, and created by fixing that: `titleOfClass` is
+    # free text, and a filer who restyles it produces an identical position under a new key. Left
+    # alone that reads as a full exit and a full entry in the same quarter.
+    #
+    # The guard is what keeps this from undoing the very thing the typed key exists for. A CUSIP
+    # carrying two class labels *within one book* is two securities, and this must not touch it;
+    # only a one-to-one swap across the boundary is a candidate relabeling, and even then it is a
+    # candidate, resolved by curation like everything else.
+    before_classes = _classes_by_cusip(before)
+    after_classes = _classes_by_cusip(after)
+    for cusip in sorted(set(before_classes) & set(after_classes)):
+        was, now = before_classes[cusip], after_classes[cusip]
+        if was == now or len(was) > 1 or len(now) > 1:
+            continue
+        gone_key, arrived_key = next(iter(was)), next(iter(now))
+        if table.successor_of(gone_key, during=window) is not None:
+            continue
 
-    pairings: list[tuple[str, str, float, bool]] = []
+        start, end = before[gone_key], after[arrived_key]
+        share_ratio = end.shares / start.shares if start.shares > 0 else None
+        value_ratio = end.market_value / start.market_value if start.market_value > 0 else None
+        candidates.append(
+            ActionCandidate(
+                period_end=current.period_end,
+                suspected=CorporateActionKind.class_relabel,
+                from_security=gone_key,
+                to_security=arrived_key,
+                share_ratio=round(share_ratio, 4) if share_ratio else None,
+                value_ratio=round(value_ratio, 4) if value_ratio else None,
+                reason=(
+                    f"{cusip} was filed as '{gone_key.title_of_class}' and is now "
+                    f"'{arrived_key.title_of_class}', with no quarter in which both appear. "
+                    f"Share count moved {share_ratio:.4f}x"
+                    if share_ratio
+                    else f"{cusip} changed class label with no share count to compare"
+                ),
+            )
+        )
+
+    # --- one position vanishing as another of similar size appears ---------------------
+    # Same-CUSIP pairs are excluded: those are relabelings and are raised above, where the
+    # one-class-per-book guard applies. Letting them fall through here would report the same
+    # event twice under a kind that means something else.
+    vanished = [k for k in before if k not in after]
+    appeared = [k for k in after if k not in before]
+
+    pairings: list[tuple[SecurityKey, SecurityKey, float, bool]] = []
     for gone in vanished:
         if table.successor_of(gone, during=window) is not None:
             continue
@@ -263,6 +341,8 @@ def detect_candidates(
         if start_value <= 0:
             continue
         for arrival in appeared:
+            if arrival.cusip == gone.cusip:
+                continue
             ratio = after[arrival].market_value / start_value
             if not (SUCCESSOR_VALUE_LOW <= ratio <= SUCCESSOR_VALUE_HIGH):
                 continue
@@ -289,8 +369,8 @@ def detect_candidates(
                 suspected=(
                     CorporateActionKind.cusip_change if same_issuer else CorporateActionKind.merger
                 ),
-                from_cusip=gone,
-                to_cusip=arrival,
+                from_security=gone,
+                to_security=arrival,
                 value_ratio=round(ratio, 4),
                 reason=(
                     f"{before[gone].identity.issuer_name} left as "
@@ -300,7 +380,14 @@ def detect_candidates(
             )
         )
 
-    return sorted(candidates, key=lambda c: (c.suspected.value, c.from_cusip))
+    return sorted(candidates, key=lambda c: (c.suspected.value, c.from_security.token))
+
+
+def _classes_by_cusip(book: dict[SecurityKey, CanonicalPosition]) -> dict[str, set[SecurityKey]]:
+    grouped: dict[str, set[SecurityKey]] = {}
+    for key in book:
+        grouped.setdefault(key.cusip, set()).add(key)
+    return grouped
 
 
 def load_curated(path) -> LineageTable:
@@ -316,8 +403,18 @@ def load_curated(path) -> LineageTable:
     return LineageTable(
         entries=[
             SecurityLineage(
-                from_cusip=e["from_cusip"],
-                to_cusip=e.get("to_cusip"),
+                # `from_title` / `to_title` are optional. Omitted means the entry applies to
+                # whatever classes the holder had under that CUSIP, which is what an issuer-level
+                # re-identification actually does — `matches_any_class` makes that visible rather
+                # than leaving it as an unstated reading of a missing field.
+                from_security=SecurityKey(
+                    cusip=e["from_cusip"], title_of_class=e.get("from_title", "")
+                ),
+                to_security=(
+                    SecurityKey(cusip=e["to_cusip"], title_of_class=e.get("to_title", ""))
+                    if e.get("to_cusip")
+                    else None
+                ),
                 kind=CorporateActionKind(e["kind"]),
                 effective_date=date.fromisoformat(e["effective_date"]),
                 share_ratio=e.get("share_ratio"),
@@ -344,8 +441,8 @@ def unresolved_blocking(
             continue
         window = (candidate.period_end, candidate.period_end)
         resolved = (
-            table.split_ratio(candidate.from_cusip, during=window) is not None
-            or table.successor_of(candidate.from_cusip, during=window) is not None
+            table.split_ratio(candidate.from_security, during=window) is not None
+            or table.successor_of(candidate.from_security, during=window) is not None
         )
         if not resolved:
             unresolved.append(candidate)
@@ -354,44 +451,63 @@ def unresolved_blocking(
 
 def apply_lineage(
     previous: CanonicalQuarter, current: CanonicalQuarter, table: LineageTable
-) -> dict[str, str]:
+) -> dict[SecurityKey, SecurityKey]:
     """Successor mapping to apply before classification, so continuity is not read as two trades.
 
-    A confirmed re-identification means the old CUSIP *became* the new one. Left unapplied it
+    A confirmed re-identification means the old security *became* the new one. Left unapplied it
     produces a textbook exit and a textbook entry, which is two decisions where the holder made
     none.
     """
     window = (previous.period_end, current.period_end)
-    mapping: dict[str, str] = {}
+    mapping: dict[SecurityKey, SecurityKey] = {}
     for position in previous.positions:
-        entry = table.successor_of(position.identity.cusip, during=window)
-        if entry is not None and entry.to_cusip:
-            mapping[position.identity.cusip] = entry.to_cusip
+        source = position.identity.key
+        entry = table.successor_of(source, during=window)
+        if entry is None or entry.to_security is None:
+            continue
+        target = _bind_successor(entry.to_security, current)
+        if target is not None:
+            mapping[source] = target
     return mapping
 
 
-def blocked_cusips(candidates: list[ActionCandidate]) -> set[str]:
+def _bind_successor(declared: SecurityKey, current: CanonicalQuarter) -> SecurityKey | None:
+    """Resolve a curated successor against the class actually filed in the receiving book.
+
+    A curated entry usually names only the successor's CUSIP, because that is what the underlying
+    evidence establishes. Binding it here rather than inventing a class keeps the entry honest: if
+    the successor arrived under exactly one class, that is the target; if it arrived under several,
+    the entry does not say which, and the mapping is left unapplied so the transition stays visibly
+    unresolved instead of being resolved by a coin toss.
+    """
+    if declared.title_of_class:
+        return declared
+    arrived = {p.identity.key for p in current.positions if p.identity.cusip == declared.cusip}
+    return next(iter(arrived)) if len(arrived) == 1 else None
+
+
+def blocked_securities(candidates: list[ActionCandidate]) -> set[SecurityKey]:
     """Securities whose labels cannot be trusted until a candidate is resolved."""
-    blocked: set[str] = set()
+    blocked: set[SecurityKey] = set()
     for candidate in candidates:
         if not candidate.blocks_episode:
             continue
-        blocked.add(candidate.from_cusip)
-        if candidate.to_cusip:
-            blocked.add(candidate.to_cusip)
+        blocked.add(candidate.from_security)
+        if candidate.to_security:
+            blocked.add(candidate.to_security)
     return blocked
 
 
 def split_factors_for(
     previous: CanonicalQuarter, current: CanonicalQuarter, table: LineageTable
-) -> dict[str, float]:
+) -> dict[SecurityKey, float]:
     """Split adjustments to hand the classifier, drawn only from established entries."""
     window = (previous.period_end, current.period_end)
-    factors: dict[str, float] = {}
+    factors: dict[SecurityKey, float] = {}
     for position in previous.positions:
-        ratio = table.split_ratio(position.identity.cusip, during=window)
+        ratio = table.split_ratio(position.identity.key, during=window)
         if ratio is not None:
-            factors[position.identity.cusip] = ratio
+            factors[position.identity.key] = ratio
     return factors
 
 

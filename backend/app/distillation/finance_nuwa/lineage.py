@@ -236,7 +236,7 @@ def compose_quarter(
             continue
 
         if filing.amendment_type is AmendmentType.new_holdings:
-            collisions = sorted(set(accumulated) & set(incoming))
+            collisions = sorted(set(accumulated) & set(incoming), key=lambda k: k.token)
             if collisions:
                 # A correction and an addition are indistinguishable here, and picking one would
                 # either drop a real position or double-count it.
@@ -245,7 +245,7 @@ def compose_quarter(
                     needs_review=True,
                     review_reason=(
                         f"amendment {filing.accession} repeats {len(collisions)} security(ies) "
-                        f"already filed — e.g. {collisions[0][0]}. Correction and addition are "
+                        f"already filed — e.g. {collisions[0].cusip}. Correction and addition are "
                         "indistinguishable, so this needs a human"
                     ),
                     contributing_accessions=contributing,

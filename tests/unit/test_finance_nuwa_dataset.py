@@ -21,6 +21,8 @@ from app.distillation.finance_nuwa.dataset import (
     bucket_magnitude,
     score_hold,
     select_holds,
+    select_matched_holds,
+    stratum_for,
 )
 from app.distillation.finance_nuwa.disclosure import DisclosureScope
 from app.distillation.finance_nuwa.drift import (
@@ -29,6 +31,12 @@ from app.distillation.finance_nuwa.drift import (
     ObservedAction,
 )
 from app.distillation.finance_nuwa.episode import DecisionEpisode, EpisodeInputs
+from app.distillation.finance_nuwa.identity import SecurityKey
+
+
+def key(name: str) -> SecurityKey:
+    """A legible stand-in for a CUSIP, padded to the nine characters the type requires."""
+    return SecurityKey(cusip=f"{name:0<9}"[:9], title_of_class="COM")
 
 
 def episode(
@@ -43,7 +51,7 @@ def episode(
     return DecisionEpisode(
         advisor_id="buffett",
         episode_id=episode_id,
-        inputs=EpisodeInputs(as_of=window_start, symbol="AAPL"),
+        inputs=EpisodeInputs(as_of=window_start, security=key("AAPL")),
         observed_action=action,
         action_basis=basis,
         attribution_confidence=confidence,
@@ -52,8 +60,8 @@ def episode(
     )
 
 
-def classification(symbol: str, **kw) -> ActionClassification:
-    base = dict(symbol=symbol, action=ObservedAction.hold, basis=ActionBasis.share_count)
+def classification(name: str, **kw) -> ActionClassification:
+    base = dict(security=key(name), action=ObservedAction.hold, basis=ActionBasis.share_count)
     base.update(kw)
     return ActionClassification(**base)
 
@@ -127,7 +135,7 @@ def test_the_most_salient_holds_survive_the_cap():
     severe = score_hold(classification("B", end_weight=0.20), period_return=-0.45)
 
     kept = select_holds([mild, severe], action_count=1)
-    assert [k.symbol for k in kept][:1] == ["B"]
+    assert [k.security for k in kept][:1] == [key("B")]
 
 
 # --- the split ------------------------------------------------------------------------------------
@@ -284,7 +292,7 @@ def test_inputs_must_predate_the_window_opening_not_its_close():
         DecisionEpisode(
             advisor_id="buffett",
             episode_id="leaky",
-            inputs=EpisodeInputs(as_of=date(2016, 3, 30), symbol="AAPL"),
+            inputs=EpisodeInputs(as_of=date(2016, 3, 30), security=key("AAPL")),
             observed_action=ObservedAction.enter,
             action_basis=ActionBasis.share_count,
             decision_window_start=date(2016, 1, 1),
@@ -321,3 +329,65 @@ def test_the_window_width_is_available_as_an_evidence_discount():
     """A decision pinned to a week is stronger evidence than one pinned to a quarter."""
     quarterly = episode("q", when=date(2016, 3, 31))
     assert quarterly.decision_window_days == 90
+
+
+# --- a control has to come from the same split as the action it stands in for -------------------
+
+
+def test_a_hold_cannot_serve_as_a_control_for_an_action_in_another_split():
+    """Measured failure, not a hypothetical one.
+
+    With one global pool the matcher walked the actions in chronological order and took holds
+    from whichever era they came from. Early trades were paired with late holds, the pool was
+    exhausted by the time the recent actions were reached, and the real dataset came out at 1.24
+    controls per action in train against 0.23 in held-out — a hold share of 55% against 19%.
+
+    The composition of the held-out set then depends on which trades happened during training,
+    which is exactly the coupling a chronological split exists to prevent.
+    """
+    early = stratum_for(weight=0.08, trailing_return=0.01, regime="flat", cohort="train")
+    late = stratum_for(weight=0.08, trailing_return=0.01, regime="flat", cohort="held_out")
+
+    assert early.key != late.key
+
+    selection = select_matched_holds([("trade-2015", early)], [("hold-2023", late, 0.9)])
+
+    assert selection.kept == []
+    assert selection.unmatched_actions == 1
+
+
+def test_within_one_split_matching_is_unaffected():
+    stratum = stratum_for(weight=0.08, trailing_return=0.01, regime="flat", cohort="train")
+    selection = select_matched_holds([("trade-1", stratum)], [("hold-1", stratum, 0.9)])
+
+    assert selection.kept == ["hold-1"]
+    assert selection.pairs == {"hold-1": "trade-1"}
+
+
+def test_unmatched_actions_are_broken_out_rather_than_summed():
+    """An overall 80% can mean the design works, or that every entry is unmatched while the
+    resizings pair up freely. One number cannot tell those apart."""
+    lonely = stratum_for(weight=None, trailing_return=None, regime="rising", cohort="train")
+    ordinary = stratum_for(weight=0.08, trailing_return=0.01, regime="flat", cohort="train")
+
+    selection = select_matched_holds(
+        [("trade-enter", lonely), ("trade-reduce", ordinary)],
+        [("hold-1", ordinary, 0.9)],
+        action_classes={"trade-enter": "enter", "trade-reduce": "reduce"},
+    )
+
+    assert selection.unmatched_actions == 1
+    assert selection.unmatched_by_action == {"enter": 1}
+    assert selection.unmatched_by_weight_bucket == {"unknown": 1}
+    assert selection.unmatched_by_regime == {"rising": 1}
+
+
+def test_the_action_class_never_influences_which_hold_is_chosen():
+    """Matching on the outcome class would be matching on the label."""
+    stratum = stratum_for(weight=0.08, trailing_return=0.01, regime="flat", cohort="train")
+    holds = [("hold-1", stratum, 0.5)]
+
+    as_enter = select_matched_holds([("t", stratum)], list(holds), action_classes={"t": "enter"})
+    as_reduce = select_matched_holds([("t", stratum)], list(holds), action_classes={"t": "reduce"})
+
+    assert as_enter.kept == as_reduce.kept == ["hold-1"]

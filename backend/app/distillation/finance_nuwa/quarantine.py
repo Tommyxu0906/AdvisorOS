@@ -31,6 +31,7 @@ from enum import Enum
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.distillation.finance_nuwa.corporate_actions import ActionCandidate, CorporateActionKind
+from app.distillation.finance_nuwa.identity import SecurityKey
 
 
 class ExclusionStatus(str, Enum):
@@ -59,7 +60,7 @@ class EpisodeExclusion(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     transition_period_end: date
-    cusips: tuple[str, ...]
+    securities: tuple[SecurityKey, ...]
     detected_kind: CorporateActionKind
 
     reason: str
@@ -68,7 +69,7 @@ class EpisodeExclusion(BaseModel):
     scope: ExclusionScope = ExclusionScope.labels_only
     dataset_version: str = ""
 
-    def covers(self, *, period_end: date, cusip: str) -> bool:
+    def covers(self, *, period_end: date, security: SecurityKey) -> bool:
         """Whether this exclusion applies to one security at one transition.
 
         Both conditions, never one. Matching on the security alone would remove it from every
@@ -79,7 +80,7 @@ class EpisodeExclusion(BaseModel):
             return False
         if self.scope is ExclusionScope.whole_quarter:
             return True
-        return cusip in self.cusips
+        return security in self.securities
 
 
 class ExclusionRegistry(BaseModel):
@@ -90,14 +91,14 @@ class ExclusionRegistry(BaseModel):
     exclusions: list[EpisodeExclusion] = Field(default_factory=list)
     generated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
-    def excluding(self, *, period_end: date, cusip: str) -> EpisodeExclusion | None:
+    def excluding(self, *, period_end: date, security: SecurityKey) -> EpisodeExclusion | None:
         for exclusion in self.exclusions:
-            if exclusion.covers(period_end=period_end, cusip=cusip):
+            if exclusion.covers(period_end=period_end, security=security):
                 return exclusion
         return None
 
-    def is_excluded(self, *, period_end: date, cusip: str) -> bool:
-        return self.excluding(period_end=period_end, cusip=cusip) is not None
+    def is_excluded(self, *, period_end: date, security: SecurityKey) -> bool:
+        return self.excluding(period_end=period_end, security=security) is not None
 
     @property
     def transitions(self) -> int:
@@ -105,7 +106,26 @@ class ExclusionRegistry(BaseModel):
 
     @property
     def securities(self) -> int:
-        return len({c for e in self.exclusions for c in e.cusips})
+        return len({s for e in self.exclusions for s in e.securities})
+
+    def content_sha256(self) -> str:
+        """Digest of what is excluded, excluding when the registry happened to be built.
+
+        `generated_at` is deliberately left out. A dataset manifest records this so two builds
+        can be compared, and a timestamp would make every rebuild look like a different
+        quarantine — which is the same failure as a version name that quietly changes meaning,
+        pointed the other way.
+        """
+        import hashlib
+
+        payload = "\n".join(
+            sorted(
+                f"{e.transition_period_end}|{e.detected_kind.value}|{e.status.value}|"
+                f"{e.scope.value}|{','.join(s.token for s in e.securities)}"
+                for e in self.exclusions
+            )
+        )
+        return hashlib.sha256(payload.encode()).hexdigest()
 
 
 def quarantine_unresolved(
@@ -117,28 +137,28 @@ def quarantine_unresolved(
     quarantined automatically instead of silently entering the training data while someone gets
     round to writing it down.
     """
-    grouped: dict[tuple[date, CorporateActionKind], set[str]] = {}
+    grouped: dict[tuple[date, CorporateActionKind], set[SecurityKey]] = {}
     reasons: dict[tuple[date, CorporateActionKind], str] = {}
 
     for candidate in candidates:
         key = (candidate.period_end, candidate.suspected)
         touched = grouped.setdefault(key, set())
-        touched.add(candidate.from_cusip)
-        if candidate.to_cusip:
-            touched.add(candidate.to_cusip)
+        touched.add(candidate.from_security)
+        if candidate.to_security:
+            touched.add(candidate.to_security)
         reasons.setdefault(key, candidate.reason)
 
     exclusions = []
-    for (period_end, kind), cusips in sorted(grouped.items(), key=lambda kv: kv[0][0]):
+    for (period_end, kind), securities in sorted(grouped.items(), key=lambda kv: kv[0][0]):
         # One source security appearing with several successors in one transition is the
         # signature of a recapitalisation into multiple securities.
-        sources = [c.from_cusip for c in candidates if c.period_end == period_end]
-        one_to_many = len(sources) != len(set(sources)) or len(cusips) > 2
+        sources = [c.from_security for c in candidates if c.period_end == period_end]
+        one_to_many = len(sources) != len(set(sources)) or len(securities) > 2
 
         exclusions.append(
             EpisodeExclusion(
                 transition_period_end=period_end,
-                cusips=tuple(sorted(cusips)),
+                securities=tuple(sorted(securities, key=lambda k: k.token)),
                 detected_kind=kind,
                 reason=(
                     "one security maps to several successors, which a single-successor lineage "

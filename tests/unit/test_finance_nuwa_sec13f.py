@@ -184,7 +184,7 @@ def test_share_classes_are_not_merged_into_one_position():
 
 def test_the_identity_key_is_cusip_and_class_not_ticker():
     identity = SecurityIdentity(cusip="037833100", issuer_name="APPLE INC", title_of_class="COM")
-    assert identity.key == ("037833100", "COM")
+    assert identity.key.token == "037833100:COM"
     assert identity.display == "APPLE INC"  # no ticker mapped yet, and that is fine
 
     mapped = identity.with_ticker("AAPL", source="test-map", confidence=0.9)

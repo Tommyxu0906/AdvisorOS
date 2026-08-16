@@ -19,14 +19,20 @@ from app.distillation.finance_nuwa.drift import (
     classify_position,
     detect_suspected_split,
 )
+from app.distillation.finance_nuwa.identity import SecurityKey
 
 
-def snap(symbol: str, value: float, shares: float | None = None) -> PositionSnapshot:
-    return PositionSnapshot(symbol=symbol, market_value=value, shares=shares)
+def key(name: str, title: str = "COM") -> SecurityKey:
+    """A legible stand-in for a CUSIP, padded to the nine characters the type requires."""
+    return SecurityKey(cusip=f"{name:0<9}"[:9], title_of_class=title)
+
+
+def snap(name: str, value: float, shares: float | None = None) -> PositionSnapshot:
+    return PositionSnapshot(security=key(name), market_value=value, shares=shares)
 
 
 def _by_symbol(results):
-    return {r.symbol: r for r in results}
+    return {r.security: r for r in results}
 
 
 # --- the whole point -------------------------------------------------------------------------
@@ -37,7 +43,9 @@ def test_a_position_that_rose_without_being_touched_is_not_a_purchase():
     start = [snap("AAPL", 10_000), snap("BND", 90_000)]
     end = [snap("AAPL", 20_000), snap("BND", 90_000)]
 
-    result = _by_symbol(classify_portfolio(start, end, returns={"AAPL": 1.0, "BND": 0.0}))["AAPL"]
+    result = _by_symbol(
+        classify_portfolio(start, end, returns={key("AAPL"): 1.0, key("BND"): 0.0})
+    )[key("AAPL")]
 
     assert result.action is ObservedAction.hold
     assert result.basis is ActionBasis.drift_adjusted_value
@@ -54,7 +62,9 @@ def test_a_position_that_fell_but_was_topped_up_reads_as_buying():
     start = [snap("AAPL", 20_000), snap("BND", 80_000)]
     end = [snap("AAPL", 12_000), snap("BND", 80_000)]  # halved, then bought back to 12k
 
-    result = _by_symbol(classify_portfolio(start, end, returns={"AAPL": -0.5, "BND": 0.0}))["AAPL"]
+    result = _by_symbol(
+        classify_portfolio(start, end, returns={key("AAPL"): -0.5, key("BND"): 0.0})
+    )[key("AAPL")]
 
     assert result.end_weight < result.start_weight  # naive reading: "they sold"
     assert result.action is ObservedAction.increase  # drift-adjusted: they bought
@@ -71,12 +81,14 @@ def test_the_no_trade_total_is_computed_across_the_whole_portfolio():
     # Both doubled and nothing was traded, so both weights are unchanged at 50%.
     end = [snap("AAPL", 100_000), snap("SPY", 100_000)]
 
-    results = _by_symbol(classify_portfolio(start, end, returns={"AAPL": 1.0, "SPY": 1.0}))
+    results = _by_symbol(
+        classify_portfolio(start, end, returns={key("AAPL"): 1.0, key("SPY"): 1.0})
+    )
 
-    for symbol in ("AAPL", "SPY"):
-        assert results[symbol].action is ObservedAction.hold
-        assert results[symbol].drift_weight == pytest.approx(0.5)
-        assert results[symbol].active_delta == pytest.approx(0.0, abs=1e-9)
+    for name in ("AAPL", "SPY"):
+        assert results[key(name)].action is ObservedAction.hold
+        assert results[key(name)].drift_weight == pytest.approx(0.5)
+        assert results[key(name)].active_delta == pytest.approx(0.0, abs=1e-9)
 
 
 # --- share counts are a fact, weights are a reading -------------------------------------------
@@ -86,7 +98,7 @@ def test_share_counts_are_used_in_preference_to_any_inference():
     start = [snap("AAPL", 10_000, shares=100), snap("BND", 90_000, shares=900)]
     end = [snap("AAPL", 20_000, shares=100), snap("BND", 90_000, shares=900)]
 
-    result = _by_symbol(classify_portfolio(start, end, returns={"AAPL": 1.0}))["AAPL"]
+    result = _by_symbol(classify_portfolio(start, end, returns={key("AAPL"): 1.0}))[key("AAPL")]
 
     assert result.basis is ActionBasis.share_count
     assert result.action is ObservedAction.hold
@@ -98,7 +110,7 @@ def test_a_share_count_reduction_is_a_sale_however_the_price_moved():
     start = [snap("AAPL", 10_000, shares=100)]
     end = [snap("AAPL", 15_000, shares=75)]  # sold a quarter of it; price rose
 
-    result = _by_symbol(classify_portfolio(start, end))["AAPL"]
+    result = _by_symbol(classify_portfolio(start, end))[key("AAPL")]
 
     assert result.action is ObservedAction.reduce
     assert result.share_change_pct == pytest.approx(-0.25)
@@ -114,8 +126,8 @@ def test_a_value_only_observation_is_marked_as_the_weaker_evidence():
             [snap("AAPL", 10_000, shares=100), snap("BND", 90_000, shares=900)],
             [snap("AAPL", 20_000, shares=100), snap("BND", 90_000, shares=900)],
         )
-    )["AAPL"]
-    inferred = _by_symbol(classify_portfolio(start, end, returns={"AAPL": 1.0}))["AAPL"]
+    )[key("AAPL")]
+    inferred = _by_symbol(classify_portfolio(start, end, returns={key("AAPL"): 1.0}))[key("AAPL")]
 
     assert exact.basis.is_exact and exact.is_trustworthy
     assert not inferred.basis.is_exact and not inferred.is_trustworthy
@@ -123,12 +135,16 @@ def test_a_value_only_observation_is_marked_as_the_weaker_evidence():
 
 def test_with_no_returns_only_implausibly_large_moves_are_called_decisions():
     """Nothing separates price from trading here, so the bar for claiming a decision is high."""
-    modest = _by_symbol(classify_portfolio([snap("AAPL", 10_000)], [snap("AAPL", 12_000)]))["AAPL"]
+    modest = _by_symbol(classify_portfolio([snap("AAPL", 10_000)], [snap("AAPL", 12_000)]))[
+        key("AAPL")
+    ]
     assert modest.action is ObservedAction.hold
     assert modest.basis is ActionBasis.raw_value
     assert "no return data" in modest.explanation
 
-    large = _by_symbol(classify_portfolio([snap("AAPL", 10_000)], [snap("AAPL", 30_000)]))["AAPL"]
+    large = _by_symbol(classify_portfolio([snap("AAPL", 10_000)], [snap("AAPL", 30_000)]))[
+        key("AAPL")
+    ]
     assert large.action is ObservedAction.increase
     assert "remains an inference" in large.explanation
 
@@ -142,16 +158,16 @@ def test_entering_and_exiting_are_their_own_actions():
 
     results = _by_symbol(classify_portfolio(start, end))
 
-    assert results["AAPL"].action is ObservedAction.exit
-    assert results["AAPL"].end_weight == 0.0
-    assert results["MSFT"].action is ObservedAction.enter
-    assert results["MSFT"].start_weight == 0.0
-    assert results["BND"].action is ObservedAction.hold
+    assert results[key("AAPL")].action is ObservedAction.exit
+    assert results[key("AAPL")].end_weight == 0.0
+    assert results[key("MSFT")].action is ObservedAction.enter
+    assert results[key("MSFT")].start_weight == 0.0
+    assert results[key("BND")].action is ObservedAction.hold
 
 
 def test_a_symbol_absent_from_both_disclosures_is_not_invented():
     results = classify_portfolio([snap("AAPL", 100)], [snap("AAPL", 100, shares=None)])
-    assert {r.symbol for r in results} == {"AAPL"}
+    assert {r.security for r in results} == {key("AAPL")}
 
 
 # --- splits ------------------------------------------------------------------------------------
@@ -163,7 +179,7 @@ def test_an_unadjusted_split_is_flagged_rather_than_read_as_a_purchase():
     end = snap("AAPL", 10_200, shares=200)
 
     assert detect_suspected_split(start, end)
-    result = _by_symbol(classify_portfolio([start], [end]))["AAPL"]
+    result = _by_symbol(classify_portfolio([start], [end]))[key("AAPL")]
 
     assert result.suspected_split
     assert not result.is_trustworthy  # exact basis, but not safe to train on unreviewed
@@ -174,7 +190,9 @@ def test_a_declared_split_factor_removes_the_artifact():
     start = [snap("AAPL", 10_000, shares=100)]
     end = [snap("AAPL", 10_200, shares=200)]
 
-    result = _by_symbol(classify_portfolio(start, end, split_factors={"AAPL": 2.0}))["AAPL"]
+    result = _by_symbol(classify_portfolio(start, end, split_factors={key("AAPL"): 2.0}))[
+        key("AAPL")
+    ]
 
     assert result.action is ObservedAction.hold
     assert not result.suspected_split
@@ -188,7 +206,7 @@ def test_a_genuine_doubling_is_indistinguishable_and_says_so():
     end = snap("AAPL", 20_000, shares=200)  # bought more at the same price
 
     assert not detect_suspected_split(start, end)
-    result = _by_symbol(classify_portfolio([start], [end]))["AAPL"]
+    result = _by_symbol(classify_portfolio([start], [end]))[key("AAPL")]
     assert result.action is ObservedAction.increase
     assert result.is_trustworthy
 
@@ -207,7 +225,7 @@ def test_hold_is_a_decision_but_not_a_transaction():
 
 def test_a_position_cannot_claim_value_with_no_shares():
     with pytest.raises(ValueError, match="zero shares"):
-        PositionSnapshot(symbol="AAPL", market_value=1_000, shares=0)
+        PositionSnapshot(security=key("AAPL"), market_value=1_000, shares=0)
 
 
 # --- a realistic quarter -------------------------------------------------------------------------
@@ -231,10 +249,10 @@ def test_a_quarter_with_four_different_behaviours_is_read_correctly():
 
     results = _by_symbol(classify_portfolio(start, end))
 
-    assert results["AAPL"].action is ObservedAction.hold
-    assert results["KO"].action is ObservedAction.increase
-    assert results["XOM"].action is ObservedAction.reduce
-    assert results["IBM"].action is ObservedAction.exit
+    assert results[key("AAPL")].action is ObservedAction.hold
+    assert results[key("KO")].action is ObservedAction.increase
+    assert results[key("XOM")].action is ObservedAction.reduce
+    assert results[key("IBM")].action is ObservedAction.exit
 
     # And every one of them is exact, because share counts were disclosed.
     assert all(r.basis.is_exact for r in results.values())
@@ -245,7 +263,7 @@ def test_a_single_position_can_be_classified_on_its_own():
     caller then owns the portfolio totals, which is exactly the trap `classify_portfolio` closes.
     Same numbers as the flagship case, supplied by hand."""
     result = classify_position(
-        "AAPL",
+        key("AAPL"),
         start=snap("AAPL", 10_000),
         end=snap("AAPL", 20_000),
         period_return=1.0,
@@ -263,7 +281,7 @@ def test_supplying_the_wrong_drift_total_produces_the_error_the_portfolio_helper
     """Pretending the rest of the book was flat when it doubled invents a decision that was
     never taken. This is why `classify_portfolio` computes the total across every position."""
     wrong = classify_position(
-        "AAPL",
+        key("AAPL"),
         start=snap("AAPL", 50_000),
         end=snap("AAPL", 100_000),
         period_return=1.0,
@@ -283,7 +301,7 @@ def test_supplying_the_wrong_drift_total_produces_the_error_the_portfolio_helper
         classify_portfolio(
             [snap("AAPL", 50_000), snap("SPY", 50_000)],
             [snap("AAPL", 100_000), snap("SPY", 100_000)],
-            returns={"AAPL": 1.0, "SPY": 1.0},
+            returns={key("AAPL"): 1.0, key("SPY"): 1.0},
         )
-    )["AAPL"]
+    )[key("AAPL")]
     assert correct.action is ObservedAction.hold

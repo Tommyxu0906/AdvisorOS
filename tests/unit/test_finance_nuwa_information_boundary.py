@@ -28,7 +28,7 @@ from app.distillation.finance_nuwa.builder import (
 )
 from app.distillation.finance_nuwa.drift import ObservedAction
 from app.distillation.finance_nuwa.episode import EpisodeInputs
-from app.distillation.finance_nuwa.identity import SecurityIdentity
+from app.distillation.finance_nuwa.identity import SecurityIdentity, SecurityKey
 from app.distillation.finance_nuwa.lineage import CanonicalPosition, CanonicalQuarter
 from app.distillation.finance_nuwa.sec_13f import HoldingsSnapshot, ParsedPosition
 
@@ -37,6 +37,10 @@ ORIGINAL_FILED = date(2023, 11, 14)
 AMENDMENT_FILED = date(2024, 5, 15)
 PUBLIC = "111111111"
 SECRET = "222222222"
+
+
+def key(cusip: str) -> SecurityKey:
+    return SecurityKey(cusip=cusip, title_of_class="COM")
 
 
 def canonical_position(cusip: str, value: float, shares: float, **kw) -> CanonicalPosition:
@@ -108,11 +112,11 @@ def q4() -> CanonicalQuarter:
 
 def test_a_late_amendment_changes_the_outcome():
     """It really was held in Q3, so leaving it out invents a Q4 purchase that never happened."""
-    naive = {a.classification.symbol: a for a in classify_quarter_pair(q3_public_only(), q4())}
-    correct = {a.classification.symbol: a for a in classify_quarter_pair(q3_canonical(), q4())}
+    naive = {a.classification.security: a for a in classify_quarter_pair(q3_public_only(), q4())}
+    correct = {a.classification.security: a for a in classify_quarter_pair(q3_canonical(), q4())}
 
-    assert naive[SECRET].classification.action is ObservedAction.enter
-    assert correct[SECRET].classification.action is ObservedAction.hold
+    assert naive[key(SECRET)].classification.action is ObservedAction.enter
+    assert correct[key(SECRET)].classification.action is ObservedAction.hold
 
 
 def test_the_label_change_is_measured_rather_than_asserted():
@@ -128,9 +132,9 @@ def test_the_label_change_is_measured_rather_than_asserted():
 
 def test_a_label_that_leans_on_a_hidden_position_is_flagged():
     """Still a valid episode — the investor knew their own book — but worth counting."""
-    built = {a.classification.symbol: a for a in classify_quarter_pair(q3_canonical(), q4())}
-    assert built[SECRET].label_depends_on_late_disclosure
-    assert not built[PUBLIC].label_depends_on_late_disclosure
+    built = {a.classification.security: a for a in classify_quarter_pair(q3_canonical(), q4())}
+    assert built[key(SECRET)].label_depends_on_late_disclosure
+    assert not built[key(PUBLIC)].label_depends_on_late_disclosure
 
 
 # --- and must not reach the replay -----------------------------------------------------------------
@@ -145,7 +149,7 @@ def test_a_late_amendment_cannot_enter_replay_inputs():
         next(
             a
             for a in classify_quarter_pair(q3_canonical(), q4())
-            if a.classification.symbol == PUBLIC
+            if a.classification.security == key(PUBLIC)
         ),
         advisor_id="buffett",
         entity="Berkshire Hathaway Inc",
@@ -170,7 +174,7 @@ def test_the_input_book_is_the_last_filing_that_was_actually_public():
         next(
             a
             for a in classify_quarter_pair(q3_canonical(), q4())
-            if a.classification.symbol == PUBLIC
+            if a.classification.security == key(PUBLIC)
         ),
         advisor_id="buffett",
         entity="Berkshire Hathaway Inc",
@@ -193,7 +197,7 @@ def test_the_oracle_view_is_available_and_explicit():
         next(
             a
             for a in classify_quarter_pair(q3_canonical(), q4())
-            if a.classification.symbol == PUBLIC
+            if a.classification.security == key(PUBLIC)
         ),
         advisor_id="buffett",
         entity="Berkshire Hathaway Inc",
@@ -242,7 +246,7 @@ def test_an_episode_carrying_a_hidden_position_would_be_refused_anyway():
     with pytest.raises(ValueError, match="became knowable"):
         EpisodeInputs(
             as_of=date(2023, 10, 1),
-            symbol=PUBLIC,
+            security=key(PUBLIC),
             portfolio_context=[
                 {"label": "secret holding", "observed_at": AMENDMENT_FILED},  # type: ignore[list-item]
             ],
@@ -291,7 +295,9 @@ def test_passing_a_raw_snapshot_fails_rather_than_silently_working():
 
 def _both_views():
     action = next(
-        a for a in classify_quarter_pair(q3_canonical(), q4()) if a.classification.symbol == PUBLIC
+        a
+        for a in classify_quarter_pair(q3_canonical(), q4())
+        if a.classification.security == key(PUBLIC)
     )
     common = dict(
         advisor_id="buffett",
@@ -354,7 +360,7 @@ def test_the_reporting_lag_alone_separates_the_views():
     action = next(
         a
         for a in classify_quarter_pair(q3_public_only(), q4())
-        if a.classification.symbol == PUBLIC
+        if a.classification.security == key(PUBLIC)
     )
     common = dict(advisor_id="buffett", entity="Berkshire Hathaway Inc", filed_at=date(2024, 2, 14))
 

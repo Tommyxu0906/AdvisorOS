@@ -1,0 +1,212 @@
+{
+  "chosen": 0.005,
+  "rows": [
+    {
+      "tolerance": 0.0,
+      "total_episodes": 2087,
+      "class_counts": {
+        "hold": 1421,
+        "enter": 85,
+        "increase": 235,
+        "reduce": 254,
+        "exit": 92
+      },
+      "flips_vs_zero": 0,
+      "flipped_episode_ids": [],
+      "train_counts": {
+        "hold": 791,
+        "enter": 40,
+        "increase": 149,
+        "reduce": 109,
+        "exit": 33
+      },
+      "validation_counts": {
+        "reduce": 75,
+        "hold": 245,
+        "increase": 33,
+        "exit": 25,
+        "enter": 17
+      },
+      "held_out_counts": {
+        "exit": 34,
+        "increase": 53,
+        "enter": 28,
+        "hold": 385,
+        "reduce": 70
+      }
+    },
+    {
+      "tolerance": 0.0005,
+      "total_episodes": 2087,
+      "class_counts": {
+        "hold": 1423,
+        "enter": 85,
+        "increase": 234,
+        "reduce": 253,
+        "exit": 92
+      },
+      "flips_vs_zero": 2,
+      "flipped_episode_ids": [
+        "berkshire_public_equity-037833100-com-2022-12-31",
+        "berkshire_public_equity-844741108-com-2020-03-31"
+      ],
+      "train_counts": {
+        "hold": 791,
+        "enter": 40,
+        "increase": 149,
+        "reduce": 109,
+        "exit": 33
+      },
+      "validation_counts": {
+        "reduce": 74,
+        "hold": 246,
+        "increase": 33,
+        "exit": 25,
+        "enter": 17
+      },
+      "held_out_counts": {
+        "exit": 34,
+        "increase": 52,
+        "enter": 28,
+        "hold": 386,
+        "reduce": 70
+      }
+    },
+    {
+      "tolerance": 0.001,
+      "total_episodes": 2087,
+      "class_counts": {
+        "hold": 1424,
+        "enter": 85,
+        "increase": 233,
+        "reduce": 253,
+        "exit": 92
+      },
+      "flips_vs_zero": 3,
+      "flipped_episode_ids": [
+        "berkshire_public_equity-037833100-com-2022-12-31",
+        "berkshire_public_equity-844741108-com-2020-03-31",
+        "berkshire_public_equity-902973304-com-new-2014-06-30"
+      ],
+      "train_counts": {
+        "hold": 792,
+        "enter": 40,
+        "increase": 148,
+        "reduce": 109,
+        "exit": 33
+      },
+      "validation_counts": {
+        "reduce": 74,
+        "hold": 246,
+        "increase": 33,
+        "exit": 25,
+        "enter": 17
+      },
+      "held_out_counts": {
+        "exit": 34,
+        "increase": 52,
+        "enter": 28,
+        "hold": 386,
+        "reduce": 70
+      }
+    },
+    {
+      "tolerance": 0.0025,
+      "total_episodes": 2087,
+      "class_counts": {
+        "hold": 1430,
+        "enter": 85,
+        "increase": 229,
+        "reduce": 251,
+        "exit": 92
+      },
+      "flips_vs_zero": 9,
+      "flipped_episode_ids": [
+        "berkshire_public_equity-037833100-com-2018-09-30",
+        "berkshire_public_equity-037833100-com-2022-12-31",
+        "berkshire_public_equity-060505104-com-2019-12-31",
+        "berkshire_public_equity-172967424-com-new-2023-03-31",
+        "berkshire_public_equity-459200101-com-2016-03-31",
+        "berkshire_public_equity-844741108-com-2020-03-31",
+        "berkshire_public_equity-902973304-com-new-2014-06-30",
+        "berkshire_public_equity-92343e102-com-2016-06-30",
+        "berkshire_public_equity-92556h206-class-b-com-2023-03-31"
+      ],
+      "train_counts": {
+        "hold": 796,
+        "enter": 40,
+        "increase": 146,
+        "reduce": 107,
+        "exit": 33
+      },
+      "validation_counts": {
+        "reduce": 74,
+        "hold": 246,
+        "increase": 33,
+        "exit": 25,
+        "enter": 17
+      },
+      "held_out_counts": {
+        "exit": 34,
+        "increase": 50,
+        "enter": 28,
+        "hold": 388,
+        "reduce": 70
+      }
+    },
+    {
+      "tolerance": 0.005,
+      "total_episodes": 2087,
+      "class_counts": {
+        "hold": 1440,
+        "enter": 85,
+        "increase": 224,
+        "reduce": 246,
+        "exit": 92
+      },
+      "flips_vs_zero": 19,
+      "flipped_episode_ids": [
+        "berkshire_public_equity-037833100-com-2018-09-30",
+        "berkshire_public_equity-037833100-com-2019-09-30",
+        "berkshire_public_equity-037833100-com-2022-03-31",
+        "berkshire_public_equity-037833100-com-2022-06-30",
+        "berkshire_public_equity-037833100-com-2022-12-31",
+        "berkshire_public_equity-060505104-com-2019-12-31",
+        "berkshire_public_equity-16117m305-cl-a-new-2016-03-31",
+        "berkshire_public_equity-172967424-com-new-2023-03-31",
+        "berkshire_public_equity-37045v100-com-2020-03-31",
+        "berkshire_public_equity-459200101-com-2014-09-30",
+        "berkshire_public_equity-459200101-com-2016-03-31",
+        "berkshire_public_equity-531229607-com-c-siriusxm-2017-03-31",
+        "berkshire_public_equity-844741108-com-2020-03-31",
+        "berkshire_public_equity-867224107-com-2020-03-31",
+        "berkshire_public_equity-902973304-com-new-2014-06-30",
+        "berkshire_public_equity-902973304-com-new-2020-06-30",
+        "berkshire_public_equity-92343e102-com-2016-06-30",
+        "berkshire_public_equity-92556h206-class-b-com-2023-03-31",
+        "berkshire_public_equity-949746101-com-2018-03-31"
+      ],
+      "train_counts": {
+        "hold": 801,
+        "enter": 40,
+        "increase": 143,
+        "reduce": 105,
+        "exit": 33
+      },
+      "validation_counts": {
+        "reduce": 71,
+        "hold": 249,
+        "increase": 33,
+        "exit": 25,
+        "enter": 17
+      },
+      "held_out_counts": {
+        "exit": 34,
+        "increase": 48,
+        "enter": 28,
+        "hold": 390,
+        "reduce": 70
+      }
+    }
+  ]
+}

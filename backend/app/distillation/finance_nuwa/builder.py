@@ -52,6 +52,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.distillation.finance_nuwa.dataset import MagnitudeBucket, bucket_magnitude
 from app.distillation.finance_nuwa.disclosure import DisclosureScope
 from app.distillation.finance_nuwa.drift import (
+    SHARE_TOLERANCE,
     ActionBasis,
     ActionClassification,
     ObservedAction,
@@ -64,7 +65,12 @@ from app.distillation.finance_nuwa.episode import (
     EpisodeInputs,
     Observation,
 )
+from app.distillation.finance_nuwa.identity import SecurityKey
 from app.distillation.finance_nuwa.lineage import CanonicalPosition, CanonicalQuarter
+
+# Bumped when episode construction changes: the decision window, the visible-book rule, the
+# episode id format, or anything else that alters what a row is.
+BUILDER_VERSION = "episode-builder-v2"
 
 
 class ReplayView(str, Enum):
@@ -116,9 +122,10 @@ def classify_quarter_pair(
     previous: CanonicalQuarter,
     current: CanonicalQuarter,
     *,
-    returns: dict[str, float] | None = None,
-    split_factors: dict[str, float] | None = None,
-    successors: dict[str, str] | None = None,
+    returns: dict[SecurityKey, float] | None = None,
+    split_factors: dict[SecurityKey, float] | None = None,
+    successors: dict[SecurityKey, SecurityKey] | None = None,
+    share_tolerance: float = SHARE_TOLERANCE,
 ) -> list[BuiltAction]:
     """Classify every position change between two canonical quarters.
 
@@ -130,13 +137,14 @@ def classify_quarter_pair(
     book before anything is compared, so continuity is never seen as an exit plus an entry. Only
     curated entries reach this — a detected candidate is not a fact.
     """
-    late_keys = {p.identity.cusip for q in (previous, current) for p in q.late_disclosed}
+    late_keys = {p.identity.key for q in (previous, current) for p in q.late_disclosed}
     successors = successors or {}
 
     before = [_to_snapshot(p) for p in previous.positions]
     if successors:
         before = [
-            s.model_copy(update={"symbol": successors.get(s.symbol, s.symbol)}) for s in before
+            s.model_copy(update={"security": successors.get(s.security, s.security)})
+            for s in before
         ]
 
     classifications = classify_portfolio(
@@ -144,6 +152,7 @@ def classify_quarter_pair(
         [_to_snapshot(p) for p in current.positions],
         returns=returns,
         split_factors=split_factors,
+        share_tolerance=share_tolerance,
     )
 
     built: list[BuiltAction] = []
@@ -156,7 +165,7 @@ def classify_quarter_pair(
             BuiltAction(
                 classification=classification,
                 magnitude=bucket_magnitude(classification.action, fraction),
-                label_depends_on_late_disclosure=classification.symbol in late_keys,
+                label_depends_on_late_disclosure=classification.security in late_keys,
             )
         )
     return built
@@ -184,11 +193,11 @@ def build_episode(
     the investor did not have. That is deliberately the conservative end.
     """
     window_start = _quarter_start(current.period_end)
-    symbol = action.classification.symbol
+    security = action.classification.security
 
     visible, source_quarter = _visible_book(history, window_start, view)
     visible_total = sum(p.market_value for p in visible)
-    holding = next((p for p in visible if p.identity.cusip == symbol), None)
+    holding = next((p for p in visible if p.identity.key == security), None)
 
     portfolio_context = [
         Observation(
@@ -211,7 +220,7 @@ def build_episode(
 
     inputs = EpisodeInputs(
         as_of=window_start,
-        symbol=symbol,
+        security=security,
         starting_weight=(
             round(holding.market_value / visible_total, 6)
             if holding is not None and visible_total > 0
@@ -224,7 +233,7 @@ def build_episode(
 
     return DecisionEpisode(
         advisor_id=advisor_id,
-        episode_id=f"{advisor_id}-{symbol.lower()}-{current.period_end.isoformat()}",
+        episode_id=f"{advisor_id}-{security.slug}-{current.period_end.isoformat()}",
         inputs=inputs,
         observed_action=action.classification.action,
         action_basis=action.classification.basis,
@@ -273,9 +282,9 @@ def _visible_book(
 
 
 def _to_snapshot(canonical) -> PositionSnapshot:
-    """CUSIP is the symbol here: it is the identifier the filings actually key on."""
+    """(CUSIP, share class) is the identity: a CUSIP alone lets one class overwrite another."""
     return PositionSnapshot(
-        symbol=canonical.identity.cusip,
+        security=canonical.identity.key,
         market_value=canonical.market_value,
         shares=canonical.shares or None,
     )

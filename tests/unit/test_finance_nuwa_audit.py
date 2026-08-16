@@ -17,7 +17,7 @@ from app.distillation.finance_nuwa.dataset import (
     stratum_for,
 )
 from app.distillation.finance_nuwa.features import build_features, implied_price, regime_bucket
-from app.distillation.finance_nuwa.identity import SecurityIdentity
+from app.distillation.finance_nuwa.identity import SecurityIdentity, SecurityKey
 from app.distillation.finance_nuwa.lineage import CanonicalPosition, CanonicalQuarter
 from app.distillation.finance_nuwa.sec_13f import ParsedPosition
 
@@ -28,6 +28,11 @@ def audit(**kw) -> DatasetAudit:
         entity="Berkshire Hathaway Inc",
         action_counts={"hold": 526, "reduce": 243, "increase": 224, "exit": 92, "enter": 85},
         share_count_grounded=1170,
+        # Both are measurements, so the defaults are False and a report that never froze an
+        # artifact is correctly not clean. The fixture states them because it describes one that
+        # did.
+        artifact_verified=True,
+        split_manifest_matches=True,
     )
     base.update(kw)
     return DatasetAudit(**base)
@@ -47,8 +52,12 @@ def test_a_clean_dataset_passes_and_says_so():
     "failure",
     [
         {"lookahead_violations": 1},
+        {"feature_lookahead_violations": 1},
+        {"matching_lookahead_violations": 1},
         {"value_unit_conflicts": 1},
         {"unresolved_reaching_modelling": 1},
+        {"artifact_verified": False},
+        {"split_manifest_matches": False},
     ],
 )
 def test_any_single_integrity_failure_blocks_the_whole_dataset(failure: dict):
@@ -65,7 +74,7 @@ def test_a_dataset_with_a_lookahead_violation_is_blocked():
     report = audit(lookahead_violations=3)
     failing = [g for g in report.gates if not g.passed]
 
-    assert [g.name for g in failing] == ["lookahead violations"]
+    assert [g.name for g in failing] == ["episode input lookahead"]
     assert "would score well and teach nothing" in failing[0].detail
 
 
@@ -182,6 +191,10 @@ def test_regime_buckets_are_coarse_on_purpose():
 # --- point-in-time features ---------------------------------------------------------------------------
 
 
+def key(cusip: str) -> SecurityKey:
+    return SecurityKey(cusip=cusip, title_of_class="COM")
+
+
 def _q(period_end: date, entries: list[tuple[str, float, float]]) -> CanonicalQuarter:
     return CanonicalQuarter(
         period_end=period_end,
@@ -205,8 +218,8 @@ def _q(period_end: date, entries: list[tuple[str, float, float]]) -> CanonicalQu
 def test_an_implied_price_comes_straight_out_of_the_filing():
     """No ticker mapping and no price vendor: value over shares is a price series."""
     quarter = _q(date(2020, 3, 31), [("111111111", 1e9, 10_000_000)])
-    assert implied_price(quarter, "111111111") == 100.0
-    assert implied_price(quarter, "999999999") is None
+    assert implied_price(quarter, key("111111111")) == 100.0
+    assert implied_price(quarter, key("999999999")) is None
 
 
 def test_a_short_history_reports_none_rather_than_a_partial_window():
@@ -216,7 +229,7 @@ def test_a_short_history_reports_none_rather_than_a_partial_window():
         _q(date(2020, 3, 31), [("111111111", 1e9, 10_000_000)]),
         _q(date(2020, 6, 30), [("111111111", 1.2e9, 10_000_000)]),
     ]
-    features = build_features(history, "111111111", as_of=date(2020, 7, 1))
+    features = build_features(history, key("111111111"), as_of=date(2020, 7, 1))
 
     assert features.trailing_return_1q == pytest.approx(0.2)
     assert features.trailing_return_4q is None
@@ -226,7 +239,7 @@ def test_features_are_computed_only_from_the_history_they_are_handed():
     """Disclosure timing is decided once, in the builder. This function trusts its input and
     reaches outside it for nothing."""
     history = [_q(date(2020, 3, 31), [("111111111", 1e9, 10_000_000)])]
-    features = build_features(history, "111111111", as_of=date(2020, 4, 1))
+    features = build_features(history, key("111111111"), as_of=date(2020, 4, 1))
 
     assert features.source_period_end == date(2020, 3, 31)
     assert features.as_of == date(2020, 4, 1)
@@ -236,7 +249,7 @@ def test_features_are_computed_only_from_the_history_they_are_handed():
 
 def test_a_position_absent_from_the_visible_book_has_no_weight_rather_than_zero():
     history = [_q(date(2020, 3, 31), [("111111111", 1e9, 10_000_000)])]
-    features = build_features(history, "222222222", as_of=date(2020, 4, 1))
+    features = build_features(history, key("222222222"), as_of=date(2020, 4, 1))
 
     assert features.weight is None
     assert features.rank is None
@@ -251,4 +264,4 @@ def test_holding_duration_stops_at_a_gap():
         _q(date(2019, 9, 30), [("111111111", 1e9, 1e6)]),
         _q(date(2019, 12, 31), [("111111111", 1e9, 1e6)]),
     ]
-    assert build_features(history, "111111111", as_of=date(2020, 1, 1)).quarters_held == 2
+    assert build_features(history, key("111111111"), as_of=date(2020, 1, 1)).quarters_held == 2

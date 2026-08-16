@@ -93,12 +93,40 @@ class DatasetAudit(BaseModel):
     review_required: int = 0
 
     # --- information integrity
+    # Three separate lookahead measurements, because they fail independently and the first one
+    # was reporting a clean zero while the third was already contaminated. An episode-input check
+    # never inspects a feature, and a feature check never inspects which rows were sampled.
     lookahead_violations: int = 0
+    feature_lookahead_violations: int = 0
+    matching_lookahead_violations: int = 0
     value_unit_conflicts: int = 0
     amendment_induced_label_changes: int = 0
     fabricated_enters_removed: int = 0
     public_vs_oracle_divergent_episodes: int = 0
     public_vs_oracle_total: int = 0
+
+    # --- the frozen artifact
+    artifact_verified: bool = False
+    artifact_sha256: str = ""
+    artifact_detail: str = ""
+    split_manifest_matches: bool = False
+
+    # --- label robustness
+    tolerance_chosen: float = 0.0
+    tolerance_flips_vs_zero: int = 0
+    tolerance_flip_share: float = 0.0
+    tolerance_summary: str = ""
+
+    # --- matched controls
+    actions_requiring_controls: int = 0
+    matched_holds: int = 0
+    match_rate: float = 0.0
+    unmatched_actions: int = 0
+    unmatched_by_action: dict[str, int] = Field(default_factory=dict)
+    unmatched_by_weight_bucket: dict[str, int] = Field(default_factory=dict)
+    unmatched_by_return_bucket: dict[str, int] = Field(default_factory=dict)
+    unmatched_by_regime: dict[str, int] = Field(default_factory=dict)
+    match_coverage_by_split: dict[str, float] = Field(default_factory=dict)
 
     # --- split
     train_episodes: int = 0
@@ -109,10 +137,22 @@ class DatasetAudit(BaseModel):
     def gates(self) -> list[GateResult]:
         return [
             GateResult(
-                name="lookahead violations",
+                name="episode input lookahead",
                 observed=self.lookahead_violations,
                 detail="an episode whose inputs postdate its decision window would score well "
                 "and teach nothing",
+            ),
+            GateResult(
+                name="PIT feature lookahead",
+                observed=self.feature_lookahead_violations,
+                detail="features are built from a book filed after the cutoff. This is the leak "
+                "an episode-input check cannot see, because features never enter EpisodeInputs",
+            ),
+            GateResult(
+                name="matching-selection lookahead",
+                observed=self.matching_lookahead_violations,
+                detail="a control was chosen using a position nobody could see at the time, so "
+                "the sample itself carries information the model is meant to be tested without",
             ),
             GateResult(
                 name="value-unit conflicts",
@@ -125,6 +165,21 @@ class DatasetAudit(BaseModel):
                 observed=self.unresolved_reaching_modelling,
                 detail="a split read as a purchase teaches conviction nobody showed. "
                 "Quarantined transitions do not count here — they are withheld, not resolved",
+            ),
+            GateResult(
+                name="dataset artifact hash verified",
+                observed=int(self.artifact_verified),
+                required=1,
+                detail=self.artifact_detail
+                or "the rows on disk must hash to what the manifest says they hash to, or the "
+                "version names something other than what was measured",
+            ),
+            GateResult(
+                name="split manifest matches artifact",
+                observed=int(self.split_manifest_matches),
+                required=1,
+                detail="every row must belong to exactly one split. An unaccounted row is how a "
+                "held-out example reaches refinement without anyone noticing",
             ),
         ]
 
@@ -206,12 +261,53 @@ class DatasetAudit(BaseModel):
         lines += [
             "",
             "INFORMATION INTEGRITY",
-            f"  Lookahead violations      {self.lookahead_violations}",
+            f"  Episode input lookahead   {self.lookahead_violations}",
+            f"  PIT feature lookahead     {self.feature_lookahead_violations}",
+            f"  Matching lookahead        {self.matching_lookahead_violations}",
             f"  Value-unit conflicts      {self.value_unit_conflicts}",
             f"  Amendment label changes   {self.amendment_induced_label_changes}"
             f"  ({self.fabricated_enters_removed} fabricated ENTERs removed)",
             f"  Public vs oracle differ   {self.public_vs_oracle_divergent_episodes}"
             f" of {self.public_vs_oracle_total}",
+            "",
+            "LABEL ROBUSTNESS",
+            f"  Share tolerance           {self.tolerance_chosen:.2%}",
+            f"  Labels moved vs 0%        {self.tolerance_flips_vs_zero}"
+            f"  ({self.tolerance_flip_share:.2%} of episodes)",
+        ]
+        if self.tolerance_summary:
+            lines.append(f"  {self.tolerance_summary}")
+
+        lines += [
+            "",
+            "MATCHED CONTROLS",
+            f"  Actions needing controls  {self.actions_requiring_controls}",
+            f"  Matched holds             {self.matched_holds}  ({self.match_rate:.0%})",
+            f"  Unmatched actions         {self.unmatched_actions}",
+        ]
+        for label, breakdown in (
+            ("by action", self.unmatched_by_action),
+            ("by weight band", self.unmatched_by_weight_bucket),
+            ("by return band", self.unmatched_by_return_bucket),
+            ("by regime", self.unmatched_by_regime),
+        ):
+            if breakdown:
+                rendered = "  ".join(
+                    f"{k} {v}" for k, v in sorted(breakdown.items(), key=lambda kv: -kv[1])
+                )
+                lines.append(f"    unmatched {label:<16} {rendered}")
+        if self.match_coverage_by_split:
+            rendered = "  ".join(
+                f"{k} {v:.0%}" for k, v in sorted(self.match_coverage_by_split.items())
+            )
+            lines.append(f"    hold share by split   {rendered}")
+
+        lines += [
+            "",
+            "FROZEN ARTIFACT",
+            f"  SHA256                    {self.artifact_sha256 or '(not written)'}",
+            f"  Verified                  {'yes' if self.artifact_verified else 'NO'}"
+            f"  ({self.artifact_detail})",
             "",
             "TEMPORAL SPLIT",
             f"  Refinement / train        {self.train_episodes}",
@@ -225,7 +321,7 @@ class DatasetAudit(BaseModel):
         ]
         for gate in self.gates:
             mark = "PASS" if gate.passed else "FAIL"
-            lines.append(f"  [{mark}] {gate.name:<34} {gate.observed} (required {gate.required})")
+            lines.append(f"  [{mark}] {gate.name:<38} {gate.observed} (required {gate.required})")
             if not gate.passed:
                 lines.append(f"         {gate.detail}")
 

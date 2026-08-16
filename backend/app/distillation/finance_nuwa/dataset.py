@@ -33,6 +33,7 @@ from enum import Enum
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.distillation.finance_nuwa.drift import ActionClassification, ObservedAction
+from app.distillation.finance_nuwa.identity import SecurityKey
 
 # --- magnitude ------------------------------------------------------------------------------
 
@@ -105,7 +106,7 @@ class HoldSalience(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    symbol: str
+    security: SecurityKey
     score: float = Field(ge=0.0)
     reasons: list[str] = Field(default_factory=list)
 
@@ -145,7 +146,7 @@ def score_hold(
         score += SALIENCE_CONCENTRATION
         reasons.append("position is concentrated by any common standard")
 
-    return HoldSalience(symbol=classification.symbol, score=round(score, 4), reasons=reasons)
+    return HoldSalience(security=classification.security, score=round(score, 4), reasons=reasons)
 
 
 def select_holds(
@@ -332,19 +333,41 @@ class MatchStratum(BaseModel):
     weight_bucket: int
     return_bucket: int
     regime: str
+    cohort: str = Field(
+        default="",
+        description="Split the pair must share. Empty matches across the whole timeline.",
+    )
 
     @property
-    def key(self) -> tuple[int, int, str]:
-        return (self.weight_bucket, self.return_bucket, self.regime)
+    def key(self) -> tuple[int, int, str, str]:
+        return (self.weight_bucket, self.return_bucket, self.regime, self.cohort)
 
 
 def stratum_for(
-    *, weight: float | None, trailing_return: float | None, regime: str
+    *, weight: float | None, trailing_return: float | None, regime: str, cohort: str = ""
 ) -> MatchStratum:
+    """The cell, optionally confined to one split.
+
+    `cohort` exists because leaving it out produced a measured failure rather than a theoretical
+    one. With a single global pool the matcher walks the actions in chronological order and takes
+    holds from whichever era they came from, so early trades were paired with late holds and the
+    pool was exhausted by the time the recent ones were reached: 1.24 controls per action in
+    train against 0.23 in held-out, and a hold share of 55% against 19%.
+
+    Two things are wrong with that. The obvious one is that the majority-class baseline then
+    differs by 36 points between the set a model is refined on and the set it is scored on, so
+    the two accuracies are not measuring the same task. The subtler one matters more: it makes
+    the composition of the held-out set depend on which trades happened during training, which is
+    precisely the coupling a chronological split exists to prevent.
+
+    Confining the pair to one split costs match rate, and that is the correct trade. A control
+    that could only be found by reaching across the split boundary was not a valid control.
+    """
     return MatchStratum(
         weight_bucket=_bucket(weight, WEIGHT_BUCKET_EDGES),
         return_bucket=_bucket(trailing_return, RETURN_BUCKET_EDGES),
         regime=regime,
+        cohort=cohort,
     )
 
 
@@ -359,9 +382,21 @@ class MatchedSelection(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     kept: list[str] = Field(default_factory=list, description="Identifiers of selected holds")
+    pairs: dict[str, str] = Field(
+        default_factory=dict, description="hold id -> the action id it serves as a control for"
+    )
     unmatched_actions: int = 0
     strata_used: int = 0
     holds_available: int = 0
+
+    # Where matching failed, broken out rather than summed. An overall 82% can mean the design
+    # works, or it can mean every large-position trade is unmatched while the small ones pair up
+    # freely — which would leave exactly the confound the matching exists to remove. One number
+    # cannot distinguish those and the breakdown can.
+    unmatched_by_action: dict[str, int] = Field(default_factory=dict)
+    unmatched_by_weight_bucket: dict[str, int] = Field(default_factory=dict)
+    unmatched_by_return_bucket: dict[str, int] = Field(default_factory=dict)
+    unmatched_by_regime: dict[str, int] = Field(default_factory=dict)
 
     @property
     def match_rate(self) -> float:
@@ -374,41 +409,76 @@ def select_matched_holds(
     hold_strata: list[tuple[str, MatchStratum, float]],
     *,
     per_action: int = 1,
+    action_classes: dict[str, str] | None = None,
 ) -> MatchedSelection:
     """Pick holds that look like the trades, cell by cell.
 
     `hold_strata` carries each hold's salience so that ties inside a cell resolve toward the
     holds that were under real pressure — matching decides *which cell*, salience decides which
     member of it. Both filters matter and neither subsumes the other.
+
+    `action_classes` is optional metadata used only to attribute failures. It never influences
+    which hold is chosen: matching on the outcome class would be matching on the label.
     """
-    pool: dict[tuple[int, int, str], list[tuple[str, float]]] = {}
+    action_classes = action_classes or {}
+    pool: dict[tuple[int, int, str, str], list[tuple[str, float]]] = {}
     for identifier, stratum, salience in hold_strata:
         pool.setdefault(stratum.key, []).append((identifier, salience))
     for candidates in pool.values():
         candidates.sort(key=lambda pair: pair[1], reverse=True)
 
     kept: list[str] = []
+    pairs: dict[str, str] = {}
     unmatched = 0
-    used: set[tuple[int, int, str]] = set()
+    used: set[tuple[int, int, str, str]] = set()
+    by_action: dict[str, int] = {}
+    by_weight: dict[str, int] = {}
+    by_return: dict[str, int] = {}
+    by_regime: dict[str, int] = {}
 
-    for _, stratum in action_strata:
+    for action_id, stratum in action_strata:
         available = pool.get(stratum.key, [])
         taken = 0
         while available and taken < per_action:
             identifier, _ = available.pop(0)
             kept.append(identifier)
+            pairs[identifier] = action_id
             taken += 1
         if taken:
             used.add(stratum.key)
-        else:
-            unmatched += 1
+            continue
+
+        unmatched += 1
+        label = action_classes.get(action_id, "unknown")
+        by_action[label] = by_action.get(label, 0) + 1
+        weight_band = _band_name(stratum.weight_bucket, WEIGHT_BUCKET_EDGES)
+        return_band = _band_name(stratum.return_bucket, RETURN_BUCKET_EDGES)
+        by_weight[weight_band] = by_weight.get(weight_band, 0) + 1
+        by_return[return_band] = by_return.get(return_band, 0) + 1
+        by_regime[stratum.regime] = by_regime.get(stratum.regime, 0) + 1
 
     return MatchedSelection(
         kept=kept,
+        pairs=pairs,
         unmatched_actions=unmatched,
         strata_used=len(used),
         holds_available=sum(len(v) for v in pool.values()) + len(kept),
+        unmatched_by_action=by_action,
+        unmatched_by_weight_bucket=by_weight,
+        unmatched_by_return_bucket=by_return,
+        unmatched_by_regime=by_regime,
     )
+
+
+def _band_name(index: int, edges: tuple[float, ...]) -> str:
+    """Readable label for a bucket index, so the report names bands rather than integers."""
+    if index < 0:
+        return "unknown"
+    if index == 0:
+        return f"<{edges[0]:.0%}"
+    if index >= len(edges):
+        return f">={edges[-1]:.0%}"
+    return f"{edges[index - 1]:.0%}-{edges[index]:.0%}"
 
 
 def _bucket(value: float | None, edges: tuple[float, ...]) -> int:

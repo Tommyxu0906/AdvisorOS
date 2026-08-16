@@ -26,6 +26,75 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 CUSIP_PATTERN = re.compile(r"^[0-9A-Z]{9}$")
 
+# Bumped whenever the fields that constitute an identity change, because episode ids are built
+# from it and two datasets with different key schemas cannot be compared row for row.
+SECURITY_KEY_SCHEMA_VERSION = "security-key-v1"
+
+# CUSIPs are alphanumeric, so this can never appear inside one and a token always splits cleanly.
+KEY_SEPARATOR = ":"
+
+
+class SecurityKey(BaseModel):
+    """What a security *is*, for every purpose downstream of parsing.
+
+    A bare CUSIP was the identifier everywhere below the parser, and it is one field short. A
+    filing may report two share classes of the same issuer under one CUSIP, and a dictionary keyed
+    on CUSIP alone silently keeps whichever it saw last — one position overwrites another, and
+    nothing anywhere reports that it happened. This type makes that impossible rather than
+    unlikely: two classes are two keys, and there is no code path that collapses them.
+
+    The class token is the filer's `titleOfClass`, normalised for whitespace and case and
+    otherwise left exactly as filed. Parsing it into a canonical class designator was the obvious
+    alternative and is a bad idea — it is free text, filers write "COM", "CL A", "COM SER C
+    FRMLA", and a regex that maps those to A/B/C is inventing a fact the filing does not contain.
+    Where a label genuinely changes for a security that never moved, that is a *relabeling*, and
+    it is resolved the way every other identity change in this pipeline is: detected, then either
+    curated with evidence or quarantined. Never patched over by a normaliser.
+    """
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    cusip: str
+    title_of_class: str = ""
+
+    @field_validator("cusip")
+    @classmethod
+    def _well_formed(cls, value: str) -> str:
+        upper = value.strip().upper()
+        if not CUSIP_PATTERN.match(upper):
+            raise ValueError(f"{value!r} is not a 9-character CUSIP")
+        return upper
+
+    @field_validator("title_of_class")
+    @classmethod
+    def _normalised(cls, value: str) -> str:
+        return " ".join(value.upper().split())
+
+    @classmethod
+    def of(cls, identity: SecurityIdentity) -> SecurityKey:
+        return cls(cusip=identity.cusip, title_of_class=identity.title_of_class)
+
+    @classmethod
+    def parse(cls, token: str) -> SecurityKey:
+        """Round-trip a serialized key. Every artifact row stores `token`, and reading one back
+        must produce the identical key or the frozen dataset does not mean what it says."""
+        cusip, _, title = token.partition(KEY_SEPARATOR)
+        return cls(cusip=cusip, title_of_class=title)
+
+    @property
+    def token(self) -> str:
+        """Stable serialized form. This is what goes in a JSONL row and a manifest."""
+        return f"{self.cusip}{KEY_SEPARATOR}{self.title_of_class}"
+
+    @property
+    def slug(self) -> str:
+        """Filename- and identifier-safe form, used to build episode ids."""
+        cleaned = re.sub(r"[^a-z0-9]+", "-", self.token.lower()).strip("-")
+        return cleaned
+
+    def __str__(self) -> str:
+        return self.token
+
 
 class SecurityIdentity(BaseModel):
     """One security, identified by the field the filing actually keys on."""
@@ -56,14 +125,18 @@ class SecurityIdentity(BaseModel):
         return upper
 
     @property
-    def key(self) -> tuple[str, str]:
-        """What positions aggregate on.
+    def key(self) -> SecurityKey:
+        """What positions aggregate on, and what everything downstream is keyed by.
 
         Share class is part of it: a filing that reports Class A and Class C separately is
         describing two securities with different votes and often different prices, and summing
         them would invent a position that does not exist.
+
+        A typed key rather than a tuple, because a tuple is structurally identical to every other
+        two-string tuple in the program and a bare CUSIP string is assignable wherever one is
+        expected. Neither mistake type-checks against this.
         """
-        return (self.cusip, self.title_of_class.strip().upper())
+        return SecurityKey.of(self)
 
     @property
     def display(self) -> str:

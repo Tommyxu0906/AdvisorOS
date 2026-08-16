@@ -11,7 +11,7 @@ from __future__ import annotations
 from datetime import date
 
 from app.distillation.finance_nuwa.drift import ObservedAction, PositionSnapshot, classify_portfolio
-from app.distillation.finance_nuwa.identity import SecurityIdentity
+from app.distillation.finance_nuwa.identity import SecurityIdentity, SecurityKey
 from app.distillation.finance_nuwa.lineage import compose_quarter
 from app.distillation.finance_nuwa.sec_13f import (
     HoldingsSnapshot,
@@ -23,6 +23,13 @@ from app.distillation.finance_nuwa.sec_13f import (
 from app.distillation.finance_nuwa.store import AmendmentType, FilingRef, QuarterLineage
 
 PERIOD = date(2023, 9, 30)
+
+
+def k(name: str) -> SecurityKey:
+    """A legible stand-in for a CUSIP, padded to the nine characters the type requires."""
+    return SecurityKey(cusip=f"{name:0<9}"[:9], title_of_class="COM")
+
+
 NORMALIZATION = ValueNormalization(
     unit=ValueUnit.dollars_usd,
     multiplier=1.0,
@@ -105,21 +112,21 @@ def test_dropping_an_additive_amendment_fabricates_a_decision_next_quarter():
     was bought — and the investor's timing is learned wrong in exactly the cases they took care
     to conceal.
     """
-    q3_without_amendment = [PositionSnapshot(symbol="AAA", market_value=1e9, shares=1000)]
+    q3_without_amendment = [PositionSnapshot(security=k("AAA"), market_value=1e9, shares=1000)]
     q3_with_amendment = [
-        PositionSnapshot(symbol="AAA", market_value=1e9, shares=1000),
-        PositionSnapshot(symbol="SECRET", market_value=5e8, shares=500),
+        PositionSnapshot(security=k("AAA"), market_value=1e9, shares=1000),
+        PositionSnapshot(security=k("SECRET"), market_value=5e8, shares=500),
     ]
     q4 = [
-        PositionSnapshot(symbol="AAA", market_value=1e9, shares=1000),
-        PositionSnapshot(symbol="SECRET", market_value=5e8, shares=500),
+        PositionSnapshot(security=k("AAA"), market_value=1e9, shares=1000),
+        PositionSnapshot(security=k("SECRET"), market_value=5e8, shares=500),
     ]
 
-    naive = {c.symbol: c for c in classify_portfolio(q3_without_amendment, q4)}
-    correct = {c.symbol: c for c in classify_portfolio(q3_with_amendment, q4)}
+    naive = {c.security: c for c in classify_portfolio(q3_without_amendment, q4)}
+    correct = {c.security: c for c in classify_portfolio(q3_with_amendment, q4)}
 
-    assert naive["SECRET"].action is ObservedAction.enter  # a purchase that never happened
-    assert correct["SECRET"].action is ObservedAction.hold  # nothing was traded, which is true
+    assert naive[k("SECRET")].action is ObservedAction.enter  # a purchase that never happened
+    assert correct[k("SECRET")].action is ObservedAction.hold  # nothing was traded, which is true
 
 
 def test_a_restatement_replaces_everything_before_it():

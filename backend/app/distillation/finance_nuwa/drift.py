@@ -36,6 +36,8 @@ from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from app.distillation.finance_nuwa.identity import SecurityKey
+
 
 class ObservedAction(str, Enum):
     """What the investor did to one position over one period."""
@@ -95,6 +97,11 @@ class ActionBasis(str, Enum):
 # report exact shares, so in principle any change is real — but rounding, restatements, and
 # partial-period reporting all produce sub-percent wobble that is not a decision. An AdvisorOS
 # convention, not a finding.
+#
+# Because it is a convention and it decides labels, it is a parameter rather than a constant, and
+# `tolerance.py` sweeps it so the dataset can state how many labels rest on the choice. That
+# sweep is a robustness measurement and must never be resolved by picking whichever value scores
+# best downstream — that would be fitting the definition of the target to the model.
 SHARE_TOLERANCE = 0.005
 
 # Active weight delta, in weight units, below which a move is treated as drift rather than
@@ -117,7 +124,7 @@ class ActionClassification(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    symbol: str = Field(min_length=1)
+    security: SecurityKey
     action: ObservedAction
     basis: ActionBasis
 
@@ -148,19 +155,19 @@ class PositionSnapshot(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    symbol: str = Field(min_length=1)
+    security: SecurityKey
     market_value: float = Field(ge=0)
     shares: float | None = Field(default=None, ge=0)
 
     @model_validator(mode="after")
     def _consistent(self) -> PositionSnapshot:
         if self.shares == 0 and self.market_value > 0:
-            raise ValueError(f"{self.symbol}: zero shares cannot hold a positive market value")
+            raise ValueError(f"{self.security}: zero shares cannot hold a positive market value")
         return self
 
 
 def classify_position(
-    symbol: str,
+    security: SecurityKey,
     *,
     start: PositionSnapshot | None,
     end: PositionSnapshot | None,
@@ -169,6 +176,7 @@ def classify_position(
     end_total: float | None = None,
     drift_total: float | None = None,
     split_factor: float = 1.0,
+    share_tolerance: float = SHARE_TOLERANCE,
 ) -> ActionClassification:
     """Classify one position's change, preferring share counts over any value-based inference.
 
@@ -182,7 +190,7 @@ def classify_position(
 
     if not held_before and not held_after:
         return ActionClassification(
-            symbol=symbol,
+            security=security,
             action=ObservedAction.hold,
             basis=ActionBasis.raw_value,
             explanation="Not held at either date.",
@@ -193,7 +201,7 @@ def classify_position(
 
     if not held_before:
         return ActionClassification(
-            symbol=symbol,
+            security=security,
             action=ObservedAction.enter,
             basis=ActionBasis.share_count
             if end and end.shares is not None
@@ -204,7 +212,7 @@ def classify_position(
         )
     if not held_after:
         return ActionClassification(
-            symbol=symbol,
+            security=security,
             action=ObservedAction.exit,
             basis=ActionBasis.share_count
             if start and start.shares is not None
@@ -222,7 +230,7 @@ def classify_position(
         change = (end.shares - adjusted_start) / adjusted_start
         split = detect_suspected_split(start, end, split_factor=split_factor)
 
-        if abs(change) <= SHARE_TOLERANCE:
+        if abs(change) <= share_tolerance:
             action, reason = ObservedAction.hold, "Share count unchanged"
         elif change > 0:
             action, reason = ObservedAction.increase, f"Share count up {change:.1%}"
@@ -235,7 +243,7 @@ def classify_position(
             else ""
         )
         return ActionClassification(
-            symbol=symbol,
+            security=security,
             action=action,
             basis=ActionBasis.share_count,
             start_weight=start_weight,
@@ -272,7 +280,7 @@ def classify_position(
             )
 
         return ActionClassification(
-            symbol=symbol,
+            security=security,
             action=action,
             basis=ActionBasis.drift_adjusted_value,
             start_weight=start_weight,
@@ -297,7 +305,7 @@ def classify_position(
             "but with no return data this remains an inference"
         )
     return ActionClassification(
-        symbol=symbol,
+        security=security,
         action=action,
         basis=ActionBasis.raw_value,
         start_weight=start_weight,
@@ -310,8 +318,9 @@ def classify_portfolio(
     start: list[PositionSnapshot],
     end: list[PositionSnapshot],
     *,
-    returns: dict[str, float] | None = None,
-    split_factors: dict[str, float] | None = None,
+    returns: dict[SecurityKey, float] | None = None,
+    split_factors: dict[SecurityKey, float] | None = None,
+    share_tolerance: float = SHARE_TOLERANCE,
 ) -> list[ActionClassification]:
     """Classify every position across two disclosures.
 
@@ -319,29 +328,34 @@ def classify_portfolio(
     because a single name's drift weight depends on how the *rest* of the portfolio moved. Doing
     this per-position — the obvious shortcut — silently assumes every other holding was flat, and
     in a quarter when the market moved, that error lands on every name at once.
+
+    Keyed on `SecurityKey`, so two share classes filed under one CUSIP stay two positions. Under
+    the old bare-CUSIP keying one of them silently overwrote the other in these dictionaries and
+    nothing reported it.
     """
     returns = returns or {}
     split_factors = split_factors or {}
 
-    by_symbol_start = {p.symbol: p for p in start}
-    by_symbol_end = {p.symbol: p for p in end}
+    by_key_start = {p.security: p for p in start}
+    by_key_end = {p.security: p for p in end}
 
     start_total = sum(p.market_value for p in start)
     end_total = sum(p.market_value for p in end)
-    drift_total = sum(p.market_value * (1.0 + returns.get(p.symbol, 0.0)) for p in start)
+    drift_total = sum(p.market_value * (1.0 + returns.get(p.security, 0.0)) for p in start)
 
     return [
         classify_position(
-            symbol,
-            start=by_symbol_start.get(symbol),
-            end=by_symbol_end.get(symbol),
-            period_return=returns.get(symbol),
+            security,
+            start=by_key_start.get(security),
+            end=by_key_end.get(security),
+            period_return=returns.get(security),
             start_total=start_total or None,
             end_total=end_total or None,
             drift_total=drift_total or None,
-            split_factor=split_factors.get(symbol, 1.0),
+            split_factor=split_factors.get(security, 1.0),
+            share_tolerance=share_tolerance,
         )
-        for symbol in sorted(set(by_symbol_start) | set(by_symbol_end))
+        for security in sorted(set(by_key_start) | set(by_key_end), key=lambda k: k.token)
     ]
 
 
