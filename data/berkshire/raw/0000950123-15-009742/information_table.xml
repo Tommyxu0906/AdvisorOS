@@ -1,0 +1,36 @@
+<informationTable xmlns="http://www.sec.gov/edgar/document/thirteenf/informationtable" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <infoTable>
+       <nameOfIssuer>PHILLIPS 66</nameOfIssuer>
+       <titleOfClass>COM</titleOfClass>
+       <cusip>718546104</cusip>
+       <value>491577</value>
+       <shrsOrPrnAmt>
+           <sshPrnamt>6102000</sshPrnamt>
+           <sshPrnamtType>SH</sshPrnamtType>
+       </shrsOrPrnAmt>
+       <investmentDiscretion>DFND</investmentDiscretion>
+       <otherManager>1</otherManager>
+       <votingAuthority>
+           <Sole>6102000</Sole>
+           <Shared>0</Shared>
+           <None>0</None>
+       </votingAuthority>
+   </infoTable>
+   <infoTable>
+       <nameOfIssuer>PHILLIPS 66</nameOfIssuer>
+       <titleOfClass>COM</titleOfClass>
+       <cusip>718546104</cusip>
+       <value>1900890</value>
+       <shrsOrPrnAmt>
+           <sshPrnamt>23595948</sshPrnamt>
+           <sshPrnamtType>SH</sshPrnamtType>
+       </shrsOrPrnAmt>
+       <investmentDiscretion>DFND</investmentDiscretion>
+       <otherManager>1,2</otherManager>
+       <votingAuthority>
+           <Sole>23595948</Sole>
+           <Shared>0</Shared>
+           <None>0</None>
+       </votingAuthority>
+   </infoTable>
+</informationTable>
