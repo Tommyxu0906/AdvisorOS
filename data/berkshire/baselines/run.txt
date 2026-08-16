@@ -1,0 +1,370 @@
+Berkshire Behavioral Fidelity — Model Phase 0 baselines
+  natural view 3a4fa93eaa08  train 1122  validation 395
+  matched view 02a7c370d265
+  oracle view  e5a161d12da0
+
+==============================================================================
+BASELINES A/B — no features at all
+==============================================================================
+
+always_hold  ·  berkshire-v2.0-natural  ·  validation  ·  n=395
+  macro F1 0.155  [0.147, 0.161]   balanced acc 0.200   accuracy 0.630   (majority 0.630)
+  class       supp  pred    prec  recall      F1           F1 95% CI
+  exit          25     0   0.000   0.000   0.000        [0.00, 0.00]
+  reduce        71     0   0.000   0.000   0.000        [0.00, 0.00]
+  hold         249   395   0.630   1.000   0.773        [0.73, 0.81]
+  increase      33     0   0.000   0.000   0.000        [0.00, 0.00]
+  enter         17     0   0.000   0.000   0.000        [0.00, 0.00]
+  log loss 12.7662   Brier 0.7392   (deployable prior)
+
+class_prior  ·  berkshire-v2.0-natural  ·  validation  ·  n=395
+  macro F1 0.155  [0.147, 0.161]   balanced acc 0.200   accuracy 0.630   (majority 0.630)
+  class       supp  pred    prec  recall      F1           F1 95% CI
+  exit          25     0   0.000   0.000   0.000        [0.00, 0.00]
+  reduce        71     0   0.000   0.000   0.000        [0.00, 0.00]
+  hold         249   395   0.630   1.000   0.773        [0.73, 0.81]
+  increase      33     0   0.000   0.000   0.000        [0.00, 0.00]
+  enter         17     0   0.000   0.000   0.000        [0.00, 0.00]
+  log loss 1.1770   Brier 0.5750   (deployable prior)
+
+always_hold  ·  berkshire-v2.0  ·  validation  ·  n=253
+  macro F1 0.119  [0.106, 0.129]   balanced acc 0.200   accuracy 0.423   (majority 0.423)
+  class       supp  pred    prec  recall      F1           F1 95% CI
+  exit          25     0   0.000   0.000   0.000        [0.00, 0.00]
+  reduce        71     0   0.000   0.000   0.000        [0.00, 0.00]
+  hold         107   253   0.423   1.000   0.594        [0.53, 0.65]
+  increase      33     0   0.000   0.000   0.000        [0.00, 0.00]
+  enter         17     0   0.000   0.000   0.000        [0.00, 0.00]
+  log loss 19.9315   Brier 1.1542   (MATCHED PRIOR — not a real-world probability)
+
+class_prior  ·  berkshire-v2.0  ·  validation  ·  n=253
+  macro F1 0.119  [0.106, 0.129]   balanced acc 0.200   accuracy 0.423   (majority 0.423)
+  class       supp  pred    prec  recall      F1           F1 95% CI
+  exit          25     0   0.000   0.000   0.000        [0.00, 0.00]
+  reduce        71     0   0.000   0.000   0.000        [0.00, 0.00]
+  hold         107   253   0.423   1.000   0.594        [0.53, 0.65]
+  increase      33     0   0.000   0.000   0.000        [0.00, 0.00]
+  enter         17     0   0.000   0.000   0.000        [0.00, 0.00]
+  log loss 1.4677   Brier 0.7373   (MATCHED PRIOR — not a real-world probability)
+
+==============================================================================
+BASELINES C/D — feature ablation, selected on validation only
+==============================================================================
+
+--- berkshire-v2.0-natural  (train 1122, validation 395)
+
+logistic
+  feature set                 val macro F1  val bal acc  config
+  position                           0.272        0.398  {"balanced": true, "iterations": 600, "l2": 0.1, "learning_rate": 1.0}
+  position+price                     0.339        0.444  {"balanced": true, "iterations": 300, "l2": 0.01, "learning_rate": 0.5}
+  position+price+portfolio           0.305        0.429  {"balanced": true, "iterations": 600, "l2": 0.1, "learning_rate": 1.0}
+
+boosted_trees
+  feature set                 val macro F1  val bal acc  config
+  position                           0.371        0.471  {"balanced": true, "learning_rate": 0.2, "max_depth": 3, "min_leaf": 10, "rounds": 80}
+  position+price                     0.387        0.477  {"balanced": true, "learning_rate": 0.3, "max_depth": 2, "min_leaf": 20, "rounds": 40}
+  position+price+portfolio           0.336        0.473  {"balanced": true, "learning_rate": 0.3, "max_depth": 2, "min_leaf": 20, "rounds": 40}
+
+--- berkshire-v2.0  (train 594, validation 253)
+
+logistic
+  feature set                 val macro F1  val bal acc  config
+  position                           0.273        0.402  {"balanced": true, "iterations": 300, "l2": 0.01, "learning_rate": 0.5}
+  position+price                     0.289        0.405  {"balanced": true, "iterations": 300, "l2": 0.01, "learning_rate": 0.5}
+  position+price+portfolio           0.288        0.299  {"balanced": false, "iterations": 300, "l2": 0.01, "learning_rate": 0.5}
+
+boosted_trees
+  feature set                 val macro F1  val bal acc  config
+  position                           0.336        0.454  {"balanced": true, "learning_rate": 0.3, "max_depth": 2, "min_leaf": 20, "rounds": 40}
+  position+price                     0.347        0.457  {"balanced": true, "learning_rate": 0.2, "max_depth": 3, "min_leaf": 10, "rounds": 80}
+  position+price+portfolio           0.324        0.462  {"balanced": true, "learning_rate": 0.2, "max_depth": 3, "min_leaf": 10, "rounds": 80}
+
+==============================================================================
+FREEZING MODEL CONFIGS
+==============================================================================
+  berkshire-v2.0            boosted_trees   position+price             val 0.347  33e6898d6c5b
+  berkshire-v2.0            logistic        position+price             val 0.289  254e9639ed09
+  berkshire-v2.0-natural    boosted_trees   position+price             val 0.387  3ad3ef768ed4
+  berkshire-v2.0-natural    logistic        position+price             val 0.339  a62fdf75e83c
+
+==============================================================================
+HELD OUT — one evaluation, after the configs above were hashed
+==============================================================================
+
+always_hold  ·  berkshire-v2.0-natural  ·  held_out  ·  n=570
+  macro F1 0.163  [0.157, 0.168]   balanced acc 0.200   accuracy 0.684   (majority 0.684)
+  class       supp  pred    prec  recall      F1           F1 95% CI
+  exit          34     0   0.000   0.000   0.000        [0.00, 0.00]
+  reduce        70     0   0.000   0.000   0.000        [0.00, 0.00]
+  hold         390   570   0.684   1.000   0.812        [0.78, 0.84]
+  increase      48     0   0.000   0.000   0.000        [0.00, 0.00]
+  enter         28     0   0.000   0.000   0.000        [0.00, 0.00]
+  log loss 10.9070   Brier 0.6316
+
+always_hold  ·  berkshire-v2.0-natural  ·  held_out/incumbent  ·  n=505
+  macro F1 0.213  [0.206, 0.219]   balanced acc 0.250   accuracy 0.741   (majority 0.741)
+  class       supp  pred    prec  recall      F1           F1 95% CI
+  exit          33     0   0.000   0.000   0.000        [0.00, 0.00]
+  reduce        68     0   0.000   0.000   0.000        [0.00, 0.00]
+  hold         374   505   0.741   1.000   0.851        [0.82, 0.88]
+  increase      30     0   0.000   0.000   0.000        [0.00, 0.00]
+  log loss 8.9596   Brier 0.5188
+
+class_prior  ·  berkshire-v2.0-natural  ·  held_out  ·  n=570
+  macro F1 0.163  [0.157, 0.168]   balanced acc 0.200   accuracy 0.684   (majority 0.684)
+  class       supp  pred    prec  recall      F1           F1 95% CI
+  exit          34     0   0.000   0.000   0.000        [0.00, 0.00]
+  reduce        70     0   0.000   0.000   0.000        [0.00, 0.00]
+  hold         390   570   0.684   1.000   0.812        [0.78, 0.84]
+  increase      48     0   0.000   0.000   0.000        [0.00, 0.00]
+  enter         28     0   0.000   0.000   0.000        [0.00, 0.00]
+  log loss 1.0691   Brier 0.5084
+
+class_prior  ·  berkshire-v2.0-natural  ·  held_out/incumbent  ·  n=505
+  macro F1 0.213  [0.206, 0.219]   balanced acc 0.250   accuracy 0.741   (majority 0.741)
+  class       supp  pred    prec  recall      F1           F1 95% CI
+  exit          33     0   0.000   0.000   0.000        [0.00, 0.00]
+  reduce        68     0   0.000   0.000   0.000        [0.00, 0.00]
+  hold         374   505   0.741   1.000   0.851        [0.82, 0.88]
+  increase      30     0   0.000   0.000   0.000        [0.00, 0.00]
+  log loss 0.9214   Brier 0.4352
+
+always_hold  ·  berkshire-v2.0  ·  held_out  ·  n=317
+  macro F1 0.121  [0.110, 0.131]   balanced acc 0.200   accuracy 0.432   (majority 0.432)
+  class       supp  pred    prec  recall      F1           F1 95% CI
+  exit          34     0   0.000   0.000   0.000        [0.00, 0.00]
+  reduce        70     0   0.000   0.000   0.000        [0.00, 0.00]
+  hold         137   317   0.432   1.000   0.604        [0.55, 0.65]
+  increase      48     0   0.000   0.000   0.000        [0.00, 0.00]
+  enter         28     0   0.000   0.000   0.000        [0.00, 0.00]
+  log loss 19.6119   Brier 1.1356
+
+always_hold  ·  berkshire-v2.0  ·  held_out/incumbent  ·  n=252
+  macro F1 0.162  [0.147, 0.175]   balanced acc 0.250   accuracy 0.480   (majority 0.480)
+  class       supp  pred    prec  recall      F1           F1 95% CI
+  exit          33     0   0.000   0.000   0.000        [0.00, 0.00]
+  reduce        68     0   0.000   0.000   0.000        [0.00, 0.00]
+  hold         121   252   0.480   1.000   0.649        [0.59, 0.70]
+  increase      30     0   0.000   0.000   0.000        [0.00, 0.00]
+  log loss 17.9547   Brier 1.0397
+
+class_prior  ·  berkshire-v2.0  ·  held_out  ·  n=317
+  macro F1 0.121  [0.110, 0.131]   balanced acc 0.200   accuracy 0.432   (majority 0.432)
+  class       supp  pred    prec  recall      F1           F1 95% CI
+  exit          34     0   0.000   0.000   0.000        [0.00, 0.00]
+  reduce        70     0   0.000   0.000   0.000        [0.00, 0.00]
+  hold         137   317   0.432   1.000   0.604        [0.55, 0.65]
+  increase      48     0   0.000   0.000   0.000        [0.00, 0.00]
+  enter         28     0   0.000   0.000   0.000        [0.00, 0.00]
+  log loss 1.4826   Brier 0.7360
+
+class_prior  ·  berkshire-v2.0  ·  held_out/incumbent  ·  n=252
+  macro F1 0.162  [0.147, 0.175]   balanced acc 0.250   accuracy 0.480   (majority 0.480)
+  class       supp  pred    prec  recall      F1           F1 95% CI
+  exit          33     0   0.000   0.000   0.000        [0.00, 0.00]
+  reduce        68     0   0.000   0.000   0.000        [0.00, 0.00]
+  hold         121   252   0.480   1.000   0.649        [0.59, 0.70]
+  increase      30     0   0.000   0.000   0.000        [0.00, 0.00]
+  log loss 1.3889   Brier 0.6994
+
+boosted_trees  ·  berkshire-v2.0-natural  ·  held_out/incumbent  ·  n=505
+  macro F1 0.267  [0.225, 0.309]   balanced acc 0.322   accuracy 0.368   (majority 0.741)
+  class       supp  pred    prec  recall      F1           F1 95% CI
+  exit          33    93   0.097   0.273   0.143        [0.06, 0.23]
+  reduce        68   163   0.135   0.324   0.191        [0.12, 0.26]
+  hold         374   198   0.737   0.390   0.510        [0.45, 0.56]
+  increase      30    51   0.176   0.300   0.222        [0.11, 0.34]
+
+boosted_trees  ·  berkshire-v2.0-natural  ·  held_out/new_to_book  ·  n=65
+  macro F1 0.120  [0.098, 0.210]   balanced acc 0.200   accuracy 0.431   (majority 0.431)
+  class       supp  pred    prec  recall      F1           F1 95% CI
+  exit           1     0   0.000   0.000   0.000        [0.00, 0.00]
+  reduce         2     0   0.000   0.000   0.000        [0.00, 0.00]
+  hold          16     0   0.000   0.000   0.000        [0.00, 0.00]
+  increase      18     0   0.000   0.000   0.000        [0.00, 0.00]
+  enter         28    65   0.431   1.000   0.602        [0.47, 0.71]
+  NOT A DEPLOYABLE TASK: every row here is a position the observer could not see at the cutoff, and the candidate set already implies something happened. ENTER recall near 1.0 is row construction, not prediction.
+
+boosted_trees  ·  berkshire-v2.0-natural  ·  held_out  ·  n=570
+  macro F1 0.322  [0.281, 0.362]   balanced acc 0.428   accuracy 0.375   (majority 0.684)
+  class       supp  pred    prec  recall      F1           F1 95% CI
+  exit          34    93   0.097   0.265   0.142        [0.06, 0.23]
+  reduce        70   163   0.135   0.314   0.189        [0.12, 0.26]
+  hold         390   198   0.737   0.374   0.497        [0.44, 0.55]
+  increase      48    51   0.176   0.188   0.182        [0.08, 0.29]
+  enter         28    65   0.431   1.000   0.602        [0.47, 0.71]
+  confusion (rows = actual, columns = predicted)
+                  exit    reduce      hold  increase     enter
+  exit               9         7         9         8         1
+  reduce             5        22        33         8         2
+  hold              77       125       146        26        16
+  increase           2         9        10         9        18
+  enter              0         0         0         0        28
+
+  calibration (deployable prior)
+    log loss 1.2713   Brier 0.6931   ECE 0.0801
+    confidence         n   mean conf    accuracy       gap
+    0.0-0.3           40       0.290       0.325     0.035
+    0.3-0.4          202       0.352       0.342    -0.011
+    0.4-0.5          163       0.444       0.380    -0.063
+    0.5-0.6           68       0.544       0.397    -0.146
+    0.6-0.7           91       0.665       0.429    -0.236
+    0.7-0.8            6       0.724       0.667    -0.057
+
+logistic  ·  berkshire-v2.0-natural  ·  held_out/incumbent  ·  n=505
+  macro F1 0.245  [0.204, 0.290]   balanced acc 0.340   accuracy 0.283   (majority 0.741)
+  class       supp  pred    prec  recall      F1           F1 95% CI
+  exit          33   167   0.078   0.394   0.130        [0.07, 0.20]
+  reduce        68   167   0.156   0.382   0.221        [0.15, 0.29]
+  hold         374   121   0.777   0.251   0.380        [0.33, 0.43]
+  increase      30    50   0.200   0.333   0.250        [0.12, 0.37]
+
+logistic  ·  berkshire-v2.0-natural  ·  held_out/new_to_book  ·  n=65
+  macro F1 0.120  [0.098, 0.210]   balanced acc 0.200   accuracy 0.431   (majority 0.431)
+  class       supp  pred    prec  recall      F1           F1 95% CI
+  exit           1     0   0.000   0.000   0.000        [0.00, 0.00]
+  reduce         2     0   0.000   0.000   0.000        [0.00, 0.00]
+  hold          16     0   0.000   0.000   0.000        [0.00, 0.00]
+  increase      18     0   0.000   0.000   0.000        [0.00, 0.00]
+  enter         28    65   0.431   1.000   0.602        [0.47, 0.71]
+  NOT A DEPLOYABLE TASK: every row here is a position the observer could not see at the cutoff, and the candidate set already implies something happened. ENTER recall near 1.0 is row construction, not prediction.
+
+logistic  ·  berkshire-v2.0-natural  ·  held_out  ·  n=570
+  macro F1 0.305  [0.261, 0.345]   balanced acc 0.441   accuracy 0.300   (majority 0.684)
+  class       supp  pred    prec  recall      F1           F1 95% CI
+  exit          34   167   0.078   0.382   0.129        [0.07, 0.20]
+  reduce        70   167   0.156   0.371   0.219        [0.15, 0.29]
+  hold         390   121   0.777   0.241   0.368        [0.31, 0.42]
+  increase      48    50   0.200   0.208   0.204        [0.10, 0.32]
+  enter         28    65   0.431   1.000   0.602        [0.47, 0.71]
+  confusion (rows = actual, columns = predicted)
+                  exit    reduce      hold  increase     enter
+  exit              13         6         7         7         1
+  reduce            16        26        14        12         2
+  hold             135       124        94        21        16
+  increase           3        11         6        10        18
+  enter              0         0         0         0        28
+
+  calibration (deployable prior)
+    log loss 1.2881   Brier 0.7223   ECE 0.1532
+    confidence         n   mean conf    accuracy       gap
+    0.0-0.3           23       0.284       0.130    -0.153
+    0.3-0.4          217       0.355       0.350    -0.004
+    0.4-0.5          167       0.445       0.264    -0.182
+    0.5-0.6           74       0.536       0.189    -0.347
+    0.6-0.7           75       0.667       0.387    -0.281
+    0.7-0.8           11       0.754       0.364    -0.390
+    0.8-0.9            3       0.836       0.333    -0.502
+
+boosted_trees  ·  berkshire-v2.0  ·  held_out/incumbent  ·  n=252
+  macro F1 0.269  [0.209, 0.323]   balanced acc 0.331   accuracy 0.278   (majority 0.480)
+  class       supp  pred    prec  recall      F1           F1 95% CI
+  exit          33    67   0.224   0.455   0.300        [0.18, 0.41]
+  reduce        68   107   0.308   0.485   0.377        [0.28, 0.46]
+  hold         121    36   0.389   0.116   0.178        [0.10, 0.26]
+  increase      30    42   0.191   0.267   0.222        [0.10, 0.36]
+
+boosted_trees  ·  berkshire-v2.0  ·  held_out/new_to_book  ·  n=65
+  macro F1 0.120  [0.098, 0.210]   balanced acc 0.200   accuracy 0.431   (majority 0.431)
+  class       supp  pred    prec  recall      F1           F1 95% CI
+  exit           1     0   0.000   0.000   0.000        [0.00, 0.00]
+  reduce         2     0   0.000   0.000   0.000        [0.00, 0.00]
+  hold          16     0   0.000   0.000   0.000        [0.00, 0.00]
+  increase      18     0   0.000   0.000   0.000        [0.00, 0.00]
+  enter         28    65   0.431   1.000   0.602        [0.47, 0.71]
+  NOT A DEPLOYABLE TASK: every row here is a position the observer could not see at the cutoff, and the candidate set already implies something happened. ENTER recall near 1.0 is row construction, not prediction.
+
+boosted_trees  ·  berkshire-v2.0  ·  held_out  ·  n=317
+  macro F1 0.322  [0.271, 0.366]   balanced acc 0.436   accuracy 0.309   (majority 0.432)
+  class       supp  pred    prec  recall      F1           F1 95% CI
+  exit          34    67   0.224   0.441   0.297        [0.18, 0.40]
+  reduce        70   107   0.308   0.471   0.373        [0.28, 0.46]
+  hold         137    36   0.389   0.102   0.162        [0.09, 0.24]
+  increase      48    42   0.191   0.167   0.178        [0.08, 0.29]
+  enter         28    65   0.431   1.000   0.602        [0.47, 0.72]
+  confusion (rows = actual, columns = predicted)
+                  exit    reduce      hold  increase     enter
+  exit              15        10         1         7         1
+  reduce            13        33        14         8         2
+  hold              37        51        14        19        16
+  increase           2        13         7         8        18
+  enter              0         0         0         0        28
+
+  calibration (MATCHED PRIOR — not a real-world probability)
+    log loss 1.6535   Brier 0.8406   ECE 0.2390
+    confidence         n   mean conf    accuracy       gap
+    0.0-0.3           11       0.281       0.273    -0.008
+    0.3-0.4           65       0.353       0.200    -0.153
+    0.4-0.5           66       0.447       0.182    -0.265
+    0.5-0.6           47       0.556       0.362    -0.195
+    0.6-0.7           80       0.636       0.412    -0.224
+    0.7-0.8            9       0.758       0.333    -0.424
+    0.8-0.9           24       0.854       0.417    -0.437
+    0.9-1.0           15       0.927       0.467    -0.461
+
+logistic  ·  berkshire-v2.0  ·  held_out/incumbent  ·  n=252
+  macro F1 0.250  [0.195, 0.299]   balanced acc 0.321   accuracy 0.254   (majority 0.480)
+  class       supp  pred    prec  recall      F1           F1 95% CI
+  exit          33    87   0.195   0.515   0.283        [0.18, 0.38]
+  reduce        68   110   0.291   0.471   0.360        [0.27, 0.44]
+  hold         121    29   0.276   0.066   0.107        [0.04, 0.17]
+  increase      30    26   0.269   0.233   0.250        [0.10, 0.39]
+
+logistic  ·  berkshire-v2.0  ·  held_out/new_to_book  ·  n=65
+  macro F1 0.120  [0.098, 0.210]   balanced acc 0.200   accuracy 0.431   (majority 0.431)
+  class       supp  pred    prec  recall      F1           F1 95% CI
+  exit           1     0   0.000   0.000   0.000        [0.00, 0.00]
+  reduce         2     0   0.000   0.000   0.000        [0.00, 0.00]
+  hold          16     0   0.000   0.000   0.000        [0.00, 0.00]
+  increase      18     0   0.000   0.000   0.000        [0.00, 0.00]
+  enter         28    65   0.431   1.000   0.602        [0.47, 0.71]
+  NOT A DEPLOYABLE TASK: every row here is a position the observer could not see at the cutoff, and the candidate set already implies something happened. ENTER recall near 1.0 is row construction, not prediction.
+
+logistic  ·  berkshire-v2.0  ·  held_out  ·  n=317
+  macro F1 0.305  [0.253, 0.354]   balanced acc 0.432   accuracy 0.290   (majority 0.432)
+  class       supp  pred    prec  recall      F1           F1 95% CI
+  exit          34    87   0.195   0.500   0.281        [0.17, 0.38]
+  reduce        70   110   0.291   0.457   0.356        [0.27, 0.44]
+  hold         137    29   0.276   0.058   0.096        [0.04, 0.16]
+  increase      48    26   0.269   0.146   0.189        [0.07, 0.32]
+  enter         28    65   0.431   1.000   0.602        [0.47, 0.72]
+  confusion (rows = actual, columns = predicted)
+                  exit    reduce      hold  increase     enter
+  exit              17         8         5         3         1
+  reduce            17        32        11         8         2
+  hold              49        56         8         8        16
+  increase           4        14         5         7        18
+  enter              0         0         0         0        28
+
+  calibration (MATCHED PRIOR — not a real-world probability)
+    log loss 1.9650   Brier 0.8764   ECE 0.2378
+    confidence         n   mean conf    accuracy       gap
+    0.0-0.3            7       0.289       0.286    -0.003
+    0.3-0.4           77       0.350       0.260    -0.090
+    0.4-0.5           57       0.447       0.210    -0.237
+    0.5-0.6           43       0.551       0.233    -0.319
+    0.6-0.7           99       0.636       0.333    -0.302
+    0.7-0.8           24       0.742       0.417    -0.325
+    0.8-0.9           10       0.849       0.500    -0.349
+
+==============================================================================
+PUBLIC OBSERVER vs ORACLE OWN BOOK — same episodes, same architecture
+==============================================================================
+
+boosted_trees  ·  public vs oracle  ·  held_out  ·  n=570
+  both correct                     141
+  public wrong / oracle correct    109   <- reporting lag
+  both wrong                       247   <- policy or model error
+  public correct / oracle wrong     73
+  macro F1  public 0.322  ·  oracle 0.450  ·  lag share of public errors 30.6%
+  These are two measurements of different questions and are never averaged.
+
+logistic  ·  public vs oracle  ·  held_out  ·  n=570
+  both correct                      89
+  public wrong / oracle correct     69   <- reporting lag
+  both wrong                       330   <- policy or model error
+  public correct / oracle wrong     82
+  macro F1  public 0.305  ·  oracle 0.409  ·  lag share of public errors 17.3%
+  These are two measurements of different questions and are never averaged.
+
+==> wrote data/berkshire/baselines/baseline_report.json

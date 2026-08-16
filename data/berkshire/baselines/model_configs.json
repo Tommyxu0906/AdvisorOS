@@ -1,0 +1,72 @@
+{
+  "berkshire-v2.0-natural::boosted_trees": {
+    "config": {
+      "dataset_sha256": "3a4fa93eaa0881e4bea8742ba08c71523e99a46ddd675aeec6a81cc9e2bd3fc8",
+      "feature_schema_version": "pit-features-v1",
+      "feature_set": "position+price",
+      "model": "boosted_trees",
+      "params": {
+        "balanced": true,
+        "learning_rate": 0.3,
+        "max_depth": 2,
+        "min_leaf": 20,
+        "rounds": 40
+      },
+      "view": "berkshire-v2.0-natural"
+    },
+    "config_sha256": "3ad3ef768ed4f1fb947fe957f7fb97654285d50e9ee47d8054bf31c4e4085f9b",
+    "validation_macro_f1": 0.3871
+  },
+  "berkshire-v2.0-natural::logistic": {
+    "config": {
+      "dataset_sha256": "3a4fa93eaa0881e4bea8742ba08c71523e99a46ddd675aeec6a81cc9e2bd3fc8",
+      "feature_schema_version": "pit-features-v1",
+      "feature_set": "position+price",
+      "model": "logistic",
+      "params": {
+        "balanced": true,
+        "iterations": 300,
+        "l2": 0.01,
+        "learning_rate": 0.5
+      },
+      "view": "berkshire-v2.0-natural"
+    },
+    "config_sha256": "a62fdf75e83c3c8623d5e5e321bad5564c8bf0267d0719a10ff85a02990d6465",
+    "validation_macro_f1": 0.3385
+  },
+  "berkshire-v2.0::boosted_trees": {
+    "config": {
+      "dataset_sha256": "02a7c370d26591d916d31ad602b7781eb945080116a92e3e88729d7e1aef67f1",
+      "feature_schema_version": "pit-features-v1",
+      "feature_set": "position+price",
+      "model": "boosted_trees",
+      "params": {
+        "balanced": true,
+        "learning_rate": 0.2,
+        "max_depth": 3,
+        "min_leaf": 10,
+        "rounds": 80
+      },
+      "view": "berkshire-v2.0"
+    },
+    "config_sha256": "33e6898d6c5b913fda35f773ee0f8f8da29257292e25d2f28f81d6c9c363564c",
+    "validation_macro_f1": 0.3472
+  },
+  "berkshire-v2.0::logistic": {
+    "config": {
+      "dataset_sha256": "02a7c370d26591d916d31ad602b7781eb945080116a92e3e88729d7e1aef67f1",
+      "feature_schema_version": "pit-features-v1",
+      "feature_set": "position+price",
+      "model": "logistic",
+      "params": {
+        "balanced": true,
+        "iterations": 300,
+        "l2": 0.01,
+        "learning_rate": 0.5
+      },
+      "view": "berkshire-v2.0"
+    },
+    "config_sha256": "254e9639ed09c322e39db437ad34212cff25fc1ab68bdb096b215642fc8a1ab4",
+    "validation_macro_f1": 0.2886
+  }
+}

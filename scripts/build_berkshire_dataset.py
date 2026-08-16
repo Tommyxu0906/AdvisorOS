@@ -71,6 +71,7 @@ from app.distillation.finance_nuwa.lineage import (  # noqa: E402
     CanonicalQuarter,
     PublicQuarterView,
     compose_quarter,
+    oracle_view,
 )
 from app.distillation.finance_nuwa.quarantine import (  # noqa: E402
     ExclusionRegistry,
@@ -309,7 +310,7 @@ def main() -> int:  # noqa: PLR0915 — one linear pipeline; splitting it would 
         )
 
     # --- episodes -------------------------------------------------------------------
-    episodes, holds, actions_meta = [], [], []
+    episodes, holds, actions_meta, all_episodes = [], [], [], []
     magnitudes: dict[str, int] = {}
     context: dict[str, dict] = {}
     withheld: list[WithheldRow] = []
@@ -325,6 +326,11 @@ def main() -> int:  # noqa: PLR0915 — one linear pipeline; splitting it would 
         public_history = [q for q in history if filed_at.get(q.period_end, q.period_end) <= cutoff]
         visible = [PublicQuarterView.of(q, as_of=cutoff) for q in public_history]
         regime = regime_bucket(regime_features(visible).get("book_return_1q"))
+        # The research upper bound: the entity's own book, confidential positions included, and
+        # without the filing lag. Same episodes and same labels — only the information set moves,
+        # which is what makes the pairwise comparison a decomposition rather than two results.
+        oracle_history = [oracle_view(q) for q in history]
+        oracle_regime = regime_bucket(regime_features(oracle_history).get("book_return_1q"))
 
         # Measured here rather than asserted downstream: every book that contributes to a feature
         # must have been filed by the cutoff, and every position in it disclosed by then. The
@@ -395,6 +401,7 @@ def main() -> int:  # noqa: PLR0915 — one linear pipeline; splitting it would 
                 continue
 
             features = build_features(visible, security, as_of=cutoff)
+            oracle_features = build_features(oracle_history, security, as_of=cutoff)
             # The cohort is part of the cell: a control must come from the same split as the
             # action it stands in for, or the composition of held-out depends on trades that
             # happened during training.
@@ -435,6 +442,9 @@ def main() -> int:  # noqa: PLR0915 — one linear pipeline; splitting it would 
                 "lineage_refs": lineage_refs,
                 "action": built.classification.action.value,
                 "stratum_evidence": stratum_evidence,
+                "oracle_features": oracle_features,
+                "oracle_regime": oracle_regime,
+                "regime": regime,
             }
 
             if built.classification.action is ObservedAction.hold:
@@ -443,8 +453,10 @@ def main() -> int:  # noqa: PLR0915 — one linear pipeline; splitting it would 
                 )
                 context[episode.episode_id]["salience"] = salience.score
                 holds.append((episode, stratum, salience.score))
+                all_episodes.append(episode)
             else:
                 episodes.append(episode)
+                all_episodes.append(episode)
                 actions_meta.append((episode.episode_id, stratum))
                 magnitudes[built.magnitude.value] = magnitudes.get(built.magnitude.value, 0) + 1
 
@@ -483,8 +495,7 @@ def main() -> int:  # noqa: PLR0915 — one linear pipeline; splitting it would 
         1
         for episode_id in kept | {e for e, _ in actions_meta}
         if context[episode_id]["stratum_evidence"]["filed_at"] > context[episode_id]["cutoff"]
-        or context[episode_id]["stratum_evidence"]["last_disclosed"]
-        > context[episode_id]["cutoff"]
+        or context[episode_id]["stratum_evidence"]["last_disclosed"] > context[episode_id]["cutoff"]
     )
     print(
         f"==> {len(episodes)} episodes  "
@@ -499,60 +510,92 @@ def main() -> int:  # noqa: PLR0915 — one linear pipeline; splitting it would 
         validation_end=VALIDATION_END,
     )
     dataset_manifest = dataset.manifest()
-    split_by_id = {
-        **{i: "train" for i in dataset_manifest.train_ids},
-        **{i: "validation" for i in dataset_manifest.validation_ids},
-        **{i: "held_out" for i in dataset_manifest.held_out_ids},
-    }
+    # Split assignments come from `EpisodeDataset`, which owns the chronological rule, and are
+    # computed independently for each view. Deriving the natural view's splits from the matched
+    # view's map would make the agreement check below compare a dictionary with itself.
+    natural_manifest = EpisodeDataset(
+        advisor_id=TARGET,
+        episodes=all_episodes,
+        train_end=TRAIN_END,
+        validation_end=VALIDATION_END,
+    ).manifest()
+
+    def splits_of(m) -> dict[str, str]:
+        return {
+            **{i: "train" for i in m.train_ids},
+            **{i: "validation" for i in m.validation_ids},
+            **{i: "held_out" for i in m.held_out_ids},
+        }
+
+    matched_splits = splits_of(dataset_manifest)
+    natural_splits = splits_of(natural_manifest)
 
     # --- how much of this rests on the tolerance ------------------------------------
     tolerance_report = sweep_tolerances(quarters, table, registry, chosen=args.tolerance)
     print()
     print(tolerance_report.render())
 
-    # --- the frozen artifact --------------------------------------------------------
-    rows: list[EpisodeRow] = []
-    for episode in sorted(episodes, key=lambda e: e.episode_id):
-        info = context[episode.episode_id]
-        security: SecurityKey = info["security"]
-        is_hold = episode.observed_action is ObservedAction.hold
-        rows.append(
-            EpisodeRow(
-                episode_id=episode.episode_id,
-                target_id=TARGET,
-                security=security.token,
-                security_cusip=security.cusip,
-                security_title_of_class=security.title_of_class,
-                observed_action=episode.observed_action.value,
-                magnitude="none" if is_hold else info["magnitude"],
-                action_basis=episode.action_basis.value,
-                attribution_basis=episode.attribution.value,
-                attribution_confidence=episode.attribution_confidence,
-                training_weight=episode.training_weight,
-                decision_window_start=episode.decision_window_start,
-                decision_window_end=episode.decision_window_end,
-                public_information_cutoff=episode.inputs.as_of,
-                replay_view=ReplayView.public_observer.value,
-                feature_source_period_end=info["features"].source_period_end,
-                features=info["features"].as_dict(),
-                is_matched_control=is_hold,
-                matched_control=(
-                    MatchedControl(
-                        stratum=(
-                            f"w{info['stratum'].weight_bucket}"
-                            f"|r{info['stratum'].return_bucket}"
-                            f"|{info['stratum'].regime}"
-                        ),
-                        matched_to=selection.pairs.get(episode.episode_id),
-                        salience=info.get("salience"),
-                    )
-                    if is_hold
-                    else None
-                ),
-                lineage_refs=info["lineage_refs"],
-                split=split_by_id[episode.episode_id],
+    # --- the frozen artifacts -------------------------------------------------------
+    # Three views of one ground truth. The labels, provenance, splits and quarantine are shared;
+    # what differs is which episodes are present (matched vs natural) and which information set
+    # the features came from (public vs oracle). A view is not a new ground truth, and the
+    # matched rows are a strict subset of the natural ones — asserted below rather than assumed.
+    def build_rows(source, *, natural: bool, oracle: bool) -> list[EpisodeRow]:
+        splits = natural_splits if natural else matched_splits
+        out: list[EpisodeRow] = []
+        for episode in sorted(source, key=lambda e: e.episode_id):
+            info = context[episode.episode_id]
+            security: SecurityKey = info["security"]
+            is_hold = episode.observed_action is ObservedAction.hold
+            selected = episode.episode_id in kept
+            features = info["oracle_features"] if oracle else info["features"]
+            out.append(
+                EpisodeRow(
+                    episode_id=episode.episode_id,
+                    target_id=TARGET,
+                    security=security.token,
+                    security_cusip=security.cusip,
+                    security_title_of_class=security.title_of_class,
+                    observed_action=episode.observed_action.value,
+                    magnitude="none" if is_hold else info["magnitude"],
+                    action_basis=episode.action_basis.value,
+                    attribution_basis=episode.attribution.value,
+                    attribution_confidence=episode.attribution_confidence,
+                    training_weight=episode.training_weight,
+                    decision_window_start=episode.decision_window_start,
+                    decision_window_end=episode.decision_window_end,
+                    public_information_cutoff=episode.inputs.as_of,
+                    replay_view=(
+                        ReplayView.oracle_own_book.value
+                        if oracle
+                        else ReplayView.public_observer.value
+                    ),
+                    feature_source_period_end=features.source_period_end,
+                    features=features.as_dict(),
+                    # In the natural view this marks the holds that *also* appear in the matched
+                    # view, so one can be derived from the other by filtering rather than by
+                    # rebuilding — which is what makes "same underlying labels" checkable.
+                    is_matched_control=is_hold and (selected or not natural),
+                    matched_control=(
+                        MatchedControl(
+                            stratum=(
+                                f"w{info['stratum'].weight_bucket}"
+                                f"|r{info['stratum'].return_bucket}"
+                                f"|{info['stratum'].regime}"
+                            ),
+                            matched_to=selection.pairs.get(episode.episode_id),
+                            salience=info.get("salience"),
+                        )
+                        if is_hold and selected
+                        else None
+                    ),
+                    lineage_refs=info["lineage_refs"],
+                    split=splits[episode.episode_id],
+                )
             )
-        )
+        return out
+
+    rows = build_rows(episodes, natural=False, oracle=False)
 
     artifact_dir = root / "dataset" / args.version
     manifest = ArtifactManifest(
@@ -582,6 +625,67 @@ def main() -> int:  # noqa: PLR0915 — one linear pipeline; splitting it would 
         f"({result.manifest.row_count} rows, sha256 {result.manifest.artifact_sha256[:12]})"
     )
     artifact_ok, artifact_detail = verify(artifact_dir)
+
+    # --- the natural and oracle views -----------------------------------------------
+    # Separate frozen artifacts rather than fields on the matched one, because the matched view
+    # is already frozen and must stay byte-identical. They answer different questions: the
+    # matched view asks whether a real hold can be told from a real trade under similar
+    # conditions, and the natural view carries the true class prevalence, which is the only
+    # basis on which a probability can be called calibrated.
+    natural_rows = build_rows(all_episodes, natural=True, oracle=False)
+    oracle_rows = build_rows(all_episodes, natural=True, oracle=True)
+    for name, view_rows in (("natural", natural_rows), ("oracle", oracle_rows)):
+        ids = {"train": [], "validation": [], "held_out": []}
+        counts: dict[str, int] = {}
+        for row in view_rows:
+            ids[row.split].append(row.episode_id)
+            counts[row.observed_action] = counts.get(row.observed_action, 0) + 1
+        view_version = f"{args.version}-{name}"
+        view_manifest = manifest.model_copy(
+            update={
+                "dataset_version": view_version,
+                "class_counts": counts,
+                "train_ids": ids["train"],
+                "validation_ids": ids["validation"],
+                "held_out_ids": ids["held_out"],
+            }
+        )
+        try:
+            view_result = freeze(
+                root / "dataset" / view_version,
+                manifest=view_manifest,
+                rows=view_rows,
+                withheld=withheld,
+            )
+        except DatasetFrozenError as error:
+            print(f"\nFROZEN: {error}", file=sys.stderr)
+            return 2
+        hold_share = counts.get("hold", 0) / len(view_rows) if view_rows else 0.0
+        print(
+            f"==> {'wrote' if view_result.written else 'unchanged'} {view_version} "
+            f"({view_result.manifest.row_count} rows, hold {hold_share:.1%}, "
+            f"sha256 {view_result.manifest.artifact_sha256[:12]})"
+        )
+
+    # A view is not a new ground truth. Every matched row must appear in the natural view with
+    # the same label, the same features and the same split — checked here rather than trusted,
+    # because two views that quietly disagree would let a result be reported against whichever
+    # one flatters it.
+    natural_by_id = {r.episode_id: r for r in natural_rows}
+    disagreements = [
+        r.episode_id
+        for r in rows
+        if r.episode_id not in natural_by_id
+        or natural_by_id[r.episode_id].observed_action != r.observed_action
+        or natural_by_id[r.episode_id].features != r.features
+        or natural_by_id[r.episode_id].split != r.split
+    ]
+    if disagreements:
+        print(
+            f"\nVIEWS DISAGREE on {len(disagreements)} episode(s), e.g. {disagreements[:3]}",
+            file=sys.stderr,
+        )
+        return 3
 
     # Measured, not asserted. Construction validators already reject a leaking episode, so this
     # should be zero — which is exactly why re-deriving it is worth the six lines: a gate that

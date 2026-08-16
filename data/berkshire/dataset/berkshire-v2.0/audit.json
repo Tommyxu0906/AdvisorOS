@@ -1,7 +1,7 @@
 {
   "dataset_version": "berkshire-v2.0",
   "entity": "Berkshire Hathaway Inc",
-  "generated_at": "2026-08-16T13:48:17.559960Z",
+  "generated_at": "2026-08-16T13:56:09.833920Z",
   "coverage": "2014-03-31 to 2024-12-31",
   "canonical_quarters": 44,
   "missing_quarters": [],

@@ -158,6 +158,11 @@ class PublicQuarterView(BaseModel):
         description="Positions held but not yet public at as_of — counted so the audit can show "
         "the filter did something rather than assume it",
     )
+    information_set: str = Field(
+        default="public_observer",
+        description="public_observer | oracle_own_book. Carried so a deployable result can be "
+        "checked rather than assumed at the point it is reported",
+    )
 
     @classmethod
     def of(cls, quarter: CanonicalQuarter, *, as_of: date) -> PublicQuarterView:
@@ -169,6 +174,28 @@ class PublicQuarterView(BaseModel):
             positions=visible,
             withheld=len(quarter.positions) - len(visible),
         )
+
+    @property
+    def is_deployable(self) -> bool:
+        return self.information_set == "public_observer"
+
+
+def oracle_view(quarter: CanonicalQuarter) -> PublicQuarterView:
+    """The entity's own book, confidential positions included. A research upper bound.
+
+    Not lookahead from the investor's point of view — they knew their own holdings. It is
+    lookahead from everyone else's, which is exactly why nothing built from this may be reported
+    as a deployable result. The `information_set` field travels with the view so that "this is
+    the oracle number" is a property of the object rather than a claim in a paragraph someone
+    might drop when copying a table.
+    """
+    return PublicQuarterView(
+        period_end=quarter.period_end,
+        as_of=quarter.period_end,
+        positions=list(quarter.positions),
+        withheld=0,
+        information_set="oracle_own_book",
+    )
 
     @property
     def total_value(self) -> float:
