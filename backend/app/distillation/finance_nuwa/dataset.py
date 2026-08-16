@@ -53,6 +53,14 @@ class MagnitudeBucket(str, Enum):
     full = "full"
     """Opened from nothing or closed to nothing."""
 
+    unknown = "unknown"
+    """A trade whose size the data cannot support a bucket for.
+
+    Previously these were returned as `small`, which is a claim rather than an absence — and the
+    wrong one, since a trade with no measurable fraction is as likely to have been large. A model
+    trained on that learns a bias toward small trades that exists only in the encoding.
+    """
+
 
 # Boundaries as fractions of the starting position. House conventions chosen to match how these
 # moves get described in practice, not derived from anything.
@@ -67,7 +75,7 @@ def bucket_magnitude(action: ObservedAction, fraction_traded: float | None) -> M
     if action in (ObservedAction.enter, ObservedAction.exit):
         return MagnitudeBucket.full
     if fraction_traded is None:
-        return MagnitudeBucket.small
+        return MagnitudeBucket.unknown
     size = abs(fraction_traded)
     if size < SMALL_CEILING:
         return MagnitudeBucket.small

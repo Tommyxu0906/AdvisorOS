@@ -130,6 +130,51 @@ class CanonicalQuarter(BaseModel):
         return [p.position for p in self.positions]
 
 
+class PublicQuarterView(BaseModel):
+    """A quarter as an outside observer could actually see it on a given date.
+
+    A separate type rather than a convention, because the convention failed. The build script
+    filtered *quarters* by filing date and then handed the whole `CanonicalQuarter` to the
+    feature layer, which read `.positions` — so a holding that was real in the quarter but not
+    disclosed until a confidential-treatment amendment months later still reached portfolio
+    weight, rank, HHI, the regime proxy, and hold matching.
+
+    That leak is nastier than the one the episode audit checks for. Those features never enter
+    `EpisodeInputs`, so a lookahead check that only inspects episode inputs reports a clean zero
+    while the control selection has already been contaminated. A model would then be scored on
+    matched holds chosen using information nobody had.
+
+    So filtering happens exactly once, here, at construction. Anything downstream that wants the
+    public book asks for this type and cannot accidentally receive the unfiltered one.
+    """
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    period_end: date
+    as_of: date = Field(description="The date this view was taken as at")
+    positions: list[CanonicalPosition] = Field(default_factory=list)
+    withheld: int = Field(
+        default=0,
+        description="Positions held but not yet public at as_of — counted so the audit can show "
+        "the filter did something rather than assume it",
+    )
+
+    @classmethod
+    def of(cls, quarter: CanonicalQuarter, *, as_of: date) -> PublicQuarterView:
+        """The only supported construction path, and the only place the filter lives."""
+        visible = quarter.positions_knowable_on(as_of)
+        return cls(
+            period_end=quarter.period_end,
+            as_of=as_of,
+            positions=visible,
+            withheld=len(quarter.positions) - len(visible),
+        )
+
+    @property
+    def total_value(self) -> float:
+        return sum(p.market_value for p in self.positions)
+
+
 def compose_quarter(
     lineage: QuarterLineage, snapshots: dict[str, HoldingsSnapshot]
 ) -> CanonicalQuarter:

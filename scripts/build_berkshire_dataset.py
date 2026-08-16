@@ -28,9 +28,12 @@ from app.distillation.finance_nuwa.builder import (  # noqa: E402
 )
 from app.distillation.finance_nuwa.corporate_actions import (  # noqa: E402
     CorporateActionKind,
-    LineageTable,
+    apply_lineage,
     blocked_cusips,
     detect_candidates,
+    load_curated,
+    split_factors_for,
+    unresolved_blocking,
 )
 from app.distillation.finance_nuwa.dataset import (  # noqa: E402
     EpisodeDataset,
@@ -44,11 +47,21 @@ from app.distillation.finance_nuwa.features import (  # noqa: E402
     regime_bucket,
     regime_features,
 )
-from app.distillation.finance_nuwa.lineage import compose_quarter  # noqa: E402
+from app.distillation.finance_nuwa.lineage import (  # noqa: E402
+    PublicQuarterView,
+    compose_quarter,
+)
 from app.distillation.finance_nuwa.sec_13f import parse_information_table  # noqa: E402
 from app.distillation.finance_nuwa.store import FilingRef, QuarterLineage  # noqa: E402
 
 ENTITY = "Berkshire Hathaway Inc"
+# The subject of this dataset is the filing entity, not a person. 13F reports net holdings
+# changes for Berkshire; it never says whether Buffett, Combs, Weschler or anyone else chose a
+# given trade. Labelling these "buffett" would assert an attribution the source cannot support,
+# and a Buffett-attributed subset must later be built from independent evidence — letters,
+# interviews, annual-meeting statements — never from position size, otherManager, or a trade
+# looking Buffett-like, all of which would make the evaluation circular.
+TARGET = "berkshire_public_equity"
 CIK = "1067983"
 TRAIN_END = date(2019, 12, 31)
 VALIDATION_END = date(2021, 12, 31)
@@ -58,6 +71,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", default="data/berkshire")
     parser.add_argument("--version", default="berkshire-v1.0")
+    parser.add_argument("--lineage", default="config/security_lineage/reviewed_v1.json")
     args = parser.parse_args()
 
     root = Path(args.root)
@@ -110,7 +124,8 @@ def main() -> int:
     print(f"==> {len(quarters)} canonical quarters, {amendments} amendments")
 
     # --- corporate actions ----------------------------------------------------------
-    table = LineageTable()
+    # Curated entries only. Detection proposes; nothing here promotes a candidate.
+    table = load_curated(args.lineage)
     candidates = [
         candidate
         for previous, current in zip(quarters, quarters[1:], strict=False)
@@ -119,8 +134,16 @@ def main() -> int:
     by_kind: dict[str, int] = {}
     for candidate in candidates:
         by_kind[candidate.suspected.value] = by_kind.get(candidate.suspected.value, 0) + 1
-    blocking = [c for c in candidates if c.blocks_episode]
-    print(f"==> {len(candidates)} corporate-action candidates, {len(blocking)} blocking")
+    still_open = unresolved_blocking(candidates, table)
+    print(
+        f"==> {len(candidates)} detected candidates, {len(table.entries)} curated entries, "
+        f"{len(still_open)} unresolved blocking"
+    )
+    for candidate in still_open:
+        print(
+            f"    UNRESOLVED {candidate.period_end} {candidate.suspected.value} "
+            f"{candidate.from_cusip}->{candidate.to_cusip}"
+        )
 
     # --- episodes -------------------------------------------------------------------
     episodes, holds, actions_meta = [], [], []
@@ -133,7 +156,11 @@ def main() -> int:
         history = quarters[: index + 1]
         blocked = blocked_cusips(detect_candidates(previous, current, table=table))
         cutoff = date(current.period_end.year, ((current.period_end.month - 1) // 3) * 3 + 1, 1)
-        visible = [q for q in history if filed_at.get(q.period_end, q.period_end) <= cutoff]
+        visible = [
+            PublicQuarterView.of(q, as_of=cutoff)
+            for q in history
+            if filed_at.get(q.period_end, q.period_end) <= cutoff
+        ]
         regime = regime_bucket(regime_features(visible).get("book_return_1q"))
 
         for position in current.late_disclosed:
@@ -141,7 +168,13 @@ def main() -> int:
             late_value += position.market_value
             delays.append(position.disclosure_delay_days(current.period_end))
 
-        for built in classify_quarter_pair(previous, current):
+        successors = apply_lineage(previous, current, table)
+        for built in classify_quarter_pair(
+            previous,
+            current,
+            split_factors=split_factors_for(previous, current, table),
+            successors=successors,
+        ):
             cusip = built.classification.symbol
             if cusip in blocked:
                 continue
@@ -155,7 +188,7 @@ def main() -> int:
                 history,
                 current,
                 built,
-                advisor_id="buffett",
+                advisor_id=TARGET,
                 entity=ENTITY,
                 filed_at=filed_at.get(current.period_end, current.period_end),
                 view=ReplayView.public_observer,
@@ -164,7 +197,7 @@ def main() -> int:
                 history,
                 current,
                 built,
-                advisor_id="buffett",
+                advisor_id=TARGET,
                 entity=ENTITY,
                 filed_at=filed_at.get(current.period_end, current.period_end),
                 view=ReplayView.oracle_own_book,
@@ -215,7 +248,7 @@ def main() -> int:
     )
 
     dataset = EpisodeDataset(
-        advisor_id="buffett",
+        advisor_id=TARGET,
         episodes=episodes,
         train_end=TRAIN_END,
         validation_end=VALIDATION_END,
@@ -249,10 +282,15 @@ def main() -> int:
         late_disclosed_value=late_value,
         median_disclosure_delay_days=int(statistics.median(delays)) if delays else None,
         max_disclosure_delay_days=max(delays) if delays else None,
-        confirmed_cusip_changes=by_kind.get(CorporateActionKind.cusip_change.value, 0),
-        confirmed_splits=by_kind.get(CorporateActionKind.split.value, 0),
+        detected_candidates=len(candidates),
+        confirmed_cusip_changes=sum(
+            1
+            for e in table.entries
+            if e.kind in (CorporateActionKind.cusip_change, CorporateActionKind.class_change)
+        ),
+        confirmed_splits=sum(1 for e in table.entries if e.kind is CorporateActionKind.split),
         merger_review_queue=by_kind.get(CorporateActionKind.merger.value, 0),
-        unresolved_blocking_actions=0,
+        unresolved_blocking_actions=len(still_open),
         action_counts=dataset_manifest.action_counts,
         magnitude_counts=magnitudes,
         share_count_grounded=sum(1 for e in episodes if e.action_basis.value == "share_count"),

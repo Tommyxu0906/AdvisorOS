@@ -1,0 +1,64 @@
+{
+  "version": "security-lineage-v1",
+  "scope": "Facts about securities, not about any holder. Shared by every subject in the library.",
+  "evidence_standard": "Each entry records what the resolution actually rests on. None of these come from an authoritative corporate-actions feed — that source does not exist in this project yet — so confidence reflects the strength of the available basis and never claims more.",
+  "entries": [
+    {
+      "from_cusip": "584404107",
+      "to_cusip": "58441K100",
+      "kind": "cusip_change",
+      "effective_date": "2014-12-31",
+      "evidence": "Issuer name continuity (MEDIA GEN INC -> MEDIA GEN INC NEW) across a single filing boundary, with position value within 30%. The 'NEW' suffix is the filer's own marker for a re-identified issuer. Reviewed by hand; not from a corporate-actions feed.",
+      "confidence": 0.85
+    },
+    {
+      "from_cusip": "92826C839",
+      "to_cusip": "92826C839",
+      "kind": "split",
+      "effective_date": "2015-03-31",
+      "share_ratio": 4.0,
+      "evidence": "Share count moved 3.94x while position value moved 0.98x — arithmetically a split rather than a purchase, and the ratio rounds to a clean 4:1. Same CUSIP on both sides, which rules out re-identification. Reviewed by hand; not from a corporate-actions feed.",
+      "confidence": 0.9
+    },
+    {
+      "from_cusip": "16117M305",
+      "to_cusip": "16119P108",
+      "kind": "class_change",
+      "effective_date": "2016-06-30",
+      "evidence": "Issuer name continuity with an explicit share-class marker (CHARTER COMMUNICATIONS INC D -> INC N) and value within 2%. Reviewed by hand; not from a corporate-actions feed.",
+      "confidence": 0.85
+    },
+    {
+      "from_cusip": "G5480U138",
+      "to_cusip": "G9001E102",
+      "kind": "cusip_change",
+      "effective_date": "2018-03-31",
+      "evidence": "Issuer name continuity (LIBERTY GLOBAL PLC -> LIBERTY LATIN AMERICA LTD) with value within 3%, one-to-one across the boundary. Reviewed by hand; not from a corporate-actions feed.",
+      "confidence": 0.75
+    },
+    {
+      "from_cusip": "G5480U153",
+      "to_cusip": "G9001E128",
+      "kind": "cusip_change",
+      "effective_date": "2018-03-31",
+      "evidence": "Second share class of the same transition as G5480U138, matching one-to-one with value within 4%. Reviewed by hand; not from a corporate-actions feed.",
+      "confidence": 0.75
+    },
+    {
+      "from_cusip": "G6693N103",
+      "to_cusip": "G6683N103",
+      "kind": "cusip_change",
+      "effective_date": "2022-12-31",
+      "evidence": "Identical issuer name (NU HLDGS LTD) on both sides with value within 8% and a one-character CUSIP difference, which is the shape of an identifier correction rather than a trade. Reviewed by hand; not from a corporate-actions feed.",
+      "confidence": 0.8
+    }
+  ],
+  "deliberately_unresolved": [
+    {
+      "cusips": ["531229102", "531229300", "531229409", "531229607", "531229789", "531229813"],
+      "periods": ["2016-06-30", "2023-09-30"],
+      "reason": "Liberty Media recapitalised into multiple tracking stocks, so these are one-to-many transitions: 531229102 maps to BOTH 531229607 and 531229409, and the 2023 boundary splits again. SecurityLineage models a single successor and cannot represent that without either dropping a leg or double-counting a position. Resolving these needs a one-to-many lineage type and an authoritative source for the exchange ratios; asserting a 1:1 successor here would be inventing the very fact the table exists to record.",
+      "blocks": true
+    }
+  ]
+}

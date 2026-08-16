@@ -83,9 +83,10 @@ def test_a_hold_has_no_magnitude():
     assert bucket_magnitude(ObservedAction.hold, None) is MagnitudeBucket.none
 
 
-def test_an_unknown_fraction_does_not_become_a_confident_bucket():
-    """Regressing on 37.2% would invite precision the filing cannot support."""
-    assert bucket_magnitude(ObservedAction.reduce, None) is MagnitudeBucket.small
+def test_an_unknown_fraction_is_unknown_rather_than_small():
+    """`small` is a claim, and the wrong one: a trade with no measurable fraction is as likely to
+    have been large. Encoding it as small teaches a bias that exists only in the encoding."""
+    assert bucket_magnitude(ObservedAction.reduce, None) is MagnitudeBucket.unknown
 
 
 # --- which holds are evidence ------------------------------------------------------------------

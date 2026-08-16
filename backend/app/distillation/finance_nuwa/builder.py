@@ -118,16 +118,29 @@ def classify_quarter_pair(
     *,
     returns: dict[str, float] | None = None,
     split_factors: dict[str, float] | None = None,
+    successors: dict[str, str] | None = None,
 ) -> list[BuiltAction]:
     """Classify every position change between two canonical quarters.
 
     Takes `CanonicalQuarter` and nothing else. A raw-snapshot overload would be convenient and
     would quietly resurrect the five quarters whose amendments matter.
+
+    `successors` carries confirmed re-identifications, and applying them here rather than after
+    classification is the point: a security that became another one is renamed in the *previous*
+    book before anything is compared, so continuity is never seen as an exit plus an entry. Only
+    curated entries reach this — a detected candidate is not a fact.
     """
     late_keys = {p.identity.cusip for q in (previous, current) for p in q.late_disclosed}
+    successors = successors or {}
+
+    before = [_to_snapshot(p) for p in previous.positions]
+    if successors:
+        before = [
+            s.model_copy(update={"symbol": successors.get(s.symbol, s.symbol)}) for s in before
+        ]
 
     classifications = classify_portfolio(
-        [_to_snapshot(p) for p in previous.positions],
+        before,
         [_to_snapshot(p) for p in current.positions],
         returns=returns,
         split_factors=split_factors,

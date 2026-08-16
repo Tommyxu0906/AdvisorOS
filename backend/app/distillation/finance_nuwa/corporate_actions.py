@@ -303,6 +303,73 @@ def detect_candidates(
     return sorted(candidates, key=lambda c: (c.suspected.value, c.from_cusip))
 
 
+def load_curated(path) -> LineageTable:
+    """Read the curated table. Only these entries count as resolved.
+
+    Kept out of the detector's reach on purpose: an entry exists because someone wrote down what
+    it rests on, which is a different act from an arithmetic pattern being suspicious.
+    """
+    import json
+    from pathlib import Path
+
+    payload = json.loads(Path(path).read_text())
+    return LineageTable(
+        entries=[
+            SecurityLineage(
+                from_cusip=e["from_cusip"],
+                to_cusip=e.get("to_cusip"),
+                kind=CorporateActionKind(e["kind"]),
+                effective_date=date.fromisoformat(e["effective_date"]),
+                share_ratio=e.get("share_ratio"),
+                evidence=e.get("evidence", ""),
+                confidence=e.get("confidence", 1.0),
+            )
+            for e in payload.get("entries", [])
+        ]
+    )
+
+
+def unresolved_blocking(
+    candidates: list[ActionCandidate], table: LineageTable
+) -> list[ActionCandidate]:
+    """Blocking candidates with no curated entry behind them.
+
+    This is what the dataset gate reads. It has to be computed rather than asserted: a gate that
+    reports a literal zero proves nothing about the data it exists to guard, and a detected
+    candidate is not a confirmed fact however convincing its arithmetic looked.
+    """
+    unresolved: list[ActionCandidate] = []
+    for candidate in candidates:
+        if not candidate.blocks_episode:
+            continue
+        window = (candidate.period_end, candidate.period_end)
+        resolved = (
+            table.split_ratio(candidate.from_cusip, during=window) is not None
+            or table.successor_of(candidate.from_cusip, during=window) is not None
+        )
+        if not resolved:
+            unresolved.append(candidate)
+    return unresolved
+
+
+def apply_lineage(
+    previous: CanonicalQuarter, current: CanonicalQuarter, table: LineageTable
+) -> dict[str, str]:
+    """Successor mapping to apply before classification, so continuity is not read as two trades.
+
+    A confirmed re-identification means the old CUSIP *became* the new one. Left unapplied it
+    produces a textbook exit and a textbook entry, which is two decisions where the holder made
+    none.
+    """
+    window = (previous.period_end, current.period_end)
+    mapping: dict[str, str] = {}
+    for position in previous.positions:
+        entry = table.successor_of(position.identity.cusip, during=window)
+        if entry is not None and entry.to_cusip:
+            mapping[position.identity.cusip] = entry.to_cusip
+    return mapping
+
+
 def blocked_cusips(candidates: list[ActionCandidate]) -> set[str]:
     """Securities whose labels cannot be trusted until a candidate is resolved."""
     blocked: set[str] = set()

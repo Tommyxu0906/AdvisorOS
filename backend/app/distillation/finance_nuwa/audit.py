@@ -69,6 +69,9 @@ class DatasetAudit(BaseModel):
     max_disclosure_delay_days: int | None = None
 
     # --- corporate actions
+    # Detected and confirmed are different claims and are never conflated: a candidate is an
+    # arithmetic suspicion, a confirmation is someone having written down what it rests on.
+    detected_candidates: int = 0
     confirmed_cusip_changes: int = 0
     confirmed_splits: int = 0
     merger_review_queue: int = 0
@@ -164,6 +167,7 @@ class DatasetAudit(BaseModel):
             f" max {self.max_disclosure_delay_days}d",
             "",
             "CORPORATE ACTIONS",
+            f"  Detected candidates       {self.detected_candidates}",
             f"  Confirmed CUSIP changes   {self.confirmed_cusip_changes}",
             f"  Confirmed splits          {self.confirmed_splits}",
             f"  Merger review queue       {self.merger_review_queue}",

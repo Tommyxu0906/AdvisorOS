@@ -29,7 +29,7 @@ from datetime import date
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.distillation.finance_nuwa.lineage import CanonicalQuarter
+from app.distillation.finance_nuwa.lineage import PublicQuarterView
 
 
 class PositionFeatures(BaseModel):
@@ -81,7 +81,7 @@ class PositionFeatures(BaseModel):
         }
 
 
-def implied_price(quarter: CanonicalQuarter, cusip: str) -> float | None:
+def implied_price(quarter: PublicQuarterView, cusip: str) -> float | None:
     """Value over shares, which is the price the filing implies for that security."""
     for position in quarter.positions:
         if position.identity.cusip == cusip and position.shares > 0:
@@ -90,17 +90,19 @@ def implied_price(quarter: CanonicalQuarter, cusip: str) -> float | None:
 
 
 def build_features(
-    visible_history: list[CanonicalQuarter],
+    visible_history: list[PublicQuarterView],
     cusip: str,
     *,
     as_of: date,
 ) -> PositionFeatures:
     """Features from the books an observer could see at `as_of`, newest last.
 
-    The caller is responsible for having filtered `visible_history` to what was public — this
-    function trusts what it is handed and computes nothing that reaches outside it. That split
-    is intentional: disclosure timing is decided once, in the builder, rather than re-derived by
-    every consumer with its own idea of what counts as knowable.
+    Takes `PublicQuarterView` and not `CanonicalQuarter`, so the unfiltered book cannot be
+    passed by accident. An earlier version accepted the canonical quarter and trusted the caller
+    to have filtered it; the caller filtered *quarters* by filing date but not *positions* by
+    disclosure date, and confidential holdings reached weight, rank, HHI and hold matching
+    without ever appearing in an episode input — invisible to a lookahead check that only
+    inspects episode inputs.
     """
     if not visible_history:
         return PositionFeatures(cusip=cusip, as_of=as_of, source_period_end=as_of)
@@ -158,7 +160,7 @@ def _drawdown(prices: list[float]) -> float | None:
     return prices[-1] / peak - 1.0 if peak > 0 else None
 
 
-def _relative_return(history: list[CanonicalQuarter], cusip: str, quarters: int) -> float | None:
+def _relative_return(history: list[PublicQuarterView], cusip: str, quarters: int) -> float | None:
     """Position return less the book's own return, so a rising tide is netted out.
 
     Holding through a 30% fall means something different when everything fell 30% and when
@@ -174,7 +176,7 @@ def _relative_return(history: list[CanonicalQuarter], cusip: str, quarters: int)
     return position - book if book is not None else None
 
 
-def _book_return(then: CanonicalQuarter, now: CanonicalQuarter) -> float | None:
+def _book_return(then: PublicQuarterView, now: PublicQuarterView) -> float | None:
     """Value-weighted implied-price return of everything held in both books.
 
     Restricted to the intersection on purpose: comparing total values would mostly measure
@@ -198,7 +200,7 @@ def _book_return(then: CanonicalQuarter, now: CanonicalQuarter) -> float | None:
     return weighted / weight_total if weight_total > 0 else None
 
 
-def _consecutive_tail(history: list[CanonicalQuarter], cusip: str) -> int:
+def _consecutive_tail(history: list[PublicQuarterView], cusip: str) -> int:
     """How many consecutive recent quarters this has been held.
 
     Counted backwards from the latest book and stopping at the first gap, because a position
@@ -214,11 +216,12 @@ def _consecutive_tail(history: list[CanonicalQuarter], cusip: str) -> int:
     return count
 
 
-def regime_features(visible_history: list[CanonicalQuarter]) -> dict[str, float | None]:
+def regime_features(visible_history: list[PublicQuarterView]) -> dict[str, float | None]:
     """Coarse market context, derived from the book rather than from an index.
 
     A proxy and labelled as one: the return of what this manager held is not the market's
-    return. It is enough to separate "everything was falling" from "only this was", which is the
+    return, and it is computed from the public view so the regime bucket cannot be moved by a
+    holding nobody could see. It is enough to separate "everything was falling" from "only this was", which is the
     distinction matched controls actually need, and it introduces no external series whose
     as-of semantics would have to be re-verified.
     """
