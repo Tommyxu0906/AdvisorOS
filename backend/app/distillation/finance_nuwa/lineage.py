@@ -26,6 +26,15 @@ So amendments are applied in filing order, and what each one does depends on its
 A `NEW HOLDINGS` amendment that repeats a CUSIP already present is ambiguous — a correction and
 an addition look identical — so that also goes to review rather than being resolved by a rule
 nobody can defend.
+
+**The information-time boundary.** An amendment corrects what was *true* without changing what
+was *knowable*, and those are different facts about the same quarter. A position held in 2023 Q3
+under confidential treatment and disclosed in May 2024 really was held in Q3 — so it belongs in
+the ground truth, and leaving it out fabricates a purchase in Q4. But nobody outside the firm
+could see it until 2024, so it must never appear in a replay of a 2023 decision. Both statements
+are true at once, which is why every position carries the date it became public and
+`knowable_on()` exists to filter by it. Ground truth reads `positions`; replay inputs read
+`positions_knowable_on(...)`, and nothing may use the former to build the latter.
 """
 
 from __future__ import annotations
@@ -34,8 +43,46 @@ from datetime import date
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.distillation.finance_nuwa.identity import SecurityIdentity
 from app.distillation.finance_nuwa.sec_13f import HoldingsSnapshot, ParsedPosition
 from app.distillation.finance_nuwa.store import AmendmentType, QuarterLineage
+
+
+class CanonicalPosition(BaseModel):
+    """One holding, plus the date the outside world could first see it.
+
+    The two dates differ whenever confidential treatment was granted, and that gap is the whole
+    reason this type exists rather than a bare `ParsedPosition`.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    position: ParsedPosition
+    disclosed_at: date = Field(description="Filing date of the document that first revealed it")
+    source_accession: str
+    confidential_treatment: bool = Field(
+        default=False,
+        description="Revealed by a later amendment rather than by the original filing",
+    )
+
+    @property
+    def identity(self) -> SecurityIdentity:
+        return self.position.identity
+
+    @property
+    def market_value(self) -> float:
+        return self.position.market_value
+
+    @property
+    def shares(self) -> float:
+        return self.position.shares
+
+    def knowable_on(self, when: date) -> bool:
+        """Whether an outside observer could have known about this position on `when`."""
+        return self.disclosed_at <= when
+
+    def disclosure_delay_days(self, period_end: date) -> int:
+        return (self.disclosed_at - period_end).days
 
 
 class CanonicalQuarter(BaseModel):
@@ -44,7 +91,7 @@ class CanonicalQuarter(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     period_end: date
-    positions: list[ParsedPosition] = Field(default_factory=list)
+    positions: list[CanonicalPosition] = Field(default_factory=list)
 
     contributing_accessions: list[str] = Field(default_factory=list)
     resolution: str = ""
@@ -64,6 +111,24 @@ class CanonicalQuarter(BaseModel):
     def is_usable(self) -> bool:
         return not self.needs_review and bool(self.positions)
 
+    @property
+    def late_disclosed(self) -> list[CanonicalPosition]:
+        """Positions the public learned about after the regular filing."""
+        return [p for p in self.positions if p.confidential_treatment]
+
+    def positions_knowable_on(self, when: date) -> list[CanonicalPosition]:
+        """The quarter as an outside observer could have seen it on a given date.
+
+        This — never `positions` — is what a replay of a contemporaneous decision may read. The
+        difference is exactly the confidential-treatment holdings, which is to say the ones the
+        firm went to some trouble to keep private at the time.
+        """
+        return [p for p in self.positions if p.knowable_on(when)]
+
+    def as_parsed(self) -> list[ParsedPosition]:
+        """Underlying positions, for arithmetic that has no view on disclosure timing."""
+        return [p.position for p in self.positions]
+
 
 def compose_quarter(
     lineage: QuarterLineage, snapshots: dict[str, HoldingsSnapshot]
@@ -82,7 +147,7 @@ def compose_quarter(
             review_reason="no filings for this period",
         )
 
-    accumulated: dict[tuple[str, str], ParsedPosition] = {}
+    accumulated: dict[tuple[str, str], CanonicalPosition] = {}
     contributing: list[str] = []
     steps: list[str] = []
     added_positions = 0
@@ -98,7 +163,16 @@ def compose_quarter(
                 contributing_accessions=contributing,
             )
 
-        incoming = {p.identity.key: p for p in snapshot.positions}
+        incoming = {
+            p.identity.key: CanonicalPosition(
+                position=p,
+                disclosed_at=filing.filed_at,
+                source_accession=filing.accession,
+                confidential_treatment=filing.is_amendment
+                and filing.amendment_type is AmendmentType.new_holdings,
+            )
+            for p in snapshot.positions
+        }
 
         if not filing.is_amendment:
             accumulated = dict(incoming)
