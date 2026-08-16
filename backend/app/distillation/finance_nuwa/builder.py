@@ -28,12 +28,18 @@ ended in June. The most recent quarter is never the most recent *knowable* quart
 `history[-1]` as the input book quietly grants six weeks to three months of hindsight on every
 single episode. `_last_public_book` walks back until it finds one that had actually been filed.
 
-That conservatism has a real cost and it is worth naming: the investor obviously knew their own
-holdings on 1 October, so a strict public-observer replay asks the model to predict a decision
-with less information than the decider had. `ReplayView` makes the choice explicit rather than
-implicit, and defaults to the public view — a persona deployed later will only ever see public
-data, so training it on private holdings would build in a train-serve skew on top of the
-attribution problem.
+That conservatism has a real cost, and rather than trade it off, `ReplayView` turns it into a
+second measurement against the same ground truth:
+
+    public_observer     what anyone could have read that day. The production benchmark.
+    oracle_own_book     the portfolio state the decider actually had. A research upper bound.
+
+The gap between them is not noise to be minimised — it is the share of the error that comes from
+information the outside world did not have, separated from the share that comes from the persona
+not having learned the policy. A public score of 0.51 against an oracle score of 0.69 says the
+lag is doing the damage; 0.51 against 0.53 says the persona is.
+
+There is one set of outcomes. Only the inputs differ.
 """
 
 from __future__ import annotations
@@ -62,14 +68,36 @@ from app.distillation.finance_nuwa.lineage import CanonicalPosition, CanonicalQu
 
 
 class ReplayView(str, Enum):
-    """Whose knowledge the replay inputs represent."""
+    """Whose information set the replay inputs represent.
+
+    Not a configuration knob to be tuned — two different questions, answered against one shared
+    ground truth. The gap between the scores is itself a result: it measures how much of the
+    error comes from information the outside world simply did not have.
+    """
 
     public_observer = "public_observer"
-    """Only filings actually public at the cutoff. The default, and the stricter option."""
+    """Only filings actually public at the cutoff.
 
-    investor_own_book = "investor_own_book"
-    """The decider's own holdings as at the last quarter end, including confidential positions.
-    Closer to what the investor knew, further from what a deployed persona will ever see."""
+    The production benchmark, and the honest one. It answers: given a persona and nothing but
+    what anyone could have read that day, how well can it reconstruct what Berkshire did? This
+    is the number a README should lead with, because it is the only one a deployed system could
+    ever reproduce.
+    """
+
+    oracle_own_book = "oracle_own_book"
+    """The entity's actual holdings at the last quarter end, confidential positions included.
+
+    A research upper bound, never a product capability — the name says `oracle` so that nobody
+    later mistakes it for one. It answers a different question: handed the portfolio state the
+    decider genuinely had, does the persona reconstruct the decision? Using a late amendment
+    here is not lookahead from the investor's point of view; they knew their own book. It is
+    lookahead from everyone else's, which is exactly why it cannot ship.
+    """
+
+    @property
+    def is_deployable(self) -> bool:
+        """Whether a live system could ever reproduce this information set."""
+        return self is ReplayView.public_observer
 
 
 class BuiltAction(BaseModel):
@@ -218,7 +246,9 @@ def _visible_book(
     if not history:
         return [], None
 
-    if view is ReplayView.investor_own_book:
+    if view is ReplayView.oracle_own_book:
+        # The decider knew their own book, including anything still confidential. Legitimate as
+        # an upper bound, and unusable in production for exactly the same reason.
         latest = history[-1]
         return list(latest.positions), latest
 

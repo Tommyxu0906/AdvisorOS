@@ -184,7 +184,7 @@ def test_the_input_book_is_the_last_filing_that_was_actually_public():
     assert episode.inputs.starting_value == 9e8
 
 
-def test_the_investors_own_view_is_available_and_explicit():
+def test_the_oracle_view_is_available_and_explicit():
     """The cost of the strict default, named rather than hidden: the investor knew their whole
     book on 1 October, including the confidential position."""
     episode = build_episode(
@@ -198,7 +198,7 @@ def test_the_investors_own_view_is_available_and_explicit():
         advisor_id="buffett",
         entity="Berkshire Hathaway Inc",
         filed_at=date(2024, 2, 14),
-        view=ReplayView.investor_own_book,
+        view=ReplayView.oracle_own_book,
     )
 
     disclosed = next(
@@ -284,3 +284,86 @@ def test_passing_a_raw_snapshot_fails_rather_than_silently_working():
     )
     with pytest.raises(AttributeError):
         classify_quarter_pair(raw, q4())  # type: ignore[arg-type]
+
+
+# --- two benchmarks, one ground truth ------------------------------------------------------------
+
+
+def _both_views():
+    action = next(
+        a for a in classify_quarter_pair(q3_canonical(), q4()) if a.classification.symbol == PUBLIC
+    )
+    common = dict(
+        advisor_id="buffett",
+        entity="Berkshire Hathaway Inc",
+        filed_at=date(2024, 2, 14),
+    )
+    public = build_episode(
+        [q2_public(), q3_canonical()], q4(), action, view=ReplayView.public_observer, **common
+    )
+    oracle = build_episode(
+        [q2_public(), q3_canonical()], q4(), action, view=ReplayView.oracle_own_book, **common
+    )
+    return public, oracle
+
+
+def test_the_two_views_share_one_outcome_and_differ_only_in_inputs():
+    """One set of outcomes, two information sets. If a refactor ever makes the labels differ,
+    the gap between the scores stops meaning anything."""
+    public, oracle = _both_views()
+
+    assert public.observed_action is oracle.observed_action
+    assert public.action_basis is oracle.action_basis
+    assert public.decision_window_start == oracle.decision_window_start
+    assert public.decision_window_end == oracle.decision_window_end
+    assert public.episode_id == oracle.episode_id
+
+
+def test_the_two_views_must_not_collapse_into_each_other():
+    """Guards the refactor that quietly makes both paths return the same thing. Here they differ
+    for two independent reasons at once: a confidential holding, and the ordinary filing lag."""
+    public, oracle = _both_views()
+
+    public_count = next(
+        o for o in public.inputs.portfolio_context if o.label == "disclosed portfolio positions"
+    ).value
+    oracle_count = next(
+        o for o in oracle.inputs.portfolio_context if o.label == "disclosed portfolio positions"
+    ).value
+
+    assert public_count != oracle_count, (
+        "public and oracle replays returned identical books — the information boundary has "
+        "collapsed and the error decomposition is meaningless"
+    )
+    assert public.inputs.starting_value != oracle.inputs.starting_value
+    # The confidential holding is counted in one book and not the other. Inputs carry aggregates
+    # rather than an enumeration, so the difference shows up in the count, not in a CUSIP string.
+    assert public_count == 1 and oracle_count == 2
+
+
+def test_only_the_public_view_claims_to_be_deployable():
+    """The name says oracle so nobody mistakes it for a product capability; the flag says so to
+    code that might otherwise pick it up as a default."""
+    assert ReplayView.public_observer.is_deployable
+    assert not ReplayView.oracle_own_book.is_deployable
+
+
+def test_the_reporting_lag_alone_separates_the_views():
+    """Even with no confidential holding anywhere, the ordinary 45-day filing lag means the two
+    views see different books — so the gap is not an artefact of amendments."""
+    action = next(
+        a
+        for a in classify_quarter_pair(q3_public_only(), q4())
+        if a.classification.symbol == PUBLIC
+    )
+    common = dict(advisor_id="buffett", entity="Berkshire Hathaway Inc", filed_at=date(2024, 2, 14))
+
+    public = build_episode(
+        [q2_public(), q3_public_only()], q4(), action, view=ReplayView.public_observer, **common
+    )
+    oracle = build_episode(
+        [q2_public(), q3_public_only()], q4(), action, view=ReplayView.oracle_own_book, **common
+    )
+
+    assert public.inputs.starting_value == 9e8  # Q2, filed in August
+    assert oracle.inputs.starting_value == 1e9  # Q3, which nobody outside could see until November
