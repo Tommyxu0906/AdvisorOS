@@ -51,6 +51,7 @@ from app.distillation.finance_nuwa.lineage import (  # noqa: E402
     PublicQuarterView,
     compose_quarter,
 )
+from app.distillation.finance_nuwa.quarantine import quarantine_unresolved  # noqa: E402
 from app.distillation.finance_nuwa.sec_13f import parse_information_table  # noqa: E402
 from app.distillation.finance_nuwa.store import FilingRef, QuarterLineage  # noqa: E402
 
@@ -145,10 +146,22 @@ def main() -> int:
             f"{candidate.from_cusip}->{candidate.to_cusip}"
         )
 
+    # Derived from the unresolved list rather than hand-listed, so a newly detected ambiguity is
+    # quarantined automatically instead of entering training data while someone writes it down.
+    registry = quarantine_unresolved(still_open, dataset_version=args.version)
+    print(f"==> quarantined {registry.transitions} transition(s), {registry.securities} securities")
+    for exclusion in registry.exclusions:
+        print(
+            f"    QUARANTINE {exclusion.transition_period_end} "
+            f"{exclusion.detected_kind.value} {len(exclusion.cusips)} securities "
+            f"({exclusion.status.value})"
+        )
+
     # --- episodes -------------------------------------------------------------------
     episodes, holds, actions_meta = [], [], []
     magnitudes: dict[str, int] = {}
     late_positions = late_value = 0.0
+    quarantined_episodes = 0
     delays: list[int] = []
     divergent = compared = 0
 
@@ -176,6 +189,14 @@ def main() -> int:
             successors=successors,
         ):
             cusip = built.classification.symbol
+            # Quarantine is checked first so its count is real. Scoped to this transition: the
+            # same security stays usable in clean quarters, and other securities in this quarter
+            # are untouched.
+            if registry.is_excluded(period_end=current.period_end, cusip=cusip):
+                quarantined_episodes += 1
+                continue
+            # Defensive: a blocking candidate that somehow escaped quarantine must not become a
+            # label. Reaching this is a bug, and the audit's reaching-modelling gate would fail.
             if cusip in blocked:
                 continue
             features = build_features(visible, cusip, as_of=cutoff)
@@ -291,6 +312,16 @@ def main() -> int:
         confirmed_splits=sum(1 for e in table.entries if e.kind is CorporateActionKind.split),
         merger_review_queue=by_kind.get(CorporateActionKind.merger.value, 0),
         unresolved_blocking_actions=len(still_open),
+        quarantined_transitions=registry.transitions,
+        quarantined_securities=registry.securities,
+        episodes_removed_by_quarantine=quarantined_episodes,
+        # Computed: unresolved candidates that survived quarantine and would have reached
+        # the modelling rows. Zero means withheld, never means resolved.
+        unresolved_reaching_modelling=sum(
+            1
+            for c in still_open
+            if not registry.is_excluded(period_end=c.period_end, cusip=c.from_cusip)
+        ),
         action_counts=dataset_manifest.action_counts,
         magnitude_counts=magnitudes,
         share_count_grounded=sum(1 for e in episodes if e.action_basis.value == "share_count"),

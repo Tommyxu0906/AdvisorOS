@@ -48,7 +48,7 @@ def test_a_clean_dataset_passes_and_says_so():
     [
         {"lookahead_violations": 1},
         {"value_unit_conflicts": 1},
-        {"unresolved_blocking_actions": 1},
+        {"unresolved_reaching_modelling": 1},
     ],
 )
 def test_any_single_integrity_failure_blocks_the_whole_dataset(failure: dict):

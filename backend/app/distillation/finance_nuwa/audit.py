@@ -77,6 +77,14 @@ class DatasetAudit(BaseModel):
     merger_review_queue: int = 0
     unresolved_blocking_actions: int = 0
 
+    # Quarantine. A quarantined episode is NOT a resolved one — it is explicitly withheld, and
+    # the gate asks whether any unresolved action still reaches the modelling data rather than
+    # whether any exists at all.
+    quarantined_transitions: int = 0
+    quarantined_securities: int = 0
+    episodes_removed_by_quarantine: int = 0
+    unresolved_reaching_modelling: int = 0
+
     # --- episodes
     action_counts: dict[str, int] = Field(default_factory=dict)
     magnitude_counts: dict[str, int] = Field(default_factory=dict)
@@ -113,9 +121,10 @@ class DatasetAudit(BaseModel):
                 "may be wrong by a factor of a thousand",
             ),
             GateResult(
-                name="unresolved blocking corporate actions",
-                observed=self.unresolved_blocking_actions,
-                detail="a split read as a purchase teaches conviction nobody showed",
+                name="unresolved blocking reaching modelling data",
+                observed=self.unresolved_reaching_modelling,
+                detail="a split read as a purchase teaches conviction nobody showed. "
+                "Quarantined transitions do not count here — they are withheld, not resolved",
             ),
         ]
 
@@ -172,6 +181,10 @@ class DatasetAudit(BaseModel):
             f"  Confirmed splits          {self.confirmed_splits}",
             f"  Merger review queue       {self.merger_review_queue}",
             f"  Unresolved blocking       {self.unresolved_blocking_actions}",
+            f"  Quarantined transitions   {self.quarantined_transitions}"
+            f"  ({self.quarantined_securities} securities,"
+            f" {self.episodes_removed_by_quarantine} episodes withheld)",
+            f"  Reaching modelling data   {self.unresolved_reaching_modelling}",
             "",
             "EPISODES",
         ]
