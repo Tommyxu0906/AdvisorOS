@@ -295,3 +295,120 @@ class EpisodeDataset(BaseModel):
     def _when(episode) -> date:
         """Order by when the decision happened, falling back to what the inputs could see."""
         return episode.decision_window_end or episode.inputs.as_of
+
+
+# --- matched controls ---------------------------------------------------------------------------
+
+# Widths of the cells a hold and a trade must share to count as comparable. Deliberately coarse:
+# tighter cells find no match at all in a book of forty-odd positions, and a matched design with
+# no matches is just a smaller unmatched one.
+WEIGHT_BUCKET_EDGES = (0.01, 0.03, 0.07, 0.15)
+RETURN_BUCKET_EDGES = (-0.20, -0.05, 0.05, 0.20)
+
+
+class MatchStratum(BaseModel):
+    """The cell a hold and a trade must share before one can serve as a control for the other.
+
+    Salience sampling alone leaves a gap that is easy to miss: if the kept holds are the big,
+    volatile positions and the trades are whatever else happened, then position size separates
+    the classes almost perfectly and a model scores well by learning "large means hold". It would
+    have learned the sampler, not the investor.
+
+    Matching closes that. Each hold is paired against a trade in the same size band, after a
+    similar move, in a similar market — so those features carry no class information and the
+    only thing left to separate them is behaviour.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    weight_bucket: int
+    return_bucket: int
+    regime: str
+
+    @property
+    def key(self) -> tuple[int, int, str]:
+        return (self.weight_bucket, self.return_bucket, self.regime)
+
+
+def stratum_for(
+    *, weight: float | None, trailing_return: float | None, regime: str
+) -> MatchStratum:
+    return MatchStratum(
+        weight_bucket=_bucket(weight, WEIGHT_BUCKET_EDGES),
+        return_bucket=_bucket(trailing_return, RETURN_BUCKET_EDGES),
+        regime=regime,
+    )
+
+
+class MatchedSelection(BaseModel):
+    """Which holds were kept, and what the matching could not achieve.
+
+    `unmatched_actions` is reported rather than hidden. A stratum with trades and no available
+    hold is a real limit on the design, and quietly dropping those trades would bias the dataset
+    in precisely the direction the matching was meant to remove.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    kept: list[str] = Field(default_factory=list, description="Identifiers of selected holds")
+    unmatched_actions: int = 0
+    strata_used: int = 0
+    holds_available: int = 0
+
+    @property
+    def match_rate(self) -> float:
+        total = len(self.kept) + self.unmatched_actions
+        return round(len(self.kept) / total, 4) if total else 0.0
+
+
+def select_matched_holds(
+    action_strata: list[tuple[str, MatchStratum]],
+    hold_strata: list[tuple[str, MatchStratum, float]],
+    *,
+    per_action: int = 1,
+) -> MatchedSelection:
+    """Pick holds that look like the trades, cell by cell.
+
+    `hold_strata` carries each hold's salience so that ties inside a cell resolve toward the
+    holds that were under real pressure — matching decides *which cell*, salience decides which
+    member of it. Both filters matter and neither subsumes the other.
+    """
+    pool: dict[tuple[int, int, str], list[tuple[str, float]]] = {}
+    for identifier, stratum, salience in hold_strata:
+        pool.setdefault(stratum.key, []).append((identifier, salience))
+    for candidates in pool.values():
+        candidates.sort(key=lambda pair: pair[1], reverse=True)
+
+    kept: list[str] = []
+    unmatched = 0
+    used: set[tuple[int, int, str]] = set()
+
+    for _, stratum in action_strata:
+        available = pool.get(stratum.key, [])
+        taken = 0
+        while available and taken < per_action:
+            identifier, _ = available.pop(0)
+            kept.append(identifier)
+            taken += 1
+        if taken:
+            used.add(stratum.key)
+        else:
+            unmatched += 1
+
+    return MatchedSelection(
+        kept=kept,
+        unmatched_actions=unmatched,
+        strata_used=len(used),
+        holds_available=sum(len(v) for v in pool.values()) + len(kept),
+    )
+
+
+def _bucket(value: float | None, edges: tuple[float, ...]) -> int:
+    """Index of the band a value falls in. -1 keeps 'unknown' as its own cell rather than
+    silently pooling it with the smallest band."""
+    if value is None:
+        return -1
+    for index, edge in enumerate(edges):
+        if value < edge:
+            return index
+    return len(edges)
