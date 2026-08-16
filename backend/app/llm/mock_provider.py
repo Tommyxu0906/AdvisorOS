@@ -92,7 +92,10 @@ class MockLLMProvider:
             context.usage_tracker.record(usage)
             return LLMResponse(text="", usage=usage, stop_reason="refusal", refused=True)
 
-        payload = self._payload_for(role, advisor_id, schema)
+        if role == "behavioral_prediction":
+            payload = self._per_episode_payload(prompt_text)
+        else:
+            payload = self._payload_for(role, advisor_id, schema)
         text = json.dumps(payload, indent=2) if schema else self._prose_for(role, advisor_id)
 
         usage = LLMCallUsage(
@@ -130,6 +133,37 @@ class MockLLMProvider:
     def _prose_for(self, role: str, advisor_id: str | None) -> str:
         who = advisor_id or "the committee"
         return f"[mock:{role}] Deterministic response from {who}."
+
+    def _per_episode_payload(self, prompt_text: str) -> dict[str, Any]:
+        """A deterministic answer that varies with the prompt.
+
+        Separate from `_payload_for` because that method is an extension point several tests
+        subclass, and adding a parameter to it breaks every override. The committee roles answer
+        once per advisor and are happy with a canned response; a benchmark that makes one call
+        per episode needs the answers to vary, or it exercises a single code path several hundred
+        times and calls that coverage.
+
+        Deliberately not investing-aware. A mock that guessed well would be worse than useless:
+        it would look like a result.
+        """
+        seed = int(hashlib.sha256(prompt_text.encode()).hexdigest()[:8], 16)
+        wheel = ("hold", "reduce", "increase", "exit")
+        abstaining = seed % 7 == 0
+        return {
+            "abstain": abstaining,
+            "action": None if abstaining else wheel[seed % 4],
+            "confidence": round(0.3 + (seed % 60) / 100.0, 2),
+            "reason_codes": [
+                (
+                    "long_holding_horizon",
+                    "valuation_discipline",
+                    "hold_through_drawdown",
+                    "concentration_tolerance",
+                )[seed % 4]
+            ],
+            "evidence_refs": ["Berkshire Hathaway shareholder letters"],
+            "note": "[mock] deterministic placeholder, not a judgment",
+        }
 
     def _payload_for(
         self, role: str, advisor_id: str | None, schema: dict[str, Any] | None
