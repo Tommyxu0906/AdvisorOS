@@ -3,14 +3,26 @@
 Four things in real filings will corrupt a dataset silently, and all four were found by reading
 actual Berkshire filings rather than by reasoning about the format.
 
-**The value unit changed.** A 2016 filing reports `147985198` for a portfolio worth $148bn — the
-figure is in *thousands*. A 2026 filing reports `263095703570` for $263bn, in dollars. Reading
-both the same way understates a decade of positions by 1000x, and — far worse — makes the
+**The value unit changed, and the rule is published.** A 2016 filing reports `147985198` for a
+portfolio worth $148bn — *thousands*. A 2026 filing reports `263095703570` for $263bn — dollars.
+Reading both the same way understates a decade of positions by 1000x, and, far worse, makes the
 transition quarter look like every position was multiplied by a thousand, which a drift
-classifier reads as the largest buying spree in history. `detect_value_scale` infers the unit
-from the data instead of hardcoding a cutover date, by checking the implied price per share:
-real equities trade in dollars and tens of dollars, so a median implied price under a dollar
-means the values are thousands.
+classifier reads as the largest buying spree in history.
+
+The unit is decided by **the SEC's own rule, keyed on filing date**: values changed from nearest
+thousand to nearest dollar for filings submitted on or after 2023-01-03. Inferring it from the
+data instead is the tempting shortcut and the wrong one — a sub-dollar security, an unusual share
+class, a bad share count, or a malformed row can each drag an inference to the wrong answer, and
+being wrong here is a 1000x error on a whole quarter. Where a specification exists, the data does
+not get a vote.
+
+The implied-price check survives as *validation*, which is what it is good for: it cannot be the
+rule, but it will catch a filer who adopted early, a filing whose date metadata is wrong, and a
+parser bug. Disagreement is flagged for review rather than silently resolved in either direction.
+
+Note that the rule keys on when the filing was **submitted**, not the period it covers. Berkshire
+filed for period 2022-12-31 on 2023-02-14, after the cutover — that quarter is in dollars while
+the quarter before it, filed 2022-11-14, is in thousands. A period-keyed rule gets it wrong.
 
 **One CUSIP appears many times.** Berkshire's filing lists the same security once per managing
 subsidiary — ALLY appears three times in one quarter. Reading rows as positions triple-counts
@@ -20,10 +32,17 @@ the book and produces weights that sum far above one. Rows aggregate by (CUSIP, 
 holding reported as `PRN` has a "share count" that is a face value, and treating it as shares
 produces nonsense implied prices and nonsense position changes.
 
-**`otherManager` is an attribution signal.** The combined filing names its managers, and Warren
-Buffett is one of them. A row whose managers include him is materially better evidence about his
-decisions than a row managed elsewhere in the group. It is still not proof — the field records
-shared discretion, not who placed the order — so it raises confidence rather than establishing it.
+**`otherManager` is not an attribution signal.** It looked like one: the combined filing names
+its managers and Warren Buffett is sequence 4. Checked against the real filings, sequence 4
+appears on *every position*, in 2016 and in 2026 alike. The field records shared investment
+discretion — who had authority — and never who chose to buy. It is preserved as filing metadata
+and is deliberately not promoted into individual attribution anywhere in this package.
+
+Separating one manager's decisions from a colleague's needs independent evidence: a shareholder
+letter, an interview, an annual-meeting answer, a deal announcement. Position size is *not* that
+evidence. Guessing "large positions are his" and then training a persona on the result would
+make the evaluation circular — the model would be scored on reproducing a rule we invented, and
+a good score would mean nothing at all.
 """
 
 from __future__ import annotations
@@ -44,20 +63,57 @@ PARSER_VERSION = "13f-parser-1"
 
 _NS = {"t": "http://www.sec.gov/edgar/document/thirteenf/informationtable"}
 
-# Median implied price below this means values are in thousands. A real equity priced under a
-# dollar exists, but a whole portfolio with a sub-dollar median does not.
-DOLLAR_SCALE_FLOOR = 1.0
+# SEC EDGAR technical specification 22.4.1: Form 13F `value` changed from nearest-thousand
+# dollars to nearest dollar for filings submitted on or after this date. Keyed on submission,
+# not on the period covered — see the module docstring for the Berkshire quarter that proves it.
+VALUE_UNIT_CHANGE_DATE = date(2023, 1, 3)
+
+# Used only to validate the rule's answer. A real equity can trade under a dollar; a whole
+# portfolio with a sub-dollar median implied price cannot.
+IMPLIED_PRICE_FLOOR = 1.0
+MIN_ROWS_TO_VALIDATE = 3
 
 
-class ValueScale(str, Enum):
-    dollars = "dollars"
-    thousands = "thousands"
-    ambiguous = "ambiguous"
-    """Too few priceable rows to tell. The snapshot is kept and flagged, never guessed."""
+class ValueUnit(str, Enum):
+    thousands_usd = "thousands_usd"
+    dollars_usd = "dollars_usd"
 
     @property
     def multiplier(self) -> float:
-        return 1000.0 if self is ValueScale.thousands else 1.0
+        return 1000.0 if self is ValueUnit.thousands_usd else 1.0
+
+
+class ValidationOutcome(str, Enum):
+    passed = "passed"
+    """Implied prices agree with the unit the rule chose."""
+
+    disagreed = "disagreed"
+    """They do not. Flagged for review — never silently overridden in either direction."""
+
+    insufficient_data = "insufficient_data"
+    """Too few priceable rows to say anything. Not a failure; the rule still stands."""
+
+
+class ValueNormalization(BaseModel):
+    """Which unit was applied, on whose authority, and whether the data agreed.
+
+    Both halves are recorded because they answer different questions. `rule_source` says why the
+    parser did what it did and is auditable against a published specification. `validation` says
+    whether the filing actually looks like that, and catches early adopters, bad date metadata,
+    and parser bugs — none of which the rule alone can see.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    unit: ValueUnit
+    multiplier: float
+    rule_source: str
+    validation: ValidationOutcome = ValidationOutcome.insufficient_data
+    validation_detail: str = ""
+
+    @property
+    def needs_review(self) -> bool:
+        return self.validation is ValidationOutcome.disagreed
 
 
 class ParsedPosition(BaseModel):
@@ -66,7 +122,10 @@ class ParsedPosition(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     identity: SecurityIdentity
-    market_value: float = Field(ge=0, description="Dollars, after scale normalization")
+    market_value: float = Field(ge=0, description="Dollars, after unit normalization")
+    # The figure exactly as filed, kept so a normalization decision can be re-derived or undone
+    # without re-fetching. A stored value with no raw counterpart cannot be audited.
+    raw_value: float = Field(ge=0, description="Value as reported, in the filing's own unit")
     shares: float = Field(ge=0)
 
     manager_sequences: tuple[int, ...] = Field(
@@ -95,8 +154,7 @@ class HoldingsSnapshot(BaseModel):
     positions: list[ParsedPosition] = Field(default_factory=list)
     manager_names: dict[int, str] = Field(default_factory=dict)
 
-    value_scale: ValueScale = ValueScale.dollars
-    scale_evidence: str = ""
+    normalization: ValueNormalization
     parser_version: str = PARSER_VERSION
 
     skipped_non_equity_rows: int = 0
@@ -104,6 +162,11 @@ class HoldingsSnapshot(BaseModel):
     @property
     def is_amendment(self) -> bool:
         return self.form_type.upper().endswith("/A")
+
+    @property
+    def needs_review(self) -> bool:
+        """The unit rule and the data disagree, so nothing here should be trusted yet."""
+        return self.normalization.needs_review
 
     @property
     def total_value(self) -> float:
@@ -126,24 +189,67 @@ class HoldingsSnapshot(BaseModel):
         return [p for p in self.positions if sequences & set(p.manager_sequences)]
 
 
-def detect_value_scale(rows: list[tuple[float, float]]) -> tuple[ValueScale, str]:
-    """Infer whether `value` is dollars or thousands, from implied price per share.
+def unit_for_filing(filed_at: date) -> tuple[ValueUnit, str]:
+    """The unit the SEC specification says applies, from the submission date.
 
-    Inferred rather than keyed to the date the rule changed, because a hardcoded cutover is
-    wrong for every filer who adopted early or late, silently, and only in one direction.
+    The rule, not an inference. Being wrong here is a 1000x error across a whole quarter, and a
+    published rule is available, so the data does not get a vote.
     """
-    prices = [value / shares for value, shares in rows if shares > 0 and value > 0]
-    if len(prices) < 3:
-        return ValueScale.ambiguous, f"only {len(prices)} priceable rows — too few to infer"
+    if filed_at >= VALUE_UNIT_CHANGE_DATE:
+        return (
+            ValueUnit.dollars_usd,
+            f"SEC EDGAR spec 22.4.1: filings submitted on or after "
+            f"{VALUE_UNIT_CHANGE_DATE} report value in whole dollars",
+        )
+    return (
+        ValueUnit.thousands_usd,
+        f"SEC Form 13F pre-{VALUE_UNIT_CHANGE_DATE} specification: value in thousands of dollars",
+    )
+
+
+def validate_unit(
+    rows: list[tuple[float, float]], unit: ValueUnit
+) -> tuple[ValidationOutcome, str]:
+    """Check the rule's answer against implied prices per share.
+
+    Cannot override the rule and is not meant to. It exists to notice the cases the rule cannot
+    see — a filer who adopted early, date metadata that is wrong, a parser that broke — and to
+    say so loudly enough that someone looks.
+    """
+    prices = [
+        (value * unit.multiplier) / shares for value, shares in rows if shares > 0 and value > 0
+    ]
+    if len(prices) < MIN_ROWS_TO_VALIDATE:
+        return (
+            ValidationOutcome.insufficient_data,
+            f"only {len(prices)} priceable rows — too few to check the unit against",
+        )
 
     median = statistics.median(prices)
-    if median < DOLLAR_SCALE_FLOOR:
+    if median < IMPLIED_PRICE_FLOOR:
         return (
-            ValueScale.thousands,
-            f"median implied price ${median:.4f}/share is far below any real equity, so values "
-            "are thousands",
+            ValidationOutcome.disagreed,
+            f"under the {unit.value} rule the median implied price is ${median:.4f}/share, which "
+            "no real portfolio trades at — the filing may predate or postdate its stated date, "
+            "or the parser is wrong. Flagged for review rather than silently re-scaled",
         )
-    return ValueScale.dollars, f"median implied price ${median:,.2f}/share is a plausible price"
+    return (
+        ValidationOutcome.passed,
+        f"median implied price ${median:,.2f}/share is consistent with {unit.value}",
+    )
+
+
+def normalization_for(filed_at: date, rows: list[tuple[float, float]]) -> ValueNormalization:
+    """The unit to apply and the full provenance behind it."""
+    unit, rule_source = unit_for_filing(filed_at)
+    outcome, detail = validate_unit(rows, unit)
+    return ValueNormalization(
+        unit=unit,
+        multiplier=unit.multiplier,
+        rule_source=rule_source,
+        validation=outcome,
+        validation_detail=detail,
+    )
 
 
 def parse_information_table(
@@ -184,8 +290,8 @@ def parse_information_table(
             }
         )
 
-    scale, evidence = detect_value_scale([(r["value"], r["shares"]) for r in raw_rows])
-    multiplier = scale.multiplier
+    normalization = normalization_for(filed_at, [(r["value"], r["shares"]) for r in raw_rows])
+    multiplier = normalization.multiplier
 
     # Aggregate: the same security is listed once per managing subsidiary, and reading rows as
     # positions triple-counts the book.
@@ -217,6 +323,7 @@ def parse_information_table(
                 title_of_class=bucket["title"],
             ),
             market_value=round(bucket["value"] * multiplier, 2),
+            raw_value=bucket["value"],
             shares=bucket["shares"],
             manager_sequences=tuple(sorted(bucket["managers"])),
             row_count=bucket["rows"],
@@ -234,8 +341,7 @@ def parse_information_table(
         form_type=form_type,
         positions=positions,
         manager_names=manager_names or {},
-        value_scale=scale,
-        scale_evidence=evidence,
+        normalization=normalization,
         skipped_non_equity_rows=skipped,
     )
 

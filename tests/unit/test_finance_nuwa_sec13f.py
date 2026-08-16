@@ -15,10 +15,14 @@ import pytest
 
 from app.distillation.finance_nuwa.identity import SecurityIdentity
 from app.distillation.finance_nuwa.sec_13f import (
-    ValueScale,
-    detect_value_scale,
+    VALUE_UNIT_CHANGE_DATE,
+    ValidationOutcome,
+    ValueUnit,
+    normalization_for,
     parse_information_table,
     parse_manager_table,
+    unit_for_filing,
+    validate_unit,
 )
 
 NS = 'xmlns="http://www.sec.gov/edgar/document/thirteenf/informationtable"'
@@ -64,10 +68,10 @@ def parse(xml: str, **kw):
 # --- the unit changed under us -----------------------------------------------------------------
 
 
-def test_the_value_unit_is_inferred_from_implied_price_not_a_hardcoded_date():
-    """2016: value 1,061,824 against 22,742,000 shares. As dollars that is 4.7 cents a share for
-    an airline — the figure is thousands. A cutover date would be wrong for every filer who
-    adopted early or late."""
+def test_the_value_unit_comes_from_the_published_rule_not_from_the_data():
+    """The SEC changed value from nearest-thousand to nearest-dollar for filings submitted on or
+    after 2023-01-03. Being wrong here is a 1000x error across a whole quarter, and a published
+    rule exists, so the data does not get a vote."""
     old = parse(
         table(
             row("AMERICAN AIRLS GROUP INC", "02376R102", "1061824", "22742000")
@@ -76,8 +80,13 @@ def test_the_value_unit_is_inferred_from_implied_price_not_a_hardcoded_date():
         )
     )
 
-    assert old.value_scale is ValueScale.thousands
-    assert "far below any real equity" in old.scale_evidence
+    assert old.normalization.unit is ValueUnit.thousands_usd
+    assert "pre-2023-01-03 specification" in old.normalization.rule_source
+    assert old.normalization.validation is ValidationOutcome.passed
+    assert not old.needs_review
+    # The figure as filed survives beside the normalized one, so the decision is reversible.
+    ko_raw = next(p for p in old.positions if "COCA" in p.identity.issuer_name).raw_value
+    assert ko_raw == pytest.approx(16_584_000)
     # Normalized to dollars, Coca-Cola is $16.6bn at a plausible $41 a share.
     ko = next(p for p in old.positions if "COCA" in p.identity.issuer_name)
     assert ko.market_value == pytest.approx(16_584_000_000)
@@ -95,16 +104,48 @@ def test_a_modern_filing_in_dollars_is_left_alone():
         filed_at=date(2026, 5, 15),
     )
 
-    assert new.value_scale is ValueScale.dollars
+    assert new.normalization.unit is ValueUnit.dollars_usd
+    assert "22.4.1" in new.normalization.rule_source
     apple = next(p for p in new.positions if "APPLE" in p.identity.issuer_name)
     assert apple.market_value == pytest.approx(57_840_000_000)
     assert apple.implied_price == pytest.approx(253.8, abs=0.5)
 
 
-def test_too_few_priceable_rows_is_reported_as_ambiguous_rather_than_guessed():
-    scale, evidence = detect_value_scale([(1000.0, 10.0)])
-    assert scale is ValueScale.ambiguous
-    assert "too few" in evidence
+def test_the_rule_keys_on_submission_date_not_the_period_covered():
+    """Berkshire filed for period 2022-12-31 on 2023-02-14, after the cutover, and that quarter
+    reports dollars — while the quarter before it, filed 2022-11-14, reports thousands. A
+    period-keyed rule gets the boundary quarter wrong by a factor of a thousand."""
+    before, _ = unit_for_filing(date(2022, 11, 14))
+    after, _ = unit_for_filing(date(2023, 2, 14))
+
+    assert before is ValueUnit.thousands_usd
+    assert after is ValueUnit.dollars_usd
+    assert unit_for_filing(VALUE_UNIT_CHANGE_DATE)[0] is ValueUnit.dollars_usd
+
+
+def test_validation_flags_a_disagreement_instead_of_silently_re_scaling():
+    """The check cannot override the rule. It exists to notice early adopters, wrong date
+    metadata, and parser bugs — and to say so loudly enough that someone looks."""
+    # Values that are really thousands, filed after the cutover so the rule says dollars.
+    rows = [
+        (16_584_000.0, 400_000_000.0),
+        (28_434_000.0, 325_634_818.0),
+        (1_061_824.0, 22_742_000.0),
+    ]
+    outcome, detail = validate_unit(rows, ValueUnit.dollars_usd)
+
+    assert outcome is ValidationOutcome.disagreed
+    assert "Flagged for review rather than silently re-scaled" in detail
+
+    normalization = normalization_for(date(2023, 5, 15), rows)
+    assert normalization.unit is ValueUnit.dollars_usd  # the rule still stands
+    assert normalization.needs_review  # but nothing downstream should trust it
+
+
+def test_too_few_priceable_rows_leaves_the_rule_standing():
+    outcome, detail = validate_unit([(1000.0, 10.0)], ValueUnit.dollars_usd)
+    assert outcome is ValidationOutcome.insufficient_data
+    assert "too few" in detail
 
 
 # --- one CUSIP, many rows -----------------------------------------------------------------------
@@ -195,10 +236,10 @@ def test_the_manager_table_makes_the_otherManager_integers_readable():
     assert managers[10] == "National Fire & Marine Insurance Co"  # entities are unescaped
 
 
-def test_discretion_narrows_the_field_it_does_not_name_a_decision_maker():
+def test_discretion_is_filing_metadata_and_never_individual_attribution():
     """Checked against the real filings: sequence 4 (Buffett) appears on *every* Berkshire
-    position, in 2016 and in 2026. So the field confirms he could have decided, never that he
-    did — which is why attribution stays `entity_filing` rather than becoming personal."""
+    position, in 2016 and in 2026. The field records who had authority, never who chose to buy,
+    so it stays metadata and is not promoted into attribution anywhere."""
     snapshot = parse(
         table(
             row("COCA COLA CO", "191216100", "16584000", "400000000", managers="4,5,6")
@@ -229,3 +270,52 @@ def test_a_snapshot_records_what_parsed_it_and_whether_it_was_amended():
     assert amended.is_amendment
     assert original.period_end == date(2016, 12, 31)
     assert original.filed_at == date(2017, 2, 14)  # knowable six weeks after the period ended
+
+
+# --- the circularity this package must never introduce ---------------------------------------
+
+
+def test_no_code_in_the_package_derives_attribution_from_position_size():
+    """The trap that would void every later evaluation.
+
+    Guess "large positions are Buffett's", train a persona on the result, then report that the
+    persona reproduces Buffett's decisions — and the score measures nothing but our own guess
+    played back. Position size may be explored as a low-confidence hypothesis, but it must never
+    reach a label.
+
+    Stated precisely, so this catches the real thing and not merely filtering by the filing's own
+    manager field: no function that sets attribution may compare a position size against
+    anything.
+    """
+    import ast
+    from pathlib import Path
+
+    import app.distillation.finance_nuwa as package
+
+    ATTRIBUTION = {"attributionbasis", "attribution_confidence", "attribution"}
+    SIZE = {"weight", "market_value", "raw_value", "shares", "position_size", "rank"}
+
+    for path in Path(package.__file__).parent.glob("*.py"):
+        tree = ast.parse(path.read_text())
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.FunctionDef):
+                continue
+
+            sets_attribution = any(
+                (isinstance(n, ast.keyword) and n.arg and n.arg.lower() in ATTRIBUTION)
+                or (isinstance(n, ast.Attribute) and n.attr.lower() in ATTRIBUTION)
+                or (isinstance(n, ast.Name) and n.id.lower() in ATTRIBUTION)
+                for n in ast.walk(node)
+            )
+            if not sets_attribution:
+                continue
+
+            for comparison in (n for n in ast.walk(node) if isinstance(n, ast.Compare)):
+                names = {x.id.lower() for x in ast.walk(comparison) if isinstance(x, ast.Name)} | {
+                    x.attr.lower() for x in ast.walk(comparison) if isinstance(x, ast.Attribute)
+                }
+                assert not (names & SIZE), (
+                    f"{path.name}:{node.name} sets attribution and compares {names & SIZE} — "
+                    "inferring whose decision it was from how big the position is makes every "
+                    "later evaluation circular"
+                )
