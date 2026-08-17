@@ -1,0 +1,940 @@
+{
+  "entity": "Berkshire Hathaway Inc",
+  "cik": "1067983",
+  "accession": "0000950123-22-002973",
+  "period_end": "2021-12-31",
+  "filed_at": "2022-02-14",
+  "form_type": "13F-HR",
+  "positions": [
+    {
+      "identity": {
+        "cusip": "037833100",
+        "issuer_name": "APPLE INC",
+        "title_of_class": "COM",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 157528660000.0,
+      "raw_value": 157528660.0,
+      "shares": 887135554.0,
+      "manager_sequences": [
+        1,
+        2,
+        4,
+        5,
+        6,
+        8,
+        9,
+        10,
+        11,
+        12,
+        14
+      ],
+      "row_count": 11
+    },
+    {
+      "identity": {
+        "cusip": "060505104",
+        "issuer_name": "BANK AMER CORP",
+        "title_of_class": "COM",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 44939376000.0,
+      "raw_value": 44939376.0,
+      "shares": 1010100606.0,
+      "manager_sequences": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        9,
+        10,
+        11,
+        12,
+        14
+      ],
+      "row_count": 12
+    },
+    {
+      "identity": {
+        "cusip": "025816109",
+        "issuer_name": "AMERICAN EXPRESS CO",
+        "title_of_class": "COM",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 24803511000.0,
+      "raw_value": 24803511.0,
+      "shares": 151610700.0,
+      "manager_sequences": [
+        1,
+        2,
+        4,
+        5,
+        7,
+        8,
+        10,
+        11,
+        13
+      ],
+      "row_count": 8
+    },
+    {
+      "identity": {
+        "cusip": "191216100",
+        "issuer_name": "COCA COLA CO",
+        "title_of_class": "COM",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 23684001000.0,
+      "raw_value": 23684001.0,
+      "shares": 400000000.0,
+      "manager_sequences": [
+        1,
+        2,
+        4,
+        5,
+        6,
+        8,
+        10,
+        11,
+        12,
+        13
+      ],
+      "row_count": 10
+    },
+    {
+      "identity": {
+        "cusip": "500754106",
+        "issuer_name": "KRAFT HEINZ CO",
+        "title_of_class": "COM",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 11690290000.0,
+      "raw_value": 11690290.0,
+      "shares": 325634818.0,
+      "manager_sequences": [
+        4
+      ],
+      "row_count": 1
+    },
+    {
+      "identity": {
+        "cusip": "615369105",
+        "issuer_name": "MOODYS CORP",
+        "title_of_class": "COM",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 9635522000.0,
+      "raw_value": 9635522.0,
+      "shares": 24669778.0,
+      "manager_sequences": [
+        1,
+        2,
+        4,
+        8,
+        11
+      ],
+      "row_count": 3
+    },
+    {
+      "identity": {
+        "cusip": "92343V104",
+        "issuer_name": "VERIZON COMMUNICATIONS INC",
+        "title_of_class": "COM",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 8252525000.0,
+      "raw_value": 8252525.0,
+      "shares": 158824575.0,
+      "manager_sequences": [
+        4,
+        11
+      ],
+      "row_count": 1
+    },
+    {
+      "identity": {
+        "cusip": "902973304",
+        "issuer_name": "US BANCORP DEL",
+        "title_of_class": "COM NEW",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 7100894000.0,
+      "raw_value": 7100894.0,
+      "shares": 126417887.0,
+      "manager_sequences": [
+        1,
+        2,
+        4,
+        5,
+        6,
+        8,
+        9,
+        10,
+        11,
+        14
+      ],
+      "row_count": 10
+    },
+    {
+      "identity": {
+        "cusip": "166764100",
+        "issuer_name": "CHEVRON CORP NEW",
+        "title_of_class": "COM",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 4488055000.0,
+      "raw_value": 4488055.0,
+      "shares": 38245036.0,
+      "manager_sequences": [
+        4,
+        11
+      ],
+      "row_count": 1
+    },
+    {
+      "identity": {
+        "cusip": "064058100",
+        "issuer_name": "BANK OF NEW YORK MELLON CORP",
+        "title_of_class": "COM",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 4202522000.0,
+      "raw_value": 4202522.0,
+      "shares": 72357453.0,
+      "manager_sequences": [
+        1,
+        2,
+        4,
+        5,
+        6,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "row_count": 10
+    },
+    {
+      "identity": {
+        "cusip": "23918K108",
+        "issuer_name": "DAVITA INC",
+        "title_of_class": "COM",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 4106232000.0,
+      "raw_value": 4106232.0,
+      "shares": 36095570.0,
+      "manager_sequences": [
+        4,
+        8,
+        11
+      ],
+      "row_count": 2
+    },
+    {
+      "identity": {
+        "cusip": "37045V100",
+        "issuer_name": "GENERAL MTRS CO",
+        "title_of_class": "COM",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 3517800000.0,
+      "raw_value": 3517800.0,
+      "shares": 60000000.0,
+      "manager_sequences": [
+        2,
+        4,
+        8,
+        10,
+        11
+      ],
+      "row_count": 5
+    },
+    {
+      "identity": {
+        "cusip": "92343E102",
+        "issuer_name": "VERISIGN INC",
+        "title_of_class": "COM",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 3252859000.0,
+      "raw_value": 3252859.0,
+      "shares": 12815613.0,
+      "manager_sequences": [
+        4,
+        8,
+        11
+      ],
+      "row_count": 2
+    },
+    {
+      "identity": {
+        "cusip": "501044101",
+        "issuer_name": "KROGER CO",
+        "title_of_class": "COM",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 2779549000.0,
+      "raw_value": 2779549.0,
+      "shares": 61412910.0,
+      "manager_sequences": [
+        1,
+        2,
+        4,
+        11
+      ],
+      "row_count": 4
+    },
+    {
+      "identity": {
+        "cusip": "16119P108",
+        "issuer_name": "CHARTER COMMUNICATIONS INC N",
+        "title_of_class": "CL A",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 2496355000.0,
+      "raw_value": 2496355.0,
+      "shares": 3828941.0,
+      "manager_sequences": [
+        4,
+        8,
+        11
+      ],
+      "row_count": 1
+    },
+    {
+      "identity": {
+        "cusip": "531229607",
+        "issuer_name": "LIBERTY MEDIA CORP DELAWARE",
+        "title_of_class": "COM C SIRIUSXM",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 2197142000.0,
+      "raw_value": 2197142.0,
+      "shares": 43208291.0,
+      "manager_sequences": [
+        4,
+        8,
+        10,
+        11
+      ],
+      "row_count": 4
+    },
+    {
+      "identity": {
+        "cusip": "833445109",
+        "issuer_name": "SNOWFLAKE INC",
+        "title_of_class": "CL A",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 2074971000.0,
+      "raw_value": 2074971.0,
+      "shares": 6125376.0,
+      "manager_sequences": [
+        4,
+        5
+      ],
+      "row_count": 1
+    },
+    {
+      "identity": {
+        "cusip": "92826C839",
+        "issuer_name": "VISA INC",
+        "title_of_class": "COM CL A",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 1798143000.0,
+      "raw_value": 1798143.0,
+      "shares": 8297460.0,
+      "manager_sequences": [
+        4,
+        8,
+        11
+      ],
+      "row_count": 1
+    },
+    {
+      "identity": {
+        "cusip": "023135106",
+        "issuer_name": "AMAZON COM INC",
+        "title_of_class": "COM",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 1778204000.0,
+      "raw_value": 1778204.0,
+      "shares": 533300.0,
+      "manager_sequences": [
+        4,
+        8,
+        11
+      ],
+      "row_count": 2
+    },
+    {
+      "identity": {
+        "cusip": "57636Q104",
+        "issuer_name": "MASTERCARD INC",
+        "title_of_class": "CL A",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 1432482000.0,
+      "raw_value": 1432482.0,
+      "shares": 3986648.0,
+      "manager_sequences": [
+        4,
+        8,
+        11
+      ],
+      "row_count": 1
+    },
+    {
+      "identity": {
+        "cusip": "G0403H108",
+        "issuer_name": "AON PLC",
+        "title_of_class": "SHS CL A",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 1321261000.0,
+      "raw_value": 1321261.0,
+      "shares": 4396000.0,
+      "manager_sequences": [
+        2,
+        4,
+        11
+      ],
+      "row_count": 3
+    },
+    {
+      "identity": {
+        "cusip": "531229409",
+        "issuer_name": "LIBERTY MEDIA CORP DELAWARE",
+        "title_of_class": "COM A SIRIUSXM",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 1027561000.0,
+      "raw_value": 1027561.0,
+      "shares": 20207680.0,
+      "manager_sequences": [
+        4,
+        8,
+        10,
+        11
+      ],
+      "row_count": 4
+    },
+    {
+      "identity": {
+        "cusip": "G6693N103",
+        "issuer_name": "NU HLDGS LTD",
+        "title_of_class": "ORD SHS CL A",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 1004774000.0,
+      "raw_value": 1004774.0,
+      "shares": 107118784.0,
+      "manager_sequences": [
+        4,
+        5
+      ],
+      "row_count": 1
+    },
+    {
+      "identity": {
+        "cusip": "00507V109",
+        "issuer_name": "ACTIVISION BLIZZARD INC",
+        "title_of_class": "COM",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 975205000.0,
+      "raw_value": 975205.0,
+      "shares": 14658121.0,
+      "manager_sequences": [
+        4,
+        11
+      ],
+      "row_count": 1
+    },
+    {
+      "identity": {
+        "cusip": "74967X103",
+        "issuer_name": "RH",
+        "title_of_class": "COM",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 973561000.0,
+      "raw_value": 973561.0,
+      "shares": 1816547.0,
+      "manager_sequences": [
+        4,
+        11
+      ],
+      "row_count": 2
+    },
+    {
+      "identity": {
+        "cusip": "862121100",
+        "issuer_name": "STORE CAP CORP",
+        "title_of_class": "COM",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 839882000.0,
+      "raw_value": 839882.0,
+      "shares": 24415168.0,
+      "manager_sequences": [
+        1,
+        2,
+        4,
+        11
+      ],
+      "row_count": 3
+    },
+    {
+      "identity": {
+        "cusip": "872590104",
+        "issuer_name": "T-MOBILE US INC",
+        "title_of_class": "COM",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 607968000.0,
+      "raw_value": 607968.0,
+      "shares": 5242000.0,
+      "manager_sequences": [
+        4,
+        11
+      ],
+      "row_count": 2
+    },
+    {
+      "identity": {
+        "cusip": "37959E102",
+        "issuer_name": "GLOBE LIFE INC",
+        "title_of_class": "COM",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 595471000.0,
+      "raw_value": 595471.0,
+      "shares": 6353727.0,
+      "manager_sequences": [
+        1,
+        2,
+        4,
+        5,
+        10,
+        11
+      ],
+      "row_count": 5
+    },
+    {
+      "identity": {
+        "cusip": "00287Y109",
+        "issuer_name": "ABBVIE INC",
+        "title_of_class": "COM",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 410744000.0,
+      "raw_value": 410744.0,
+      "shares": 3033561.0,
+      "manager_sequences": [
+        4,
+        11
+      ],
+      "row_count": 1
+    },
+    {
+      "identity": {
+        "cusip": "G7709Q104",
+        "issuer_name": "ROYALTY PHARMA PLC",
+        "title_of_class": "SHS CLASS A",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 344633000.0,
+      "raw_value": 344633.0,
+      "shares": 8648268.0,
+      "manager_sequences": [
+        4
+      ],
+      "row_count": 1
+    },
+    {
+      "identity": {
+        "cusip": "110122108",
+        "issuer_name": "BRISTOL-MYERS SQUIBB CO",
+        "title_of_class": "COM",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 324387000.0,
+      "raw_value": 324387.0,
+      "shares": 5202674.0,
+      "manager_sequences": [
+        4,
+        11
+      ],
+      "row_count": 1
+    },
+    {
+      "identity": {
+        "cusip": "G85158106",
+        "issuer_name": "STONECO LTD",
+        "title_of_class": "COM CL A",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 180325000.0,
+      "raw_value": 180325.0,
+      "shares": 10695448.0,
+      "manager_sequences": [
+        4,
+        11
+      ],
+      "row_count": 1
+    },
+    {
+      "identity": {
+        "cusip": "531229854",
+        "issuer_name": "LIBERTY MEDIA CORP DEL",
+        "title_of_class": "COM SER C FRMLA",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 133989000.0,
+      "raw_value": 133989.0,
+      "shares": 2118746.0,
+      "manager_sequences": [
+        4
+      ],
+      "row_count": 1
+    },
+    {
+      "identity": {
+        "cusip": "339750101",
+        "issuer_name": "FLOOR & DECOR HLDGS INC",
+        "title_of_class": "CL A",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 109691000.0,
+      "raw_value": 109691.0,
+      "shares": 843709.0,
+      "manager_sequences": [
+        2,
+        4,
+        11
+      ],
+      "row_count": 2
+    },
+    {
+      "identity": {
+        "cusip": "571748102",
+        "issuer_name": "MARSH & MCLENNAN COS INC",
+        "title_of_class": "COM",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 70382000.0,
+      "raw_value": 70382.0,
+      "shares": 404911.0,
+      "manager_sequences": [
+        4,
+        11
+      ],
+      "row_count": 1
+    },
+    {
+      "identity": {
+        "cusip": "478160104",
+        "issuer_name": "JOHNSON & JOHNSON",
+        "title_of_class": "COM",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 55957000.0,
+      "raw_value": 55957.0,
+      "shares": 327100.0,
+      "manager_sequences": [
+        4
+      ],
+      "row_count": 1
+    },
+    {
+      "identity": {
+        "cusip": "742718109",
+        "issuer_name": "PROCTER & GAMBLE CO",
+        "title_of_class": "COM",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 51593000.0,
+      "raw_value": 51593.0,
+      "shares": 315400.0,
+      "manager_sequences": [
+        4
+      ],
+      "row_count": 1
+    },
+    {
+      "identity": {
+        "cusip": "609207105",
+        "issuer_name": "MONDELEZ INTL INC",
+        "title_of_class": "CL A",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 38327000.0,
+      "raw_value": 38327.0,
+      "shares": 578000.0,
+      "manager_sequences": [
+        4
+      ],
+      "row_count": 1
+    },
+    {
+      "identity": {
+        "cusip": "949746101",
+        "issuer_name": "WELLS FARGO & CO NEW",
+        "title_of_class": "COM",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 32389000.0,
+      "raw_value": 32389.0,
+      "shares": 675054.0,
+      "manager_sequences": [
+        4,
+        11
+      ],
+      "row_count": 1
+    },
+    {
+      "identity": {
+        "cusip": "G9001E102",
+        "issuer_name": "LIBERTY LATIN AMERICA LTD",
+        "title_of_class": "COM CL A",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 30675000.0,
+      "raw_value": 30675.0,
+      "shares": 2630792.0,
+      "manager_sequences": [
+        4,
+        8,
+        11
+      ],
+      "row_count": 2
+    },
+    {
+      "identity": {
+        "cusip": "922908363",
+        "issuer_name": "VANGUARD INDEX FDS",
+        "title_of_class": "S&P 500 ETF SHS",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 18773000.0,
+      "raw_value": 18773.0,
+      "shares": 43000.0,
+      "manager_sequences": [
+        4
+      ],
+      "row_count": 1
+    },
+    {
+      "identity": {
+        "cusip": "78462F103",
+        "issuer_name": "SPDR S&P 500 ETF TR",
+        "title_of_class": "TR UNIT",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 18713000.0,
+      "raw_value": 18713.0,
+      "shares": 39400.0,
+      "manager_sequences": [
+        4
+      ],
+      "row_count": 1
+    },
+    {
+      "identity": {
+        "cusip": "G9001E128",
+        "issuer_name": "LIBERTY LATIN AMERICA LTD",
+        "title_of_class": "COM CL C",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 14638000.0,
+      "raw_value": 14638.0,
+      "shares": 1284020.0,
+      "manager_sequences": [
+        4,
+        8,
+        11
+      ],
+      "row_count": 1
+    },
+    {
+      "identity": {
+        "cusip": "911312106",
+        "issuer_name": "UNITED PARCEL SERVICE INC",
+        "title_of_class": "CL B",
+        "ticker": null,
+        "ticker_as_of": null,
+        "mapping_source": "",
+        "mapping_confidence": 0.0
+      },
+      "market_value": 12732000.0,
+      "raw_value": 12732.0,
+      "shares": 59400.0,
+      "manager_sequences": [
+        4
+      ],
+      "row_count": 1
+    }
+  ],
+  "manager_names": {
+    "1": "Berkshire Hathaway Homestate Insurance Co.",
+    "2": "Berkshire Hathaway Life Insurance Co of Nebraska",
+    "3": "BH Finance LLC",
+    "4": "Buffett Warren E",
+    "5": "Columbia Insurance Co",
+    "6": "Cypress Insurance Co",
+    "7": "Fechheimer Brothers Co",
+    "8": "GEICO Corp",
+    "9": "Medical Protective Corp",
+    "10": "National Fire & Marine Insurance Co",
+    "11": "National Indemnity Co",
+    "12": "National Liability & Fire Insurance Co",
+    "13": "Nebraska Furniture Mart",
+    "14": "U.S. Investment Corp"
+  },
+  "normalization": {
+    "unit": "thousands_usd",
+    "multiplier": 1000.0,
+    "rule_source": "SEC Form 13F pre-2023-01-03 specification: value in thousands of dollars",
+    "validation": "passed",
+    "validation_detail": "median implied price $59.21/share is consistent with thousands_usd"
+  },
+  "parser_version": "13f-parser-1",
+  "skipped_non_equity_rows": 0
+}
