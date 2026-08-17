@@ -198,13 +198,6 @@ input[type="number"],
   font-weight: 600;
 }
 
-.navlink-badge {
-  margin-left: auto;
-  font-size: 11px;
-  color: var(--ink-faint);
-  font-variant-numeric: tabular-nums;
-}
-
 .rail-foot {
   margin-top: auto;
   display: flex;
@@ -1681,10 +1674,4 @@ button.step-button {
 .warn-text {
   color: var(--amber);
   font-size: 13px;
-}
-
-.app {
-  max-width: var(--workspace);
-  margin: 0 auto;
-  padding: 0 var(--edge);
 }

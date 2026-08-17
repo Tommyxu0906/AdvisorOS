@@ -47,13 +47,11 @@ export function AppShell({
   children,
   demo,
   onExitDemo,
-  reportCount,
 }: {
   route: Route;
   children: ReactNode;
   demo?: boolean;
   onExitDemo?: () => void;
-  reportCount?: number;
 }) {
   const { isConnected } = useAnthropicConnection();
   const [drawer, setDrawer] = useState(false);
@@ -88,9 +86,6 @@ export function AppShell({
               onClick={() => go(item.id)}
             >
               {item.label}
-              {item.id === "reports" && reportCount ? (
-                <span className="navlink-badge">{reportCount}</span>
-              ) : null}
             </button>
           ))}
 
@@ -127,7 +122,9 @@ export function AppShell({
             ☰
           </button>
           <span className="mobile-brand">AdvisorOS</span>
-          <h1 className="topbar-title topbar-desktop-only">{TITLES[route]}</h1>
+          {/* Not an <h1>: the page below owns the document heading, and two h1s on one page
+              leaves a screen-reader user with no way to tell which is the subject. */}
+          <span className="topbar-title topbar-desktop-only">{TITLES[route]}</span>
           <div className="topbar-spacer" />
           <span className="topbar-desktop-only">
             <StatusBadge tone={isConnected ? "good" : "neutral"}>

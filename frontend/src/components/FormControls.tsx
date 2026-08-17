@@ -1,3 +1,4 @@
+import React from "react";
 /** Field chrome and option lists shared by the intake, settings, and holdings editors. */
 
 export const ACCOUNT_TYPES = [
@@ -43,11 +44,25 @@ export const GOAL_TYPES = [
   "other",
 ];
 
+/**
+ * A labelled field, where the label is actually associated with the control.
+ *
+ * The previous version rendered a bare `<label>` next to its input. That looks identical and is
+ * not the same thing: with no `for` and no wrapping, a screen reader announces the control as an
+ * unnamed textbox, and clicking the label does not focus it. Both matter more than usual in a
+ * form whose fields are someone's income and debts.
+ *
+ * The id is derived from the label so callers do not have to invent one, and the control is
+ * cloned to receive it.
+ */
 export function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  const id = `sf-${label.replace(/\W+/g, "-").toLowerCase()}`;
   return (
     <div className="field">
-      <label>{label}</label>
-      {children}
+      <label htmlFor={id}>{label}</label>
+      {React.isValidElement(children)
+        ? React.cloneElement(children as React.ReactElement<{ id?: string }>, { id })
+        : children}
     </div>
   );
 }

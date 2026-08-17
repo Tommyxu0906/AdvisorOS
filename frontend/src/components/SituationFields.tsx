@@ -58,6 +58,7 @@ export function SituationFields({
             <input
               type="number"
               step="0.1"
+              aria-label="Employer match, percent of salary"
               placeholder="4 — blank means none"
               min={0}
               max={100}
@@ -145,13 +146,15 @@ export function SituationFields({
         render={(row, update) => (
           <>
             <input
+              aria-label="Name"
               placeholder="name"
               value={row.name}
               onChange={(e) => update({ ...row, name: e.target.value })}
             />
             <input
               type="number"
-              placeholder="balance"
+              aria-label="Balance"
+                placeholder="balance"
               value={str(row.balance)}
               onChange={(e) => update({ ...row, balance: num(e.target.value) })}
             />
@@ -159,6 +162,7 @@ export function SituationFields({
               <input
                 type="number"
                 step="0.1"
+                aria-label="Interest rate, percent"
                 placeholder="interest rate"
                 value={str(toPercent(row.apr))}
                 onChange={(e) => update({ ...row, apr: toFraction(num(e.target.value)) })}
@@ -167,6 +171,7 @@ export function SituationFields({
             </div>
             <input
               type="number"
+              aria-label="Minimum monthly payment"
               placeholder="min payment"
               value={str(row.minimum_monthly_payment)}
               onChange={(e) => update({ ...row, minimum_monthly_payment: num(e.target.value) })}
@@ -184,17 +189,20 @@ export function SituationFields({
         render={(row, update) => (
           <>
             <input
+              aria-label="Name"
               placeholder="name"
               value={row.name}
               onChange={(e) => update({ ...row, name: e.target.value })}
             />
             <input
               type="number"
+              aria-label="Value"
               placeholder="value"
               value={str(row.value)}
               onChange={(e) => update({ ...row, value: num(e.target.value) })}
             />
             <select
+              aria-label="Account type"
               value={row.account_type}
               onChange={(e) => update({ ...row, account_type: e.target.value })}
             >
@@ -225,11 +233,13 @@ export function SituationFields({
         render={(row, update) => (
           <>
             <input
+              aria-label="Name"
               placeholder="name"
               value={row.name}
               onChange={(e) => update({ ...row, name: e.target.value })}
             />
             <select
+              aria-label="Goal type"
               value={row.goal_type}
               onChange={(e) => update({ ...row, goal_type: e.target.value })}
             >
@@ -242,11 +252,13 @@ export function SituationFields({
             <input
               type="number"
               step="0.5"
+              aria-label="Years until needed"
               placeholder="years away"
               value={str(row.years_until_needed)}
               onChange={(e) => update({ ...row, years_until_needed: num(e.target.value) })}
             />
             <select
+              aria-label="How firm this goal is"
               value={row.priority ?? ""}
               onChange={(e) =>
                 update({ ...row, priority: e.target.value === "" ? null : Number(e.target.value) })

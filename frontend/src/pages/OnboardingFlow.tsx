@@ -91,7 +91,7 @@ export function OnboardingFlow({
   const isLast = step === STEPS.length - 1;
 
   return (
-    <div className="page" style={{ maxWidth: 780 }}>
+    <div className="page" style={{ maxWidth: 780, margin: "0 auto" }}>
       <div className="page-head">
         <h1>Set up your situation</h1>
         <p className="lede">
