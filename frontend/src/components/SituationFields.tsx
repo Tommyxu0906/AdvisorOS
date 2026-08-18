@@ -1,3 +1,4 @@
+import { EXPERIENCE_LEVELS, GOAL_PRIORITIES, toFraction, toPercent } from "../lib/units";
 import type { ProfileDraft } from "../lib/draft";
 import { num, str } from "../lib/draft";
 import { ACCOUNT_TYPES, Field, GOAL_TYPES, RISK, RowEditor } from "./FormControls";
@@ -52,18 +53,25 @@ export function SituationFields({
             }
           />
         </Field>
-        <Field label="Employer match (fraction of salary)">
-          <input
-            type="number"
-            step="0.01"
-            placeholder="0.04 — blank means none"
-            min={0}
-            max={1}
-            value={str(profile.income.employer_match_pct)}
-            onChange={(e) =>
-              set("income", { ...profile.income, employer_match_pct: num(e.target.value) })
-            }
-          />
+        <Field label="Employer match">
+          <div className="input-affix">
+            <input
+              type="number"
+              step="0.1"
+              aria-label="Employer match, percent of salary"
+              placeholder="4 — blank means none"
+              min={0}
+              max={100}
+              value={str(toPercent(profile.income.employer_match_pct))}
+              onChange={(e) =>
+                set("income", {
+                  ...profile.income,
+                  employer_match_pct: toFraction(num(e.target.value)),
+                })
+              }
+            />
+            <span className="affix">%</span>
+          </div>
         </Field>
         <Field label="Monthly essential expenses">
           <input
@@ -103,16 +111,29 @@ export function SituationFields({
             ))}
           </select>
         </Field>
-        <Field label="Investing experience (0–1)">
-          <input
-            type="number"
-            step="0.05"
-            min={0}
-            max={1}
-            placeholder="0 = novice, 1 = professional"
-            value={str(profile.self_reported_experience)}
-            onChange={(e) => set("self_reported_experience", num(e.target.value))}
-          />
+        <Field label="Investing experience">
+          <select
+            value={
+              profile.self_reported_experience === null
+                ? ""
+                : EXPERIENCE_LEVELS.reduce((best, l) =>
+                    Math.abs(l.value - profile.self_reported_experience!) <
+                    Math.abs(best.value - profile.self_reported_experience!)
+                      ? l
+                      : best,
+                  ).value
+            }
+            onChange={(e) =>
+              set("self_reported_experience", e.target.value === "" ? null : Number(e.target.value))
+            }
+          >
+            <option value="">— choose —</option>
+            {EXPERIENCE_LEVELS.map((l) => (
+              <option key={l.label} value={l.value}>
+                {l.label} — {l.hint}
+              </option>
+            ))}
+          </select>
         </Field>
       </div>
 
@@ -125,25 +146,32 @@ export function SituationFields({
         render={(row, update) => (
           <>
             <input
+              aria-label="Name"
               placeholder="name"
               value={row.name}
               onChange={(e) => update({ ...row, name: e.target.value })}
             />
             <input
               type="number"
-              placeholder="balance"
+              aria-label="Balance"
+                placeholder="balance"
               value={str(row.balance)}
               onChange={(e) => update({ ...row, balance: num(e.target.value) })}
             />
+            <div className="input-affix">
+              <input
+                type="number"
+                step="0.1"
+                aria-label="Interest rate, percent"
+                placeholder="interest rate"
+                value={str(toPercent(row.apr))}
+                onChange={(e) => update({ ...row, apr: toFraction(num(e.target.value)) })}
+              />
+              <span className="affix">%</span>
+            </div>
             <input
               type="number"
-              step="0.001"
-              placeholder="APR as 0.229"
-              value={str(row.apr)}
-              onChange={(e) => update({ ...row, apr: num(e.target.value) })}
-            />
-            <input
-              type="number"
+              aria-label="Minimum monthly payment"
               placeholder="min payment"
               value={str(row.minimum_monthly_payment)}
               onChange={(e) => update({ ...row, minimum_monthly_payment: num(e.target.value) })}
@@ -161,17 +189,20 @@ export function SituationFields({
         render={(row, update) => (
           <>
             <input
+              aria-label="Name"
               placeholder="name"
               value={row.name}
               onChange={(e) => update({ ...row, name: e.target.value })}
             />
             <input
               type="number"
+              aria-label="Value"
               placeholder="value"
               value={str(row.value)}
               onChange={(e) => update({ ...row, value: num(e.target.value) })}
             />
             <select
+              aria-label="Account type"
               value={row.account_type}
               onChange={(e) => update({ ...row, account_type: e.target.value })}
             >
@@ -202,11 +233,13 @@ export function SituationFields({
         render={(row, update) => (
           <>
             <input
+              aria-label="Name"
               placeholder="name"
               value={row.name}
               onChange={(e) => update({ ...row, name: e.target.value })}
             />
             <select
+              aria-label="Goal type"
               value={row.goal_type}
               onChange={(e) => update({ ...row, goal_type: e.target.value })}
             >
@@ -219,18 +252,25 @@ export function SituationFields({
             <input
               type="number"
               step="0.5"
+              aria-label="Years until needed"
               placeholder="years away"
               value={str(row.years_until_needed)}
               onChange={(e) => update({ ...row, years_until_needed: num(e.target.value) })}
             />
-            <input
-              type="number"
-              min={1}
-              max={5}
-              placeholder="priority 1–5"
-              value={str(row.priority)}
-              onChange={(e) => update({ ...row, priority: num(e.target.value) })}
-            />
+            <select
+              aria-label="How firm this goal is"
+              value={row.priority ?? ""}
+              onChange={(e) =>
+                update({ ...row, priority: e.target.value === "" ? null : Number(e.target.value) })
+              }
+            >
+              <option value="">— how firm —</option>
+              {GOAL_PRIORITIES.map((g) => (
+                <option key={g.value} value={g.value}>
+                  {g.label}
+                </option>
+              ))}
+            </select>
           </>
         )}
       />

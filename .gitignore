@@ -12,6 +12,10 @@ frontend/dist/
 !.env.example
 evals/results/
 data/runs/
+# Regenerable research artifacts. These rules exist on feature/finance-nuwa; without
+# them here, `git add -A` on a branch based off main sweeps 45 files into the commit.
+data/berkshire/snapshots/
+data/berkshire/episodes/*.audit.json
 backend/app/advisors/custom/
 *.tsbuildinfo
 .claude/settings.local.json

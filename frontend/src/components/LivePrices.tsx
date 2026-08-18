@@ -16,7 +16,7 @@ export function LivePrices({ state }: { state: QuoteState }) {
     <section className="panel">
       <div className="row-between">
         <h2>Market prices</h2>
-        <span className="badge free">delayed · no key used</span>
+        <span className="badge free">Delayed quotes · no AI call</span>
       </div>
 
       {loading && rows.length === 0 && <p className="muted">Loading prices…</p>}
