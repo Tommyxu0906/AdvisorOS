@@ -7,6 +7,7 @@
  */
 
 import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import type { ReactNode } from "react";
 
 // --- surfaces ------------------------------------------------------------------------------
@@ -175,6 +176,12 @@ export function Advanced({
  * Focus is moved in on open and returned on close, Escape dismisses, and the backdrop click
  * dismisses. Without the focus return, a keyboard user who closes a drawer lands back at the
  * top of the document instead of on the control they opened it with.
+ *
+ * Rendered through a portal to `document.body`, which is not a detail. `position: fixed` resolves
+ * against the nearest *transformed* ancestor rather than the viewport, and the mobile navigation
+ * rail is transformed — so an overlay opened from a control inside that rail (the account button
+ * lives there) was clipped to the 300px drawer instead of covering the screen. The portal makes
+ * an overlay independent of wherever it happens to be mounted.
  */
 export function Overlay({
   open,
@@ -182,6 +189,7 @@ export function Overlay({
   title,
   children,
   variant = "modal",
+  size = "default",
   labelledBy,
 }: {
   open: boolean;
@@ -189,6 +197,8 @@ export function Overlay({
   title: ReactNode;
   children: ReactNode;
   variant?: "modal" | "drawer";
+  /** `narrow` suits a single-column form; the default is sized for tables and rosters. */
+  size?: "default" | "narrow";
   labelledBy?: string;
 }) {
   const panel = useRef<HTMLDivElement>(null);
@@ -231,8 +241,8 @@ export function Overlay({
 
   if (!open) return null;
 
-  return (
-    <div className={`overlay overlay-${variant}`}>
+  return createPortal(
+    <div className={`overlay overlay-${variant} overlay-${size}`}>
       <button className="overlay-scrim" aria-label="Close" onClick={onClose} tabIndex={-1} />
       <div
         className="overlay-panel"
@@ -250,7 +260,8 @@ export function Overlay({
         </div>
         <div className="overlay-body">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

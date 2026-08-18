@@ -1139,6 +1139,90 @@ tfoot td {
   box-shadow: var(--lift);
 }
 
+/* --- segmented control, labelled rule, and full-width actions ---------------- */
+
+/* Used by the auth dialog to switch modes. A pair of bare <button>s with no class is what made
+   that dialog look unfinished — they inherited the user-agent style in the middle of a designed
+   page. */
+.segmented {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--paper-sunk);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  width: 100%;
+}
+
+.segmented button {
+  flex: 1;
+  min-height: 34px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink-faint);
+  cursor: pointer;
+}
+
+.segmented button:hover {
+  color: var(--ink);
+}
+
+.segmented button.active {
+  background: var(--paper-raised);
+  color: var(--ink);
+  font-weight: 600;
+  border: 1px solid var(--hairline);
+}
+
+/* "or" with a rule either side, rather than a bare <hr> the word sits beneath. */
+.or-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.or-divider::before,
+.or-divider::after {
+  content: "";
+  flex: 1;
+  border-top: 1px solid var(--hairline);
+}
+
+.full {
+  width: 100%;
+  justify-content: center;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.auth-form .primary {
+  margin-top: 4px;
+}
+
+.auth-note {
+  margin-top: 18px;
+  margin-bottom: 0;
+}
+
+/* A single-column form does not need the roster width. */
+.overlay-narrow .overlay-panel {
+  width: min(420px, 100%);
+}
+
 /* ============================================================ stepper */
 
 .stepper {
