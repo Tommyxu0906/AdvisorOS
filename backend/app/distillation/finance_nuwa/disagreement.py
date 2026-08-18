@@ -97,7 +97,9 @@ class DisagreementReport(BaseModel):
         """
         if not self.persona_win_reasons:
             return 0.0
-        return round(max(self.persona_win_reasons.values()) / sum(self.persona_win_reasons.values()), 4)
+        return round(
+            max(self.persona_win_reasons.values()) / sum(self.persona_win_reasons.values()), 4
+        )
 
     def render(self) -> str:
         lines = [
@@ -182,9 +184,10 @@ def analyse(
             report.both_wrong += 1
             cell = DisagreementCell.both_wrong
 
-        if cell in (DisagreementCell.persona_only, DisagreementCell.quant_only) and len(
-            cases
-        ) < max_cases:
+        if (
+            cell in (DisagreementCell.persona_only, DisagreementCell.quant_only)
+            and len(cases) < max_cases
+        ):
             row = features.get(episode_id, {})
             cases.append(
                 DisagreementCase(

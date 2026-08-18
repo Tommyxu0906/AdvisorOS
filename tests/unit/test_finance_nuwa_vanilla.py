@@ -37,7 +37,9 @@ from app.distillation.finance_nuwa.vanilla_nuwa import (
 )
 from app.domain.advisor import AdvisorManifest
 
-MANIFEST_PATH = Path(__file__).resolve().parents[2] / "config/nuwa/berkshire_public_equity.manifest.json"
+MANIFEST_PATH = (
+    Path(__file__).resolve().parents[2] / "config/nuwa/berkshire_public_equity.manifest.json"
+)
 
 
 def profile():
@@ -159,9 +161,7 @@ def test_abstaining_is_not_holding():
 def test_claiming_both_an_action_and_an_abstention_is_rejected():
     """Recording both would let a scorer pick whichever turned out right."""
     with pytest.raises(ValidationError, match="different answers"):
-        BehavioralPrediction(
-            episode_id="e1", abstain=True, action=BehavioralAction.hold
-        )
+        BehavioralPrediction(episode_id="e1", abstain=True, action=BehavioralAction.hold)
 
 
 def test_a_parse_failure_is_neither_an_abstention_nor_an_answer():
@@ -206,9 +206,7 @@ def test_a_silent_answer_is_a_failure_rather_than_an_abstention():
 
 
 def test_an_unknown_reason_code_degrades_to_other_rather_than_failing_the_row():
-    parsed = parse_prediction(
-        "e1", {"abstain": False, "action": "hold", "reason_codes": ["vibes"]}
-    )
+    parsed = parse_prediction("e1", {"abstain": False, "action": "hold", "reason_codes": ["vibes"]})
     assert parsed.reason_codes == [ReasonCode.other]
 
 
@@ -265,9 +263,7 @@ def test_scattered_wins_read_as_noise_and_concentrated_ones_do_not():
         quant,
         PredictionSet(
             predictions=[
-                BehavioralPrediction(
-                    episode_id=k, action=BehavioralAction.reduce, reason_codes=[c]
-                )
+                BehavioralPrediction(episode_id=k, action=BehavioralAction.reduce, reason_codes=[c])
                 for k, c in zip(truth, codes, strict=True)
             ]
         ),
@@ -277,9 +273,7 @@ def test_scattered_wins_read_as_noise_and_concentrated_ones_do_not():
         quant,
         PredictionSet(
             predictions=[
-                BehavioralPrediction(
-                    episode_id=k, action=BehavioralAction.reduce, reason_codes=[c]
-                )
+                BehavioralPrediction(episode_id=k, action=BehavioralAction.reduce, reason_codes=[c])
                 for k, c in zip(
                     truth,
                     [
