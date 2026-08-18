@@ -156,3 +156,69 @@ def test_no_provider_claims_to_be_a_language_model():
             f"{provider.provider_id} reports is_language_model=True but no language model ran. "
             "A deterministic rule table is not inference."
         )
+
+
+def test_the_replay_engine_reads_no_market_data_outside_the_provider():
+    """Lookahead is prevented structurally: only `market.py` may touch raw observations.
+
+    If `replay.py` grew its own access to `bars`, the `as_of` filter would stop being the only
+    door and every lookahead guarantee in the test suite would become a spot check.
+    """
+    from pathlib import Path
+
+    from app.paper import replay as replay_module
+
+    source = Path(replay_module.__file__).read_text()
+    assert ".bars" not in source, (
+        "replay.py reached into the market provider's raw observations. Point-in-time reads must "
+        "go through the accessors that filter on as_of."
+    )
+
+
+def test_the_local_market_provider_cannot_fetch(monkeypatch):
+    """Constructing and reading the provider must not require a network stack at all."""
+    import socket
+
+    from app.paper.market import LocalHistoricalMarketDataProvider
+
+    def explode(*_args, **_kwargs):
+        raise AssertionError("the offline replay path attempted a network connection")
+
+    monkeypatch.setattr(socket, "socket", explode)
+    monkeypatch.setattr(socket, "create_connection", explode)
+
+    provider = LocalHistoricalMarketDataProvider.from_directory("data/market/fixtures")
+    from datetime import date
+
+    assert provider.get_price("RISE", date(2024, 3, 1)) is not None
+    assert provider.build_price_series("RISE", date(2024, 3, 1), 60) is not None
+
+
+def test_a_full_comparison_runs_with_the_network_disabled(monkeypatch):
+    """The whole point of the offline path: four providers, zero sockets, zero credentials."""
+    import socket
+    from datetime import date
+
+    def explode(*_args, **_kwargs):
+        raise AssertionError("the offline replay path attempted a network connection")
+
+    monkeypatch.setattr(socket, "socket", explode)
+    monkeypatch.setattr(socket, "create_connection", explode)
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("ANTHROPIC_AUTH_TOKEN", raising=False)
+
+    from app.paper.clock import ReplayClock, periodic_decision_dates
+    from app.paper.comparison import build_providers, compare
+    from app.paper.market import LocalHistoricalMarketDataProvider
+    from app.paper.replay import OfflineReplayEngine
+    from tests.unit.test_paper_replay import profile, six_position_book
+
+    market = LocalHistoricalMarketDataProvider.from_directory("data/market/fixtures")
+    sessions = sorted({o.trade_date for s in market.bars.values() for o in s})
+    window = [d for d in sessions if d <= date(2024, 6, 28)]
+    clock = ReplayClock.build(periodic_decision_dates(window, 40), sessions)
+    engine = OfflineReplayEngine(market=market, clock=clock, starting_cash=20_000)
+
+    result = compare(engine, profile(), six_position_book(), build_providers())
+    assert len(result.runs) == 4
+    assert result.identical_inputs()
