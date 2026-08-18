@@ -1,0 +1,59 @@
+{
+  "policy_id": "berkshire_public_equity_policy",
+  "display_name": "Berkshire public-equity policy (hand-authored)",
+  "schema_version": "paper-policy-v1",
+  "companion_manifest": "config/nuwa/berkshire_public_equity.manifest.json",
+  "_what_this_is": "A hand-authored policy prior for managing a concentrated institutional equity book. It was written by a person reading public evidence, NOT produced by the Nuwa distillation pipeline. Every parameter carries provenance='derived' or 'house_default' rather than 'direct', because Berkshire has never published a single-name cap as a number. Treating a reader's inference as a published threshold would be the exact overclaim this project keeps refusing to make.",
+  "_why_not_the_buffett_advisor": "backend/app/advisors/builtin/buffett is a household-advice persona: index funds, emergency funds, staying out of things you do not understand. This artifact is about running a concentrated equity book, which is a different job with different numbers. Loading the household persona here would produce a 5% single-name cap and trim away the entire thesis.",
+  "_contamination": "UPPER BOUND, not a measurement. Whoever authored these numbers already knows what Berkshire did after 2014, and no instruction makes that knowledge go away. These parameters therefore bound what a faithful distillation could contribute; they do not measure it. Any forward result produced with this policy is a demonstration that the pipeline runs, never evidence that the philosophy predicts.",
+  "_evidence_window": "Authored from material published on or before 2014-12-31, so that the frozen FinanceNuwa episodes from 2014 onward remain usable as a held-out comparison. The citations below are all pre-window.",
+  "parameters": {
+    "single_name_concentration": {
+      "name": "single_name_concentration",
+      "value": 0.25,
+      "low": 0.15,
+      "high": 0.4,
+      "direction": "tolerates",
+      "provenance": "derived",
+      "confidence": 0.45,
+      "source_labels": [
+        "Berkshire Hathaway shareholder letter 1993 \u2014 on concentration and the meaning of risk",
+        "Berkshire Hathaway shareholder letter 1996 \u2014 on owning a few understandable businesses"
+      ],
+      "as_of": "2014-12-31",
+      "applicable_scope": [
+        "concentration"
+      ],
+      "note": "Read from behaviour, not from a published rule. Berkshire has repeatedly run single positions well above any conventional cap, so the direction ('higher than a default') is far better evidenced than the level. The wide low/high band is the honest expression of that."
+    },
+    "top3_concentration": {
+      "name": "top3_concentration",
+      "value": 0.6,
+      "low": 0.45,
+      "high": 0.75,
+      "direction": "tolerates",
+      "provenance": "derived",
+      "confidence": 0.35,
+      "source_labels": [
+        "Berkshire Hathaway shareholder letter 1993 \u2014 on concentration and the meaning of risk"
+      ],
+      "as_of": "2014-12-31",
+      "applicable_scope": [
+        "concentration"
+      ],
+      "note": "Even weaker than the single-name figure. Carried mainly so the direction is on record."
+    }
+  },
+  "scopes": [
+    "concentration"
+  ],
+  "allows_concentration_on_conviction": true,
+  "_scope_note": "Concentration only. This artifact says nothing about debt, liquidity, or allocation for a household, and the empty scopes are what stop it being consulted on questions it has no business answering.",
+  "stance_rules": {
+    "_how_to_read": "Deterministic mapping from a position's weight to a stance. Thresholds are expressed relative to the single-name cap above, so changing the cap moves these together rather than leaving them inconsistent.",
+    "exit_below_weight": 0.005,
+    "reduce_above_cap_multiple": 1.0,
+    "increase_below_cap_multiple": 0.25,
+    "abstain_when_price_unknown": true
+  }
+}
