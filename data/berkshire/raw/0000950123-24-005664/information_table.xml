@@ -1,0 +1,19 @@
+<informationTable xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.sec.gov/edgar/document/thirteenf/informationtable">
+  <infoTable>
+    <nameOfIssuer>CHUBB LIMITED</nameOfIssuer>
+    <titleOfClass>COM</titleOfClass>
+    <cusip>H1467J104</cusip>
+    <value>4542600000</value>
+    <shrsOrPrnAmt>
+      <sshPrnamt>20100000</sshPrnamt>
+      <sshPrnamtType>SH</sshPrnamtType>
+    </shrsOrPrnAmt>
+    <investmentDiscretion>DFND</investmentDiscretion>
+    <otherManager>4,11</otherManager>
+    <votingAuthority>
+      <Sole>20100000</Sole>
+      <Shared>0</Shared>
+      <None>0</None>
+    </votingAuthority>
+  </infoTable>
+</informationTable>

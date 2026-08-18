@@ -1,0 +1,3614 @@
+{
+  "result_name": "Berkshire Behavioral Fidelity",
+  "views": {
+    "trivial": [
+      {
+        "model_name": "always_hold",
+        "view": "berkshire-v2.0-natural",
+        "split": "validation",
+        "information_set": "public_observer",
+        "n": 395,
+        "accuracy": 0.6304,
+        "balanced_accuracy": 0.2,
+        "macro_f1": 0.1547,
+        "macro_f1_low": 0.1468,
+        "macro_f1_high": 0.1613,
+        "per_class": [
+          {
+            "label": "exit",
+            "support": 25,
+            "predicted": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "f1_low": 0.0,
+            "f1_high": 0.0,
+            "recall_low": 0.0,
+            "recall_high": 0.0
+          },
+          {
+            "label": "reduce",
+            "support": 71,
+            "predicted": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "f1_low": 0.0,
+            "f1_high": 0.0,
+            "recall_low": 0.0,
+            "recall_high": 0.0
+          },
+          {
+            "label": "hold",
+            "support": 249,
+            "predicted": 395,
+            "precision": 0.6304,
+            "recall": 1.0,
+            "f1": 0.7733,
+            "f1_low": 0.734,
+            "f1_high": 0.8066,
+            "recall_low": 1.0,
+            "recall_high": 1.0
+          },
+          {
+            "label": "increase",
+            "support": 33,
+            "predicted": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "f1_low": 0.0,
+            "f1_high": 0.0,
+            "recall_low": 0.0,
+            "recall_high": 0.0
+          },
+          {
+            "label": "enter",
+            "support": 17,
+            "predicted": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "f1_low": 0.0,
+            "f1_high": 0.0,
+            "recall_low": 0.0,
+            "recall_high": 0.0
+          }
+        ],
+        "confusion": {
+          "exit": {
+            "exit": 0,
+            "reduce": 0,
+            "hold": 25,
+            "increase": 0,
+            "enter": 0
+          },
+          "reduce": {
+            "exit": 0,
+            "reduce": 0,
+            "hold": 71,
+            "increase": 0,
+            "enter": 0
+          },
+          "hold": {
+            "exit": 0,
+            "reduce": 0,
+            "hold": 249,
+            "increase": 0,
+            "enter": 0
+          },
+          "increase": {
+            "exit": 0,
+            "reduce": 0,
+            "hold": 33,
+            "increase": 0,
+            "enter": 0
+          },
+          "enter": {
+            "exit": 0,
+            "reduce": 0,
+            "hold": 17,
+            "increase": 0,
+            "enter": 0
+          }
+        },
+        "calibration": {
+          "view": "berkshire-v2.0-natural",
+          "log_loss": 12.7662,
+          "brier": 0.7392,
+          "expected_calibration_error": 0.3696,
+          "bins": [
+            {
+              "low": 0.9,
+              "high": 1.0,
+              "count": 395,
+              "mean_confidence": 1.0,
+              "accuracy": 0.6304
+            }
+          ]
+        },
+        "majority_class_rate": 0.6304
+      },
+      {
+        "model_name": "class_prior",
+        "view": "berkshire-v2.0-natural",
+        "split": "validation",
+        "information_set": "public_observer",
+        "n": 395,
+        "accuracy": 0.6304,
+        "balanced_accuracy": 0.2,
+        "macro_f1": 0.1547,
+        "macro_f1_low": 0.1468,
+        "macro_f1_high": 0.1613,
+        "per_class": [
+          {
+            "label": "exit",
+            "support": 25,
+            "predicted": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "f1_low": 0.0,
+            "f1_high": 0.0,
+            "recall_low": 0.0,
+            "recall_high": 0.0
+          },
+          {
+            "label": "reduce",
+            "support": 71,
+            "predicted": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "f1_low": 0.0,
+            "f1_high": 0.0,
+            "recall_low": 0.0,
+            "recall_high": 0.0
+          },
+          {
+            "label": "hold",
+            "support": 249,
+            "predicted": 395,
+            "precision": 0.6304,
+            "recall": 1.0,
+            "f1": 0.7733,
+            "f1_low": 0.734,
+            "f1_high": 0.8066,
+            "recall_low": 1.0,
+            "recall_high": 1.0
+          },
+          {
+            "label": "increase",
+            "support": 33,
+            "predicted": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "f1_low": 0.0,
+            "f1_high": 0.0,
+            "recall_low": 0.0,
+            "recall_high": 0.0
+          },
+          {
+            "label": "enter",
+            "support": 17,
+            "predicted": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "f1_low": 0.0,
+            "f1_high": 0.0,
+            "recall_low": 0.0,
+            "recall_high": 0.0
+          }
+        ],
+        "confusion": {
+          "exit": {
+            "exit": 0,
+            "reduce": 0,
+            "hold": 25,
+            "increase": 0,
+            "enter": 0
+          },
+          "reduce": {
+            "exit": 0,
+            "reduce": 0,
+            "hold": 71,
+            "increase": 0,
+            "enter": 0
+          },
+          "hold": {
+            "exit": 0,
+            "reduce": 0,
+            "hold": 249,
+            "increase": 0,
+            "enter": 0
+          },
+          "increase": {
+            "exit": 0,
+            "reduce": 0,
+            "hold": 33,
+            "increase": 0,
+            "enter": 0
+          },
+          "enter": {
+            "exit": 0,
+            "reduce": 0,
+            "hold": 17,
+            "increase": 0,
+            "enter": 0
+          }
+        },
+        "calibration": {
+          "view": "berkshire-v2.0-natural",
+          "log_loss": 1.177,
+          "brier": 0.575,
+          "expected_calibration_error": 0.0835,
+          "bins": [
+            {
+              "low": 0.7,
+              "high": 0.8,
+              "count": 395,
+              "mean_confidence": 0.7139,
+              "accuracy": 0.6304
+            }
+          ]
+        },
+        "majority_class_rate": 0.6304
+      },
+      {
+        "model_name": "always_hold",
+        "view": "berkshire-v2.0",
+        "split": "validation",
+        "information_set": "public_observer",
+        "n": 253,
+        "accuracy": 0.4229,
+        "balanced_accuracy": 0.2,
+        "macro_f1": 0.1189,
+        "macro_f1_low": 0.1058,
+        "macro_f1_high": 0.1294,
+        "per_class": [
+          {
+            "label": "exit",
+            "support": 25,
+            "predicted": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "f1_low": 0.0,
+            "f1_high": 0.0,
+            "recall_low": 0.0,
+            "recall_high": 0.0
+          },
+          {
+            "label": "reduce",
+            "support": 71,
+            "predicted": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "f1_low": 0.0,
+            "f1_high": 0.0,
+            "recall_low": 0.0,
+            "recall_high": 0.0
+          },
+          {
+            "label": "hold",
+            "support": 107,
+            "predicted": 253,
+            "precision": 0.4229,
+            "recall": 1.0,
+            "f1": 0.5944,
+            "f1_low": 0.5291,
+            "f1_high": 0.6471,
+            "recall_low": 1.0,
+            "recall_high": 1.0
+          },
+          {
+            "label": "increase",
+            "support": 33,
+            "predicted": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "f1_low": 0.0,
+            "f1_high": 0.0,
+            "recall_low": 0.0,
+            "recall_high": 0.0
+          },
+          {
+            "label": "enter",
+            "support": 17,
+            "predicted": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "f1_low": 0.0,
+            "f1_high": 0.0,
+            "recall_low": 0.0,
+            "recall_high": 0.0
+          }
+        ],
+        "confusion": {
+          "exit": {
+            "exit": 0,
+            "reduce": 0,
+            "hold": 25,
+            "increase": 0,
+            "enter": 0
+          },
+          "reduce": {
+            "exit": 0,
+            "reduce": 0,
+            "hold": 71,
+            "increase": 0,
+            "enter": 0
+          },
+          "hold": {
+            "exit": 0,
+            "reduce": 0,
+            "hold": 107,
+            "increase": 0,
+            "enter": 0
+          },
+          "increase": {
+            "exit": 0,
+            "reduce": 0,
+            "hold": 33,
+            "increase": 0,
+            "enter": 0
+          },
+          "enter": {
+            "exit": 0,
+            "reduce": 0,
+            "hold": 17,
+            "increase": 0,
+            "enter": 0
+          }
+        },
+        "calibration": {
+          "view": "berkshire-v2.0",
+          "log_loss": 19.9315,
+          "brier": 1.1542,
+          "expected_calibration_error": 0.5771,
+          "bins": [
+            {
+              "low": 0.9,
+              "high": 1.0,
+              "count": 253,
+              "mean_confidence": 1.0,
+              "accuracy": 0.4229
+            }
+          ]
+        },
+        "majority_class_rate": 0.4229
+      },
+      {
+        "model_name": "class_prior",
+        "view": "berkshire-v2.0",
+        "split": "validation",
+        "information_set": "public_observer",
+        "n": 253,
+        "accuracy": 0.4229,
+        "balanced_accuracy": 0.2,
+        "macro_f1": 0.1189,
+        "macro_f1_low": 0.1058,
+        "macro_f1_high": 0.1294,
+        "per_class": [
+          {
+            "label": "exit",
+            "support": 25,
+            "predicted": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "f1_low": 0.0,
+            "f1_high": 0.0,
+            "recall_low": 0.0,
+            "recall_high": 0.0
+          },
+          {
+            "label": "reduce",
+            "support": 71,
+            "predicted": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "f1_low": 0.0,
+            "f1_high": 0.0,
+            "recall_low": 0.0,
+            "recall_high": 0.0
+          },
+          {
+            "label": "hold",
+            "support": 107,
+            "predicted": 253,
+            "precision": 0.4229,
+            "recall": 1.0,
+            "f1": 0.5944,
+            "f1_low": 0.5291,
+            "f1_high": 0.6471,
+            "recall_low": 1.0,
+            "recall_high": 1.0
+          },
+          {
+            "label": "increase",
+            "support": 33,
+            "predicted": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "f1_low": 0.0,
+            "f1_high": 0.0,
+            "recall_low": 0.0,
+            "recall_high": 0.0
+          },
+          {
+            "label": "enter",
+            "support": 17,
+            "predicted": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "f1_low": 0.0,
+            "f1_high": 0.0,
+            "recall_low": 0.0,
+            "recall_high": 0.0
+          }
+        ],
+        "confusion": {
+          "exit": {
+            "exit": 0,
+            "reduce": 0,
+            "hold": 25,
+            "increase": 0,
+            "enter": 0
+          },
+          "reduce": {
+            "exit": 0,
+            "reduce": 0,
+            "hold": 71,
+            "increase": 0,
+            "enter": 0
+          },
+          "hold": {
+            "exit": 0,
+            "reduce": 0,
+            "hold": 107,
+            "increase": 0,
+            "enter": 0
+          },
+          "increase": {
+            "exit": 0,
+            "reduce": 0,
+            "hold": 33,
+            "increase": 0,
+            "enter": 0
+          },
+          "enter": {
+            "exit": 0,
+            "reduce": 0,
+            "hold": 17,
+            "increase": 0,
+            "enter": 0
+          }
+        },
+        "calibration": {
+          "view": "berkshire-v2.0",
+          "log_loss": 1.4677,
+          "brier": 0.7373,
+          "expected_calibration_error": 0.0367,
+          "bins": [
+            {
+              "low": 0.4,
+              "high": 0.5,
+              "count": 253,
+              "mean_confidence": 0.4596,
+              "accuracy": 0.4229
+            }
+          ]
+        },
+        "majority_class_rate": 0.4229
+      }
+    ]
+  },
+  "selection": {
+    "ablation": [
+      {
+        "view": "berkshire-v2.0-natural",
+        "model": "logistic",
+        "feature_set": "position",
+        "validation_macro_f1": 0.2717,
+        "validation_balanced_accuracy": 0.3975,
+        "params": {
+          "learning_rate": 1.0,
+          "iterations": 600,
+          "l2": 0.1,
+          "balanced": true
+        }
+      },
+      {
+        "view": "berkshire-v2.0-natural",
+        "model": "logistic",
+        "feature_set": "position+price",
+        "validation_macro_f1": 0.3385,
+        "validation_balanced_accuracy": 0.4438,
+        "params": {
+          "learning_rate": 0.5,
+          "iterations": 300,
+          "l2": 0.01,
+          "balanced": true
+        }
+      },
+      {
+        "view": "berkshire-v2.0-natural",
+        "model": "logistic",
+        "feature_set": "position+price+portfolio",
+        "validation_macro_f1": 0.3054,
+        "validation_balanced_accuracy": 0.4295,
+        "params": {
+          "learning_rate": 1.0,
+          "iterations": 600,
+          "l2": 0.1,
+          "balanced": true
+        }
+      },
+      {
+        "view": "berkshire-v2.0-natural",
+        "model": "boosted_trees",
+        "feature_set": "position",
+        "validation_macro_f1": 0.3714,
+        "validation_balanced_accuracy": 0.4708,
+        "params": {
+          "rounds": 80,
+          "learning_rate": 0.2,
+          "max_depth": 3,
+          "min_leaf": 10,
+          "balanced": true
+        }
+      },
+      {
+        "view": "berkshire-v2.0-natural",
+        "model": "boosted_trees",
+        "feature_set": "position+price",
+        "validation_macro_f1": 0.3871,
+        "validation_balanced_accuracy": 0.4766,
+        "params": {
+          "rounds": 40,
+          "learning_rate": 0.3,
+          "max_depth": 2,
+          "min_leaf": 20,
+          "balanced": true
+        }
+      },
+      {
+        "view": "berkshire-v2.0-natural",
+        "model": "boosted_trees",
+        "feature_set": "position+price+portfolio",
+        "validation_macro_f1": 0.3359,
+        "validation_balanced_accuracy": 0.4726,
+        "params": {
+          "rounds": 40,
+          "learning_rate": 0.3,
+          "max_depth": 2,
+          "min_leaf": 20,
+          "balanced": true
+        }
+      },
+      {
+        "view": "berkshire-v2.0",
+        "model": "logistic",
+        "feature_set": "position",
+        "validation_macro_f1": 0.2725,
+        "validation_balanced_accuracy": 0.402,
+        "params": {
+          "learning_rate": 0.5,
+          "iterations": 300,
+          "l2": 0.01,
+          "balanced": true
+        }
+      },
+      {
+        "view": "berkshire-v2.0",
+        "model": "logistic",
+        "feature_set": "position+price",
+        "validation_macro_f1": 0.2886,
+        "validation_balanced_accuracy": 0.4052,
+        "params": {
+          "learning_rate": 0.5,
+          "iterations": 300,
+          "l2": 0.01,
+          "balanced": true
+        }
+      },
+      {
+        "view": "berkshire-v2.0",
+        "model": "logistic",
+        "feature_set": "position+price+portfolio",
+        "validation_macro_f1": 0.2884,
+        "validation_balanced_accuracy": 0.2987,
+        "params": {
+          "learning_rate": 0.5,
+          "iterations": 300,
+          "l2": 0.01,
+          "balanced": false
+        }
+      },
+      {
+        "view": "berkshire-v2.0",
+        "model": "boosted_trees",
+        "feature_set": "position",
+        "validation_macro_f1": 0.3358,
+        "validation_balanced_accuracy": 0.4543,
+        "params": {
+          "rounds": 40,
+          "learning_rate": 0.3,
+          "max_depth": 2,
+          "min_leaf": 20,
+          "balanced": true
+        }
+      },
+      {
+        "view": "berkshire-v2.0",
+        "model": "boosted_trees",
+        "feature_set": "position+price",
+        "validation_macro_f1": 0.3472,
+        "validation_balanced_accuracy": 0.4566,
+        "params": {
+          "rounds": 80,
+          "learning_rate": 0.2,
+          "max_depth": 3,
+          "min_leaf": 10,
+          "balanced": true
+        }
+      },
+      {
+        "view": "berkshire-v2.0",
+        "model": "boosted_trees",
+        "feature_set": "position+price+portfolio",
+        "validation_macro_f1": 0.3235,
+        "validation_balanced_accuracy": 0.462,
+        "params": {
+          "rounds": 80,
+          "learning_rate": 0.2,
+          "max_depth": 3,
+          "min_leaf": 10,
+          "balanced": true
+        }
+      }
+    ],
+    "frozen_configs": {
+      "berkshire-v2.0::boosted_trees": {
+        "config": {
+          "model": "boosted_trees",
+          "view": "berkshire-v2.0",
+          "feature_set": "position+price",
+          "params": {
+            "rounds": 80,
+            "learning_rate": 0.2,
+            "max_depth": 3,
+            "min_leaf": 10,
+            "balanced": true
+          },
+          "dataset_sha256": "02a7c370d26591d916d31ad602b7781eb945080116a92e3e88729d7e1aef67f1",
+          "feature_schema_version": "pit-features-v1"
+        },
+        "config_sha256": "33e6898d6c5b913fda35f773ee0f8f8da29257292e25d2f28f81d6c9c363564c",
+        "validation_macro_f1": 0.3472
+      },
+      "berkshire-v2.0::logistic": {
+        "config": {
+          "model": "logistic",
+          "view": "berkshire-v2.0",
+          "feature_set": "position+price",
+          "params": {
+            "learning_rate": 0.5,
+            "iterations": 300,
+            "l2": 0.01,
+            "balanced": true
+          },
+          "dataset_sha256": "02a7c370d26591d916d31ad602b7781eb945080116a92e3e88729d7e1aef67f1",
+          "feature_schema_version": "pit-features-v1"
+        },
+        "config_sha256": "254e9639ed09c322e39db437ad34212cff25fc1ab68bdb096b215642fc8a1ab4",
+        "validation_macro_f1": 0.2886
+      },
+      "berkshire-v2.0-natural::boosted_trees": {
+        "config": {
+          "model": "boosted_trees",
+          "view": "berkshire-v2.0-natural",
+          "feature_set": "position+price",
+          "params": {
+            "rounds": 40,
+            "learning_rate": 0.3,
+            "max_depth": 2,
+            "min_leaf": 20,
+            "balanced": true
+          },
+          "dataset_sha256": "3a4fa93eaa0881e4bea8742ba08c71523e99a46ddd675aeec6a81cc9e2bd3fc8",
+          "feature_schema_version": "pit-features-v1"
+        },
+        "config_sha256": "3ad3ef768ed4f1fb947fe957f7fb97654285d50e9ee47d8054bf31c4e4085f9b",
+        "validation_macro_f1": 0.3871
+      },
+      "berkshire-v2.0-natural::logistic": {
+        "config": {
+          "model": "logistic",
+          "view": "berkshire-v2.0-natural",
+          "feature_set": "position+price",
+          "params": {
+            "learning_rate": 0.5,
+            "iterations": 300,
+            "l2": 0.01,
+            "balanced": true
+          },
+          "dataset_sha256": "3a4fa93eaa0881e4bea8742ba08c71523e99a46ddd675aeec6a81cc9e2bd3fc8",
+          "feature_schema_version": "pit-features-v1"
+        },
+        "config_sha256": "a62fdf75e83c3c8623d5e5e321bad5564c8bf0267d0719a10ff85a02990d6465",
+        "validation_macro_f1": 0.3385
+      }
+    }
+  },
+  "held_out": {
+    "berkshire-v2.0-natural": {
+      "always_hold": {
+        "held_out": {
+          "model_name": "always_hold",
+          "view": "berkshire-v2.0-natural",
+          "split": "held_out",
+          "information_set": "public_observer",
+          "n": 570,
+          "accuracy": 0.6842,
+          "balanced_accuracy": 0.2,
+          "macro_f1": 0.1625,
+          "macro_f1_low": 0.1569,
+          "macro_f1_high": 0.1676,
+          "per_class": [
+            {
+              "label": "exit",
+              "support": 34,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "reduce",
+              "support": 70,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "hold",
+              "support": 390,
+              "predicted": 570,
+              "precision": 0.6842,
+              "recall": 1.0,
+              "f1": 0.8125,
+              "f1_low": 0.7846,
+              "f1_high": 0.8379,
+              "recall_low": 1.0,
+              "recall_high": 1.0
+            },
+            {
+              "label": "increase",
+              "support": 48,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "enter",
+              "support": 28,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            }
+          ],
+          "confusion": {
+            "exit": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 34,
+              "increase": 0,
+              "enter": 0
+            },
+            "reduce": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 70,
+              "increase": 0,
+              "enter": 0
+            },
+            "hold": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 390,
+              "increase": 0,
+              "enter": 0
+            },
+            "increase": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 48,
+              "increase": 0,
+              "enter": 0
+            },
+            "enter": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 28,
+              "increase": 0,
+              "enter": 0
+            }
+          },
+          "calibration": {
+            "view": "berkshire-v2.0-natural",
+            "log_loss": 10.907,
+            "brier": 0.6316,
+            "expected_calibration_error": 0.3158,
+            "bins": [
+              {
+                "low": 0.9,
+                "high": 1.0,
+                "count": 570,
+                "mean_confidence": 1.0,
+                "accuracy": 0.6842
+              }
+            ]
+          },
+          "majority_class_rate": 0.6842
+        },
+        "held_out/incumbent": {
+          "model_name": "always_hold",
+          "view": "berkshire-v2.0-natural",
+          "split": "held_out/incumbent",
+          "information_set": "public_observer",
+          "n": 505,
+          "accuracy": 0.7406,
+          "balanced_accuracy": 0.25,
+          "macro_f1": 0.2127,
+          "macro_f1_low": 0.2061,
+          "macro_f1_high": 0.2188,
+          "per_class": [
+            {
+              "label": "exit",
+              "support": 33,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "reduce",
+              "support": 68,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "hold",
+              "support": 374,
+              "predicted": 505,
+              "precision": 0.7406,
+              "recall": 1.0,
+              "f1": 0.851,
+              "f1_low": 0.8242,
+              "f1_high": 0.8753,
+              "recall_low": 1.0,
+              "recall_high": 1.0
+            },
+            {
+              "label": "increase",
+              "support": 30,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            }
+          ],
+          "confusion": {
+            "exit": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 33,
+              "increase": 0,
+              "enter": 0
+            },
+            "reduce": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 68,
+              "increase": 0,
+              "enter": 0
+            },
+            "hold": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 374,
+              "increase": 0,
+              "enter": 0
+            },
+            "increase": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 30,
+              "increase": 0,
+              "enter": 0
+            },
+            "enter": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 0
+            }
+          },
+          "calibration": {
+            "view": "berkshire-v2.0-natural",
+            "log_loss": 8.9596,
+            "brier": 0.5188,
+            "expected_calibration_error": 0.2594,
+            "bins": [
+              {
+                "low": 0.9,
+                "high": 1.0,
+                "count": 505,
+                "mean_confidence": 1.0,
+                "accuracy": 0.7406
+              }
+            ]
+          },
+          "majority_class_rate": 0.7406
+        }
+      },
+      "class_prior": {
+        "held_out": {
+          "model_name": "class_prior",
+          "view": "berkshire-v2.0-natural",
+          "split": "held_out",
+          "information_set": "public_observer",
+          "n": 570,
+          "accuracy": 0.6842,
+          "balanced_accuracy": 0.2,
+          "macro_f1": 0.1625,
+          "macro_f1_low": 0.1569,
+          "macro_f1_high": 0.1676,
+          "per_class": [
+            {
+              "label": "exit",
+              "support": 34,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "reduce",
+              "support": 70,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "hold",
+              "support": 390,
+              "predicted": 570,
+              "precision": 0.6842,
+              "recall": 1.0,
+              "f1": 0.8125,
+              "f1_low": 0.7846,
+              "f1_high": 0.8379,
+              "recall_low": 1.0,
+              "recall_high": 1.0
+            },
+            {
+              "label": "increase",
+              "support": 48,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "enter",
+              "support": 28,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            }
+          ],
+          "confusion": {
+            "exit": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 34,
+              "increase": 0,
+              "enter": 0
+            },
+            "reduce": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 70,
+              "increase": 0,
+              "enter": 0
+            },
+            "hold": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 390,
+              "increase": 0,
+              "enter": 0
+            },
+            "increase": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 48,
+              "increase": 0,
+              "enter": 0
+            },
+            "enter": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 28,
+              "increase": 0,
+              "enter": 0
+            }
+          },
+          "calibration": {
+            "view": "berkshire-v2.0-natural",
+            "log_loss": 1.0691,
+            "brier": 0.5084,
+            "expected_calibration_error": 0.0297,
+            "bins": [
+              {
+                "low": 0.7,
+                "high": 0.8,
+                "count": 570,
+                "mean_confidence": 0.7139,
+                "accuracy": 0.6842
+              }
+            ]
+          },
+          "majority_class_rate": 0.6842
+        },
+        "held_out/incumbent": {
+          "model_name": "class_prior",
+          "view": "berkshire-v2.0-natural",
+          "split": "held_out/incumbent",
+          "information_set": "public_observer",
+          "n": 505,
+          "accuracy": 0.7406,
+          "balanced_accuracy": 0.25,
+          "macro_f1": 0.2127,
+          "macro_f1_low": 0.2061,
+          "macro_f1_high": 0.2188,
+          "per_class": [
+            {
+              "label": "exit",
+              "support": 33,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "reduce",
+              "support": 68,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "hold",
+              "support": 374,
+              "predicted": 505,
+              "precision": 0.7406,
+              "recall": 1.0,
+              "f1": 0.851,
+              "f1_low": 0.8242,
+              "f1_high": 0.8753,
+              "recall_low": 1.0,
+              "recall_high": 1.0
+            },
+            {
+              "label": "increase",
+              "support": 30,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            }
+          ],
+          "confusion": {
+            "exit": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 33,
+              "increase": 0,
+              "enter": 0
+            },
+            "reduce": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 68,
+              "increase": 0,
+              "enter": 0
+            },
+            "hold": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 374,
+              "increase": 0,
+              "enter": 0
+            },
+            "increase": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 30,
+              "increase": 0,
+              "enter": 0
+            },
+            "enter": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 0
+            }
+          },
+          "calibration": {
+            "view": "berkshire-v2.0-natural",
+            "log_loss": 0.9214,
+            "brier": 0.4352,
+            "expected_calibration_error": 0.0267,
+            "bins": [
+              {
+                "low": 0.7,
+                "high": 0.8,
+                "count": 505,
+                "mean_confidence": 0.7139,
+                "accuracy": 0.7406
+              }
+            ]
+          },
+          "majority_class_rate": 0.7406
+        }
+      },
+      "boosted_trees": {
+        "held_out/incumbent": {
+          "model_name": "boosted_trees",
+          "view": "berkshire-v2.0-natural",
+          "split": "held_out/incumbent",
+          "information_set": "public_observer",
+          "n": 505,
+          "accuracy": 0.3683,
+          "balanced_accuracy": 0.3216,
+          "macro_f1": 0.2665,
+          "macro_f1_low": 0.2248,
+          "macro_f1_high": 0.3093,
+          "per_class": [
+            {
+              "label": "exit",
+              "support": 33,
+              "predicted": 93,
+              "precision": 0.0968,
+              "recall": 0.2727,
+              "f1": 0.1429,
+              "f1_low": 0.062,
+              "f1_high": 0.2281,
+              "recall_low": 0.129,
+              "recall_high": 0.4375
+            },
+            {
+              "label": "reduce",
+              "support": 68,
+              "predicted": 163,
+              "precision": 0.135,
+              "recall": 0.3235,
+              "f1": 0.1905,
+              "f1_low": 0.1215,
+              "f1_high": 0.256,
+              "recall_low": 0.2113,
+              "recall_high": 0.4384
+            },
+            {
+              "label": "hold",
+              "support": 374,
+              "predicted": 198,
+              "precision": 0.7374,
+              "recall": 0.3904,
+              "f1": 0.5105,
+              "f1_low": 0.4547,
+              "f1_high": 0.5578,
+              "recall_low": 0.3397,
+              "recall_high": 0.4393
+            },
+            {
+              "label": "increase",
+              "support": 30,
+              "predicted": 51,
+              "precision": 0.1765,
+              "recall": 0.3,
+              "f1": 0.2222,
+              "f1_low": 0.1096,
+              "f1_high": 0.34,
+              "recall_low": 0.1463,
+              "recall_high": 0.4615
+            }
+          ],
+          "confusion": {
+            "exit": {
+              "exit": 9,
+              "reduce": 7,
+              "hold": 9,
+              "increase": 8,
+              "enter": 0
+            },
+            "reduce": {
+              "exit": 5,
+              "reduce": 22,
+              "hold": 33,
+              "increase": 8,
+              "enter": 0
+            },
+            "hold": {
+              "exit": 77,
+              "reduce": 125,
+              "hold": 146,
+              "increase": 26,
+              "enter": 0
+            },
+            "increase": {
+              "exit": 2,
+              "reduce": 9,
+              "hold": 10,
+              "increase": 9,
+              "enter": 0
+            },
+            "enter": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 0
+            }
+          },
+          "calibration": {
+            "view": "berkshire-v2.0-natural",
+            "log_loss": 1.2301,
+            "brier": 0.6798,
+            "expected_calibration_error": 0.0589,
+            "bins": [
+              {
+                "low": 0.0,
+                "high": 0.3,
+                "count": 40,
+                "mean_confidence": 0.2899,
+                "accuracy": 0.325
+              },
+              {
+                "low": 0.3,
+                "high": 0.4,
+                "count": 202,
+                "mean_confidence": 0.3521,
+                "accuracy": 0.3416
+              },
+              {
+                "low": 0.4,
+                "high": 0.5,
+                "count": 163,
+                "mean_confidence": 0.4437,
+                "accuracy": 0.3804
+              },
+              {
+                "low": 0.5,
+                "high": 0.6,
+                "count": 68,
+                "mean_confidence": 0.5436,
+                "accuracy": 0.3971
+              },
+              {
+                "low": 0.6,
+                "high": 0.7,
+                "count": 29,
+                "mean_confidence": 0.6451,
+                "accuracy": 0.4483
+              },
+              {
+                "low": 0.7,
+                "high": 0.8,
+                "count": 3,
+                "mean_confidence": 0.7446,
+                "accuracy": 0.6667
+              }
+            ]
+          },
+          "majority_class_rate": 0.7406
+        },
+        "held_out/new_to_book": {
+          "model_name": "boosted_trees",
+          "view": "berkshire-v2.0-natural",
+          "split": "held_out/new_to_book",
+          "information_set": "public_observer",
+          "n": 65,
+          "accuracy": 0.4308,
+          "balanced_accuracy": 0.2,
+          "macro_f1": 0.1204,
+          "macro_f1_low": 0.0977,
+          "macro_f1_high": 0.2105,
+          "per_class": [
+            {
+              "label": "exit",
+              "support": 1,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "reduce",
+              "support": 2,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "hold",
+              "support": 16,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "increase",
+              "support": 18,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "enter",
+              "support": 28,
+              "predicted": 65,
+              "precision": 0.4308,
+              "recall": 1.0,
+              "f1": 0.6022,
+              "f1_low": 0.4706,
+              "f1_high": 0.7129,
+              "recall_low": 1.0,
+              "recall_high": 1.0
+            }
+          ],
+          "confusion": {
+            "exit": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 1
+            },
+            "reduce": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 2
+            },
+            "hold": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 16
+            },
+            "increase": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 18
+            },
+            "enter": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 28
+            }
+          },
+          "calibration": {
+            "view": "berkshire-v2.0-natural",
+            "log_loss": 1.5915,
+            "brier": 0.7971,
+            "expected_calibration_error": 0.2446,
+            "bins": [
+              {
+                "low": 0.6,
+                "high": 0.7,
+                "count": 62,
+                "mean_confidence": 0.674,
+                "accuracy": 0.4194
+              },
+              {
+                "low": 0.7,
+                "high": 0.8,
+                "count": 3,
+                "mean_confidence": 0.7033,
+                "accuracy": 0.6667
+              }
+            ]
+          },
+          "majority_class_rate": 0.4308
+        },
+        "held_out": {
+          "model_name": "boosted_trees",
+          "view": "berkshire-v2.0-natural",
+          "split": "held_out",
+          "information_set": "public_observer",
+          "n": 570,
+          "accuracy": 0.3754,
+          "balanced_accuracy": 0.4282,
+          "macro_f1": 0.3222,
+          "macro_f1_low": 0.281,
+          "macro_f1_high": 0.3624,
+          "per_class": [
+            {
+              "label": "exit",
+              "support": 34,
+              "predicted": 93,
+              "precision": 0.0968,
+              "recall": 0.2647,
+              "f1": 0.1417,
+              "f1_low": 0.0625,
+              "f1_high": 0.227,
+              "recall_low": 0.119,
+              "recall_high": 0.4286
+            },
+            {
+              "label": "reduce",
+              "support": 70,
+              "predicted": 163,
+              "precision": 0.135,
+              "recall": 0.3143,
+              "f1": 0.1888,
+              "f1_low": 0.125,
+              "f1_high": 0.2612,
+              "recall_low": 0.209,
+              "recall_high": 0.4268
+            },
+            {
+              "label": "hold",
+              "support": 390,
+              "predicted": 198,
+              "precision": 0.7374,
+              "recall": 0.3744,
+              "f1": 0.4966,
+              "f1_low": 0.4433,
+              "f1_high": 0.5457,
+              "recall_low": 0.3249,
+              "recall_high": 0.4214
+            },
+            {
+              "label": "increase",
+              "support": 48,
+              "predicted": 51,
+              "precision": 0.1765,
+              "recall": 0.1875,
+              "f1": 0.1818,
+              "f1_low": 0.0825,
+              "f1_high": 0.2857,
+              "recall_low": 0.0811,
+              "recall_high": 0.3077
+            },
+            {
+              "label": "enter",
+              "support": 28,
+              "predicted": 65,
+              "precision": 0.4308,
+              "recall": 1.0,
+              "f1": 0.6022,
+              "f1_low": 0.4667,
+              "f1_high": 0.7069,
+              "recall_low": 1.0,
+              "recall_high": 1.0
+            }
+          ],
+          "confusion": {
+            "exit": {
+              "exit": 9,
+              "reduce": 7,
+              "hold": 9,
+              "increase": 8,
+              "enter": 1
+            },
+            "reduce": {
+              "exit": 5,
+              "reduce": 22,
+              "hold": 33,
+              "increase": 8,
+              "enter": 2
+            },
+            "hold": {
+              "exit": 77,
+              "reduce": 125,
+              "hold": 146,
+              "increase": 26,
+              "enter": 16
+            },
+            "increase": {
+              "exit": 2,
+              "reduce": 9,
+              "hold": 10,
+              "increase": 9,
+              "enter": 18
+            },
+            "enter": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 28
+            }
+          },
+          "calibration": {
+            "view": "berkshire-v2.0-natural",
+            "log_loss": 1.2713,
+            "brier": 0.6931,
+            "expected_calibration_error": 0.0801,
+            "bins": [
+              {
+                "low": 0.0,
+                "high": 0.3,
+                "count": 40,
+                "mean_confidence": 0.2899,
+                "accuracy": 0.325
+              },
+              {
+                "low": 0.3,
+                "high": 0.4,
+                "count": 202,
+                "mean_confidence": 0.3521,
+                "accuracy": 0.3416
+              },
+              {
+                "low": 0.4,
+                "high": 0.5,
+                "count": 163,
+                "mean_confidence": 0.4437,
+                "accuracy": 0.3804
+              },
+              {
+                "low": 0.5,
+                "high": 0.6,
+                "count": 68,
+                "mean_confidence": 0.5436,
+                "accuracy": 0.3971
+              },
+              {
+                "low": 0.6,
+                "high": 0.7,
+                "count": 91,
+                "mean_confidence": 0.6648,
+                "accuracy": 0.4286
+              },
+              {
+                "low": 0.7,
+                "high": 0.8,
+                "count": 6,
+                "mean_confidence": 0.724,
+                "accuracy": 0.6667
+              }
+            ]
+          },
+          "majority_class_rate": 0.6842
+        }
+      },
+      "logistic": {
+        "held_out/incumbent": {
+          "model_name": "logistic",
+          "view": "berkshire-v2.0-natural",
+          "split": "held_out/incumbent",
+          "information_set": "public_observer",
+          "n": 505,
+          "accuracy": 0.2832,
+          "balanced_accuracy": 0.3402,
+          "macro_f1": 0.2453,
+          "macro_f1_low": 0.2036,
+          "macro_f1_high": 0.2898,
+          "per_class": [
+            {
+              "label": "exit",
+              "support": 33,
+              "predicted": 167,
+              "precision": 0.0778,
+              "recall": 0.3939,
+              "f1": 0.13,
+              "f1_low": 0.0659,
+              "f1_high": 0.199,
+              "recall_low": 0.2258,
+              "recall_high": 0.5714
+            },
+            {
+              "label": "reduce",
+              "support": 68,
+              "predicted": 167,
+              "precision": 0.1557,
+              "recall": 0.3824,
+              "f1": 0.2213,
+              "f1_low": 0.1478,
+              "f1_high": 0.2929,
+              "recall_low": 0.2683,
+              "recall_high": 0.5077
+            },
+            {
+              "label": "hold",
+              "support": 374,
+              "predicted": 121,
+              "precision": 0.7769,
+              "recall": 0.2513,
+              "f1": 0.3798,
+              "f1_low": 0.3283,
+              "f1_high": 0.4318,
+              "recall_low": 0.2104,
+              "recall_high": 0.2955
+            },
+            {
+              "label": "increase",
+              "support": 30,
+              "predicted": 50,
+              "precision": 0.2,
+              "recall": 0.3333,
+              "f1": 0.25,
+              "f1_low": 0.125,
+              "f1_high": 0.3714,
+              "recall_low": 0.1818,
+              "recall_high": 0.5
+            }
+          ],
+          "confusion": {
+            "exit": {
+              "exit": 13,
+              "reduce": 6,
+              "hold": 7,
+              "increase": 7,
+              "enter": 0
+            },
+            "reduce": {
+              "exit": 16,
+              "reduce": 26,
+              "hold": 14,
+              "increase": 12,
+              "enter": 0
+            },
+            "hold": {
+              "exit": 135,
+              "reduce": 124,
+              "hold": 94,
+              "increase": 21,
+              "enter": 0
+            },
+            "increase": {
+              "exit": 3,
+              "reduce": 11,
+              "hold": 6,
+              "increase": 10,
+              "enter": 0
+            },
+            "enter": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 0
+            }
+          },
+          "calibration": {
+            "view": "berkshire-v2.0-natural",
+            "log_loss": 1.2449,
+            "brier": 0.7123,
+            "expected_calibration_error": 0.1414,
+            "bins": [
+              {
+                "low": 0.0,
+                "high": 0.3,
+                "count": 23,
+                "mean_confidence": 0.2836,
+                "accuracy": 0.1304
+              },
+              {
+                "low": 0.3,
+                "high": 0.4,
+                "count": 217,
+                "mean_confidence": 0.3547,
+                "accuracy": 0.3502
+              },
+              {
+                "low": 0.4,
+                "high": 0.5,
+                "count": 167,
+                "mean_confidence": 0.4451,
+                "accuracy": 0.2635
+              },
+              {
+                "low": 0.5,
+                "high": 0.6,
+                "count": 74,
+                "mean_confidence": 0.5361,
+                "accuracy": 0.1892
+              },
+              {
+                "low": 0.6,
+                "high": 0.7,
+                "count": 12,
+                "mean_confidence": 0.6344,
+                "accuracy": 0.1667
+              },
+              {
+                "low": 0.7,
+                "high": 0.8,
+                "count": 9,
+                "mean_confidence": 0.7556,
+                "accuracy": 0.3333
+              },
+              {
+                "low": 0.8,
+                "high": 0.9,
+                "count": 3,
+                "mean_confidence": 0.8356,
+                "accuracy": 0.3333
+              }
+            ]
+          },
+          "majority_class_rate": 0.7406
+        },
+        "held_out/new_to_book": {
+          "model_name": "logistic",
+          "view": "berkshire-v2.0-natural",
+          "split": "held_out/new_to_book",
+          "information_set": "public_observer",
+          "n": 65,
+          "accuracy": 0.4308,
+          "balanced_accuracy": 0.2,
+          "macro_f1": 0.1204,
+          "macro_f1_low": 0.0977,
+          "macro_f1_high": 0.2105,
+          "per_class": [
+            {
+              "label": "exit",
+              "support": 1,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "reduce",
+              "support": 2,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "hold",
+              "support": 16,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "increase",
+              "support": 18,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "enter",
+              "support": 28,
+              "predicted": 65,
+              "precision": 0.4308,
+              "recall": 1.0,
+              "f1": 0.6022,
+              "f1_low": 0.4706,
+              "f1_high": 0.7129,
+              "recall_low": 1.0,
+              "recall_high": 1.0
+            }
+          ],
+          "confusion": {
+            "exit": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 1
+            },
+            "reduce": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 2
+            },
+            "hold": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 16
+            },
+            "increase": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 18
+            },
+            "enter": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 28
+            }
+          },
+          "calibration": {
+            "view": "berkshire-v2.0-natural",
+            "log_loss": 1.6234,
+            "brier": 0.8004,
+            "expected_calibration_error": 0.245,
+            "bins": [
+              {
+                "low": 0.6,
+                "high": 0.7,
+                "count": 63,
+                "mean_confidence": 0.6736,
+                "accuracy": 0.4286
+              },
+              {
+                "low": 0.7,
+                "high": 0.8,
+                "count": 2,
+                "mean_confidence": 0.7453,
+                "accuracy": 0.5
+              }
+            ]
+          },
+          "majority_class_rate": 0.4308
+        },
+        "held_out": {
+          "model_name": "logistic",
+          "view": "berkshire-v2.0-natural",
+          "split": "held_out",
+          "information_set": "public_observer",
+          "n": 570,
+          "accuracy": 0.3,
+          "balanced_accuracy": 0.4406,
+          "macro_f1": 0.3046,
+          "macro_f1_low": 0.261,
+          "macro_f1_high": 0.3452,
+          "per_class": [
+            {
+              "label": "exit",
+              "support": 34,
+              "predicted": 167,
+              "precision": 0.0778,
+              "recall": 0.3824,
+              "f1": 0.1294,
+              "f1_low": 0.0697,
+              "f1_high": 0.1969,
+              "recall_low": 0.2174,
+              "recall_high": 0.5484
+            },
+            {
+              "label": "reduce",
+              "support": 70,
+              "predicted": 167,
+              "precision": 0.1557,
+              "recall": 0.3714,
+              "f1": 0.2194,
+              "f1_low": 0.1532,
+              "f1_high": 0.2857,
+              "recall_low": 0.2656,
+              "recall_high": 0.481
+            },
+            {
+              "label": "hold",
+              "support": 390,
+              "predicted": 121,
+              "precision": 0.7769,
+              "recall": 0.241,
+              "f1": 0.3679,
+              "f1_low": 0.3147,
+              "f1_high": 0.4164,
+              "recall_low": 0.199,
+              "recall_high": 0.2803
+            },
+            {
+              "label": "increase",
+              "support": 48,
+              "predicted": 50,
+              "precision": 0.2,
+              "recall": 0.2083,
+              "f1": 0.2041,
+              "f1_low": 0.098,
+              "f1_high": 0.3168,
+              "recall_low": 0.1,
+              "recall_high": 0.3333
+            },
+            {
+              "label": "enter",
+              "support": 28,
+              "predicted": 65,
+              "precision": 0.4308,
+              "recall": 1.0,
+              "f1": 0.6022,
+              "f1_low": 0.4667,
+              "f1_high": 0.7069,
+              "recall_low": 1.0,
+              "recall_high": 1.0
+            }
+          ],
+          "confusion": {
+            "exit": {
+              "exit": 13,
+              "reduce": 6,
+              "hold": 7,
+              "increase": 7,
+              "enter": 1
+            },
+            "reduce": {
+              "exit": 16,
+              "reduce": 26,
+              "hold": 14,
+              "increase": 12,
+              "enter": 2
+            },
+            "hold": {
+              "exit": 135,
+              "reduce": 124,
+              "hold": 94,
+              "increase": 21,
+              "enter": 16
+            },
+            "increase": {
+              "exit": 3,
+              "reduce": 11,
+              "hold": 6,
+              "increase": 10,
+              "enter": 18
+            },
+            "enter": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 28
+            }
+          },
+          "calibration": {
+            "view": "berkshire-v2.0-natural",
+            "log_loss": 1.2881,
+            "brier": 0.7223,
+            "expected_calibration_error": 0.1532,
+            "bins": [
+              {
+                "low": 0.0,
+                "high": 0.3,
+                "count": 23,
+                "mean_confidence": 0.2836,
+                "accuracy": 0.1304
+              },
+              {
+                "low": 0.3,
+                "high": 0.4,
+                "count": 217,
+                "mean_confidence": 0.3547,
+                "accuracy": 0.3502
+              },
+              {
+                "low": 0.4,
+                "high": 0.5,
+                "count": 167,
+                "mean_confidence": 0.4451,
+                "accuracy": 0.2635
+              },
+              {
+                "low": 0.5,
+                "high": 0.6,
+                "count": 74,
+                "mean_confidence": 0.5361,
+                "accuracy": 0.1892
+              },
+              {
+                "low": 0.6,
+                "high": 0.7,
+                "count": 75,
+                "mean_confidence": 0.6673,
+                "accuracy": 0.3867
+              },
+              {
+                "low": 0.7,
+                "high": 0.8,
+                "count": 11,
+                "mean_confidence": 0.7537,
+                "accuracy": 0.3636
+              },
+              {
+                "low": 0.8,
+                "high": 0.9,
+                "count": 3,
+                "mean_confidence": 0.8356,
+                "accuracy": 0.3333
+              }
+            ]
+          },
+          "majority_class_rate": 0.6842
+        }
+      }
+    },
+    "berkshire-v2.0": {
+      "always_hold": {
+        "held_out": {
+          "model_name": "always_hold",
+          "view": "berkshire-v2.0",
+          "split": "held_out",
+          "information_set": "public_observer",
+          "n": 317,
+          "accuracy": 0.4322,
+          "balanced_accuracy": 0.2,
+          "macro_f1": 0.1207,
+          "macro_f1_low": 0.1098,
+          "macro_f1_high": 0.1308,
+          "per_class": [
+            {
+              "label": "exit",
+              "support": 34,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "reduce",
+              "support": 70,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "hold",
+              "support": 137,
+              "predicted": 317,
+              "precision": 0.4322,
+              "recall": 1.0,
+              "f1": 0.6035,
+              "f1_low": 0.5492,
+              "f1_high": 0.6539,
+              "recall_low": 1.0,
+              "recall_high": 1.0
+            },
+            {
+              "label": "increase",
+              "support": 48,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "enter",
+              "support": 28,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            }
+          ],
+          "confusion": {
+            "exit": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 34,
+              "increase": 0,
+              "enter": 0
+            },
+            "reduce": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 70,
+              "increase": 0,
+              "enter": 0
+            },
+            "hold": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 137,
+              "increase": 0,
+              "enter": 0
+            },
+            "increase": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 48,
+              "increase": 0,
+              "enter": 0
+            },
+            "enter": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 28,
+              "increase": 0,
+              "enter": 0
+            }
+          },
+          "calibration": {
+            "view": "berkshire-v2.0",
+            "log_loss": 19.6119,
+            "brier": 1.1356,
+            "expected_calibration_error": 0.5678,
+            "bins": [
+              {
+                "low": 0.9,
+                "high": 1.0,
+                "count": 317,
+                "mean_confidence": 1.0,
+                "accuracy": 0.4322
+              }
+            ]
+          },
+          "majority_class_rate": 0.4322
+        },
+        "held_out/incumbent": {
+          "model_name": "always_hold",
+          "view": "berkshire-v2.0",
+          "split": "held_out/incumbent",
+          "information_set": "public_observer",
+          "n": 252,
+          "accuracy": 0.4802,
+          "balanced_accuracy": 0.25,
+          "macro_f1": 0.1622,
+          "macro_f1_low": 0.147,
+          "macro_f1_high": 0.1752,
+          "per_class": [
+            {
+              "label": "exit",
+              "support": 33,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "reduce",
+              "support": 68,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "hold",
+              "support": 121,
+              "predicted": 252,
+              "precision": 0.4802,
+              "recall": 1.0,
+              "f1": 0.6488,
+              "f1_low": 0.5882,
+              "f1_high": 0.701,
+              "recall_low": 1.0,
+              "recall_high": 1.0
+            },
+            {
+              "label": "increase",
+              "support": 30,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            }
+          ],
+          "confusion": {
+            "exit": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 33,
+              "increase": 0,
+              "enter": 0
+            },
+            "reduce": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 68,
+              "increase": 0,
+              "enter": 0
+            },
+            "hold": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 121,
+              "increase": 0,
+              "enter": 0
+            },
+            "increase": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 30,
+              "increase": 0,
+              "enter": 0
+            },
+            "enter": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 0
+            }
+          },
+          "calibration": {
+            "view": "berkshire-v2.0",
+            "log_loss": 17.9547,
+            "brier": 1.0397,
+            "expected_calibration_error": 0.5198,
+            "bins": [
+              {
+                "low": 0.9,
+                "high": 1.0,
+                "count": 252,
+                "mean_confidence": 1.0,
+                "accuracy": 0.4802
+              }
+            ]
+          },
+          "majority_class_rate": 0.4802
+        }
+      },
+      "class_prior": {
+        "held_out": {
+          "model_name": "class_prior",
+          "view": "berkshire-v2.0",
+          "split": "held_out",
+          "information_set": "public_observer",
+          "n": 317,
+          "accuracy": 0.4322,
+          "balanced_accuracy": 0.2,
+          "macro_f1": 0.1207,
+          "macro_f1_low": 0.1098,
+          "macro_f1_high": 0.1308,
+          "per_class": [
+            {
+              "label": "exit",
+              "support": 34,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "reduce",
+              "support": 70,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "hold",
+              "support": 137,
+              "predicted": 317,
+              "precision": 0.4322,
+              "recall": 1.0,
+              "f1": 0.6035,
+              "f1_low": 0.5492,
+              "f1_high": 0.6539,
+              "recall_low": 1.0,
+              "recall_high": 1.0
+            },
+            {
+              "label": "increase",
+              "support": 48,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "enter",
+              "support": 28,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            }
+          ],
+          "confusion": {
+            "exit": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 34,
+              "increase": 0,
+              "enter": 0
+            },
+            "reduce": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 70,
+              "increase": 0,
+              "enter": 0
+            },
+            "hold": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 137,
+              "increase": 0,
+              "enter": 0
+            },
+            "increase": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 48,
+              "increase": 0,
+              "enter": 0
+            },
+            "enter": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 28,
+              "increase": 0,
+              "enter": 0
+            }
+          },
+          "calibration": {
+            "view": "berkshire-v2.0",
+            "log_loss": 1.4826,
+            "brier": 0.736,
+            "expected_calibration_error": 0.0274,
+            "bins": [
+              {
+                "low": 0.4,
+                "high": 0.5,
+                "count": 317,
+                "mean_confidence": 0.4596,
+                "accuracy": 0.4322
+              }
+            ]
+          },
+          "majority_class_rate": 0.4322
+        },
+        "held_out/incumbent": {
+          "model_name": "class_prior",
+          "view": "berkshire-v2.0",
+          "split": "held_out/incumbent",
+          "information_set": "public_observer",
+          "n": 252,
+          "accuracy": 0.4802,
+          "balanced_accuracy": 0.25,
+          "macro_f1": 0.1622,
+          "macro_f1_low": 0.147,
+          "macro_f1_high": 0.1752,
+          "per_class": [
+            {
+              "label": "exit",
+              "support": 33,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "reduce",
+              "support": 68,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "hold",
+              "support": 121,
+              "predicted": 252,
+              "precision": 0.4802,
+              "recall": 1.0,
+              "f1": 0.6488,
+              "f1_low": 0.5882,
+              "f1_high": 0.701,
+              "recall_low": 1.0,
+              "recall_high": 1.0
+            },
+            {
+              "label": "increase",
+              "support": 30,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            }
+          ],
+          "confusion": {
+            "exit": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 33,
+              "increase": 0,
+              "enter": 0
+            },
+            "reduce": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 68,
+              "increase": 0,
+              "enter": 0
+            },
+            "hold": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 121,
+              "increase": 0,
+              "enter": 0
+            },
+            "increase": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 30,
+              "increase": 0,
+              "enter": 0
+            },
+            "enter": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 0
+            }
+          },
+          "calibration": {
+            "view": "berkshire-v2.0",
+            "log_loss": 1.3889,
+            "brier": 0.6994,
+            "expected_calibration_error": 0.0206,
+            "bins": [
+              {
+                "low": 0.4,
+                "high": 0.5,
+                "count": 252,
+                "mean_confidence": 0.4596,
+                "accuracy": 0.4802
+              }
+            ]
+          },
+          "majority_class_rate": 0.4802
+        }
+      },
+      "boosted_trees": {
+        "held_out/incumbent": {
+          "model_name": "boosted_trees",
+          "view": "berkshire-v2.0",
+          "split": "held_out/incumbent",
+          "information_set": "public_observer",
+          "n": 252,
+          "accuracy": 0.2778,
+          "balanced_accuracy": 0.3306,
+          "macro_f1": 0.2694,
+          "macro_f1_low": 0.2089,
+          "macro_f1_high": 0.3233,
+          "per_class": [
+            {
+              "label": "exit",
+              "support": 33,
+              "predicted": 67,
+              "precision": 0.2239,
+              "recall": 0.4545,
+              "f1": 0.3,
+              "f1_low": 0.18,
+              "f1_high": 0.4082,
+              "recall_low": 0.28,
+              "recall_high": 0.6389
+            },
+            {
+              "label": "reduce",
+              "support": 68,
+              "predicted": 107,
+              "precision": 0.3084,
+              "recall": 0.4853,
+              "f1": 0.3771,
+              "f1_low": 0.28,
+              "f1_high": 0.4639,
+              "recall_low": 0.3611,
+              "recall_high": 0.6087
+            },
+            {
+              "label": "hold",
+              "support": 121,
+              "predicted": 36,
+              "precision": 0.3889,
+              "recall": 0.1157,
+              "f1": 0.1783,
+              "f1_low": 0.1039,
+              "f1_high": 0.2593,
+              "recall_low": 0.0645,
+              "recall_high": 0.175
+            },
+            {
+              "label": "increase",
+              "support": 30,
+              "predicted": 42,
+              "precision": 0.1905,
+              "recall": 0.2667,
+              "f1": 0.2222,
+              "f1_low": 0.0952,
+              "f1_high": 0.3571,
+              "recall_low": 0.1143,
+              "recall_high": 0.4231
+            }
+          ],
+          "confusion": {
+            "exit": {
+              "exit": 15,
+              "reduce": 10,
+              "hold": 1,
+              "increase": 7,
+              "enter": 0
+            },
+            "reduce": {
+              "exit": 13,
+              "reduce": 33,
+              "hold": 14,
+              "increase": 8,
+              "enter": 0
+            },
+            "hold": {
+              "exit": 37,
+              "reduce": 51,
+              "hold": 14,
+              "increase": 19,
+              "enter": 0
+            },
+            "increase": {
+              "exit": 2,
+              "reduce": 13,
+              "hold": 7,
+              "increase": 8,
+              "enter": 0
+            },
+            "enter": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 0
+            }
+          },
+          "calibration": {
+            "view": "berkshire-v2.0",
+            "log_loss": 1.7106,
+            "brier": 0.8612,
+            "expected_calibration_error": 0.2482,
+            "bins": [
+              {
+                "low": 0.0,
+                "high": 0.3,
+                "count": 11,
+                "mean_confidence": 0.2807,
+                "accuracy": 0.2727
+              },
+              {
+                "low": 0.3,
+                "high": 0.4,
+                "count": 65,
+                "mean_confidence": 0.3527,
+                "accuracy": 0.2
+              },
+              {
+                "low": 0.4,
+                "high": 0.5,
+                "count": 66,
+                "mean_confidence": 0.4468,
+                "accuracy": 0.1818
+              },
+              {
+                "low": 0.5,
+                "high": 0.6,
+                "count": 46,
+                "mean_confidence": 0.5555,
+                "accuracy": 0.3478
+              },
+              {
+                "low": 0.6,
+                "high": 0.7,
+                "count": 16,
+                "mean_confidence": 0.6414,
+                "accuracy": 0.375
+              },
+              {
+                "low": 0.7,
+                "high": 0.8,
+                "count": 9,
+                "mean_confidence": 0.7576,
+                "accuracy": 0.3333
+              },
+              {
+                "low": 0.8,
+                "high": 0.9,
+                "count": 24,
+                "mean_confidence": 0.8539,
+                "accuracy": 0.4167
+              },
+              {
+                "low": 0.9,
+                "high": 1.0,
+                "count": 15,
+                "mean_confidence": 0.9273,
+                "accuracy": 0.4667
+              }
+            ]
+          },
+          "majority_class_rate": 0.4802
+        },
+        "held_out/new_to_book": {
+          "model_name": "boosted_trees",
+          "view": "berkshire-v2.0",
+          "split": "held_out/new_to_book",
+          "information_set": "public_observer",
+          "n": 65,
+          "accuracy": 0.4308,
+          "balanced_accuracy": 0.2,
+          "macro_f1": 0.1204,
+          "macro_f1_low": 0.0977,
+          "macro_f1_high": 0.2105,
+          "per_class": [
+            {
+              "label": "exit",
+              "support": 1,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "reduce",
+              "support": 2,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "hold",
+              "support": 16,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "increase",
+              "support": 18,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "enter",
+              "support": 28,
+              "predicted": 65,
+              "precision": 0.4308,
+              "recall": 1.0,
+              "f1": 0.6022,
+              "f1_low": 0.4706,
+              "f1_high": 0.7129,
+              "recall_low": 1.0,
+              "recall_high": 1.0
+            }
+          ],
+          "confusion": {
+            "exit": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 1
+            },
+            "reduce": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 2
+            },
+            "hold": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 16
+            },
+            "increase": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 18
+            },
+            "enter": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 28
+            }
+          },
+          "calibration": {
+            "view": "berkshire-v2.0",
+            "log_loss": 1.432,
+            "brier": 0.7609,
+            "expected_calibration_error": 0.2159,
+            "bins": [
+              {
+                "low": 0.5,
+                "high": 0.6,
+                "count": 1,
+                "mean_confidence": 0.5919,
+                "accuracy": 1.0
+              },
+              {
+                "low": 0.6,
+                "high": 0.7,
+                "count": 64,
+                "mean_confidence": 0.6348,
+                "accuracy": 0.4219
+              }
+            ]
+          },
+          "majority_class_rate": 0.4308
+        },
+        "held_out": {
+          "model_name": "boosted_trees",
+          "view": "berkshire-v2.0",
+          "split": "held_out",
+          "information_set": "public_observer",
+          "n": 317,
+          "accuracy": 0.3091,
+          "balanced_accuracy": 0.4363,
+          "macro_f1": 0.3223,
+          "macro_f1_low": 0.2711,
+          "macro_f1_high": 0.3664,
+          "per_class": [
+            {
+              "label": "exit",
+              "support": 34,
+              "predicted": 67,
+              "precision": 0.2239,
+              "recall": 0.4412,
+              "f1": 0.297,
+              "f1_low": 0.1798,
+              "f1_high": 0.404,
+              "recall_low": 0.2683,
+              "recall_high": 0.6
+            },
+            {
+              "label": "reduce",
+              "support": 70,
+              "predicted": 107,
+              "precision": 0.3084,
+              "recall": 0.4714,
+              "f1": 0.3729,
+              "f1_low": 0.2767,
+              "f1_high": 0.4577,
+              "recall_low": 0.3537,
+              "recall_high": 0.5882
+            },
+            {
+              "label": "hold",
+              "support": 137,
+              "predicted": 36,
+              "precision": 0.3889,
+              "recall": 0.1022,
+              "f1": 0.1618,
+              "f1_low": 0.0864,
+              "f1_high": 0.2373,
+              "recall_low": 0.0544,
+              "recall_high": 0.155
+            },
+            {
+              "label": "increase",
+              "support": 48,
+              "predicted": 42,
+              "precision": 0.1905,
+              "recall": 0.1667,
+              "f1": 0.1778,
+              "f1_low": 0.0759,
+              "f1_high": 0.2917,
+              "recall_low": 0.0698,
+              "recall_high": 0.2857
+            },
+            {
+              "label": "enter",
+              "support": 28,
+              "predicted": 65,
+              "precision": 0.4308,
+              "recall": 1.0,
+              "f1": 0.6022,
+              "f1_low": 0.4722,
+              "f1_high": 0.7156,
+              "recall_low": 1.0,
+              "recall_high": 1.0
+            }
+          ],
+          "confusion": {
+            "exit": {
+              "exit": 15,
+              "reduce": 10,
+              "hold": 1,
+              "increase": 7,
+              "enter": 1
+            },
+            "reduce": {
+              "exit": 13,
+              "reduce": 33,
+              "hold": 14,
+              "increase": 8,
+              "enter": 2
+            },
+            "hold": {
+              "exit": 37,
+              "reduce": 51,
+              "hold": 14,
+              "increase": 19,
+              "enter": 16
+            },
+            "increase": {
+              "exit": 2,
+              "reduce": 13,
+              "hold": 7,
+              "increase": 8,
+              "enter": 18
+            },
+            "enter": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 28
+            }
+          },
+          "calibration": {
+            "view": "berkshire-v2.0",
+            "log_loss": 1.6535,
+            "brier": 0.8406,
+            "expected_calibration_error": 0.239,
+            "bins": [
+              {
+                "low": 0.0,
+                "high": 0.3,
+                "count": 11,
+                "mean_confidence": 0.2807,
+                "accuracy": 0.2727
+              },
+              {
+                "low": 0.3,
+                "high": 0.4,
+                "count": 65,
+                "mean_confidence": 0.3527,
+                "accuracy": 0.2
+              },
+              {
+                "low": 0.4,
+                "high": 0.5,
+                "count": 66,
+                "mean_confidence": 0.4468,
+                "accuracy": 0.1818
+              },
+              {
+                "low": 0.5,
+                "high": 0.6,
+                "count": 47,
+                "mean_confidence": 0.5563,
+                "accuracy": 0.3617
+              },
+              {
+                "low": 0.6,
+                "high": 0.7,
+                "count": 80,
+                "mean_confidence": 0.6361,
+                "accuracy": 0.4125
+              },
+              {
+                "low": 0.7,
+                "high": 0.8,
+                "count": 9,
+                "mean_confidence": 0.7576,
+                "accuracy": 0.3333
+              },
+              {
+                "low": 0.8,
+                "high": 0.9,
+                "count": 24,
+                "mean_confidence": 0.8539,
+                "accuracy": 0.4167
+              },
+              {
+                "low": 0.9,
+                "high": 1.0,
+                "count": 15,
+                "mean_confidence": 0.9273,
+                "accuracy": 0.4667
+              }
+            ]
+          },
+          "majority_class_rate": 0.4322
+        }
+      },
+      "logistic": {
+        "held_out/incumbent": {
+          "model_name": "logistic",
+          "view": "berkshire-v2.0",
+          "split": "held_out/incumbent",
+          "information_set": "public_observer",
+          "n": 252,
+          "accuracy": 0.254,
+          "balanced_accuracy": 0.3213,
+          "macro_f1": 0.2499,
+          "macro_f1_low": 0.1946,
+          "macro_f1_high": 0.2994,
+          "per_class": [
+            {
+              "label": "exit",
+              "support": 33,
+              "predicted": 87,
+              "precision": 0.1954,
+              "recall": 0.5152,
+              "f1": 0.2833,
+              "f1_low": 0.1782,
+              "f1_high": 0.3768,
+              "recall_low": 0.3429,
+              "recall_high": 0.6757
+            },
+            {
+              "label": "reduce",
+              "support": 68,
+              "predicted": 110,
+              "precision": 0.2909,
+              "recall": 0.4706,
+              "f1": 0.3596,
+              "f1_low": 0.2674,
+              "f1_high": 0.4412,
+              "recall_low": 0.3562,
+              "recall_high": 0.5833
+            },
+            {
+              "label": "hold",
+              "support": 121,
+              "predicted": 29,
+              "precision": 0.2759,
+              "recall": 0.0661,
+              "f1": 0.1067,
+              "f1_low": 0.0411,
+              "f1_high": 0.1733,
+              "recall_low": 0.025,
+              "recall_high": 0.1111
+            },
+            {
+              "label": "increase",
+              "support": 30,
+              "predicted": 26,
+              "precision": 0.2692,
+              "recall": 0.2333,
+              "f1": 0.25,
+              "f1_low": 0.1026,
+              "f1_high": 0.3871,
+              "recall_low": 0.0882,
+              "recall_high": 0.3846
+            }
+          ],
+          "confusion": {
+            "exit": {
+              "exit": 17,
+              "reduce": 8,
+              "hold": 5,
+              "increase": 3,
+              "enter": 0
+            },
+            "reduce": {
+              "exit": 17,
+              "reduce": 32,
+              "hold": 11,
+              "increase": 8,
+              "enter": 0
+            },
+            "hold": {
+              "exit": 49,
+              "reduce": 56,
+              "hold": 8,
+              "increase": 8,
+              "enter": 0
+            },
+            "increase": {
+              "exit": 4,
+              "reduce": 14,
+              "hold": 5,
+              "increase": 7,
+              "enter": 0
+            },
+            "enter": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 0
+            }
+          },
+          "calibration": {
+            "view": "berkshire-v2.0",
+            "log_loss": 2.0994,
+            "brier": 0.9056,
+            "expected_calibration_error": 0.2467,
+            "bins": [
+              {
+                "low": 0.0,
+                "high": 0.3,
+                "count": 7,
+                "mean_confidence": 0.2887,
+                "accuracy": 0.2857
+              },
+              {
+                "low": 0.3,
+                "high": 0.4,
+                "count": 77,
+                "mean_confidence": 0.3497,
+                "accuracy": 0.2597
+              },
+              {
+                "low": 0.4,
+                "high": 0.5,
+                "count": 57,
+                "mean_confidence": 0.4474,
+                "accuracy": 0.2105
+              },
+              {
+                "low": 0.5,
+                "high": 0.6,
+                "count": 41,
+                "mean_confidence": 0.5511,
+                "accuracy": 0.2195
+              },
+              {
+                "low": 0.6,
+                "high": 0.7,
+                "count": 38,
+                "mean_confidence": 0.6394,
+                "accuracy": 0.1842
+              },
+              {
+                "low": 0.7,
+                "high": 0.8,
+                "count": 22,
+                "mean_confidence": 0.7424,
+                "accuracy": 0.4091
+              },
+              {
+                "low": 0.8,
+                "high": 0.9,
+                "count": 10,
+                "mean_confidence": 0.8488,
+                "accuracy": 0.5
+              }
+            ]
+          },
+          "majority_class_rate": 0.4802
+        },
+        "held_out/new_to_book": {
+          "model_name": "logistic",
+          "view": "berkshire-v2.0",
+          "split": "held_out/new_to_book",
+          "information_set": "public_observer",
+          "n": 65,
+          "accuracy": 0.4308,
+          "balanced_accuracy": 0.2,
+          "macro_f1": 0.1204,
+          "macro_f1_low": 0.0977,
+          "macro_f1_high": 0.2105,
+          "per_class": [
+            {
+              "label": "exit",
+              "support": 1,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "reduce",
+              "support": 2,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "hold",
+              "support": 16,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "increase",
+              "support": 18,
+              "predicted": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "f1_low": 0.0,
+              "f1_high": 0.0,
+              "recall_low": 0.0,
+              "recall_high": 0.0
+            },
+            {
+              "label": "enter",
+              "support": 28,
+              "predicted": 65,
+              "precision": 0.4308,
+              "recall": 1.0,
+              "f1": 0.6022,
+              "f1_low": 0.4706,
+              "f1_high": 0.7129,
+              "recall_low": 1.0,
+              "recall_high": 1.0
+            }
+          ],
+          "confusion": {
+            "exit": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 1
+            },
+            "reduce": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 2
+            },
+            "hold": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 16
+            },
+            "increase": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 18
+            },
+            "enter": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 28
+            }
+          },
+          "calibration": {
+            "view": "berkshire-v2.0",
+            "log_loss": 1.444,
+            "brier": 0.7633,
+            "expected_calibration_error": 0.2036,
+            "bins": [
+              {
+                "low": 0.5,
+                "high": 0.6,
+                "count": 2,
+                "mean_confidence": 0.5612,
+                "accuracy": 0.5
+              },
+              {
+                "low": 0.6,
+                "high": 0.7,
+                "count": 61,
+                "mean_confidence": 0.6333,
+                "accuracy": 0.4262
+              },
+              {
+                "low": 0.7,
+                "high": 0.8,
+                "count": 2,
+                "mean_confidence": 0.7374,
+                "accuracy": 0.5
+              }
+            ]
+          },
+          "majority_class_rate": 0.4308
+        },
+        "held_out": {
+          "model_name": "logistic",
+          "view": "berkshire-v2.0",
+          "split": "held_out",
+          "information_set": "public_observer",
+          "n": 317,
+          "accuracy": 0.2902,
+          "balanced_accuracy": 0.4323,
+          "macro_f1": 0.3049,
+          "macro_f1_low": 0.2531,
+          "macro_f1_high": 0.3542,
+          "per_class": [
+            {
+              "label": "exit",
+              "support": 34,
+              "predicted": 87,
+              "precision": 0.1954,
+              "recall": 0.5,
+              "f1": 0.281,
+              "f1_low": 0.1667,
+              "f1_high": 0.3846,
+              "recall_low": 0.3333,
+              "recall_high": 0.6562
+            },
+            {
+              "label": "reduce",
+              "support": 70,
+              "predicted": 110,
+              "precision": 0.2909,
+              "recall": 0.4571,
+              "f1": 0.3556,
+              "f1_low": 0.2651,
+              "f1_high": 0.4409,
+              "recall_low": 0.3418,
+              "recall_high": 0.5818
+            },
+            {
+              "label": "hold",
+              "support": 137,
+              "predicted": 29,
+              "precision": 0.2759,
+              "recall": 0.0584,
+              "f1": 0.0964,
+              "f1_low": 0.0387,
+              "f1_high": 0.1573,
+              "recall_low": 0.0224,
+              "recall_high": 0.0974
+            },
+            {
+              "label": "increase",
+              "support": 48,
+              "predicted": 26,
+              "precision": 0.2692,
+              "recall": 0.1458,
+              "f1": 0.1892,
+              "f1_low": 0.075,
+              "f1_high": 0.3218,
+              "recall_low": 0.0541,
+              "recall_high": 0.2593
+            },
+            {
+              "label": "enter",
+              "support": 28,
+              "predicted": 65,
+              "precision": 0.4308,
+              "recall": 1.0,
+              "f1": 0.6022,
+              "f1_low": 0.4722,
+              "f1_high": 0.7156,
+              "recall_low": 1.0,
+              "recall_high": 1.0
+            }
+          ],
+          "confusion": {
+            "exit": {
+              "exit": 17,
+              "reduce": 8,
+              "hold": 5,
+              "increase": 3,
+              "enter": 1
+            },
+            "reduce": {
+              "exit": 17,
+              "reduce": 32,
+              "hold": 11,
+              "increase": 8,
+              "enter": 2
+            },
+            "hold": {
+              "exit": 49,
+              "reduce": 56,
+              "hold": 8,
+              "increase": 8,
+              "enter": 16
+            },
+            "increase": {
+              "exit": 4,
+              "reduce": 14,
+              "hold": 5,
+              "increase": 7,
+              "enter": 18
+            },
+            "enter": {
+              "exit": 0,
+              "reduce": 0,
+              "hold": 0,
+              "increase": 0,
+              "enter": 28
+            }
+          },
+          "calibration": {
+            "view": "berkshire-v2.0",
+            "log_loss": 1.965,
+            "brier": 0.8764,
+            "expected_calibration_error": 0.2378,
+            "bins": [
+              {
+                "low": 0.0,
+                "high": 0.3,
+                "count": 7,
+                "mean_confidence": 0.2887,
+                "accuracy": 0.2857
+              },
+              {
+                "low": 0.3,
+                "high": 0.4,
+                "count": 77,
+                "mean_confidence": 0.3497,
+                "accuracy": 0.2597
+              },
+              {
+                "low": 0.4,
+                "high": 0.5,
+                "count": 57,
+                "mean_confidence": 0.4474,
+                "accuracy": 0.2105
+              },
+              {
+                "low": 0.5,
+                "high": 0.6,
+                "count": 43,
+                "mean_confidence": 0.5515,
+                "accuracy": 0.2326
+              },
+              {
+                "low": 0.6,
+                "high": 0.7,
+                "count": 99,
+                "mean_confidence": 0.6357,
+                "accuracy": 0.3333
+              },
+              {
+                "low": 0.7,
+                "high": 0.8,
+                "count": 24,
+                "mean_confidence": 0.7419,
+                "accuracy": 0.4167
+              },
+              {
+                "low": 0.8,
+                "high": 0.9,
+                "count": 10,
+                "mean_confidence": 0.8488,
+                "accuracy": 0.5
+              }
+            ]
+          },
+          "majority_class_rate": 0.4322
+        }
+      }
+    },
+    "paired": {
+      "boosted_trees": {
+        "model_name": "boosted_trees",
+        "split": "held_out",
+        "n": 570,
+        "both_correct": 141,
+        "public_wrong_oracle_correct": 109,
+        "both_wrong": 247,
+        "public_correct_oracle_wrong": 73,
+        "public_macro_f1": 0.3222,
+        "oracle_macro_f1": 0.4504
+      },
+      "logistic": {
+        "model_name": "logistic",
+        "split": "held_out",
+        "n": 570,
+        "both_correct": 89,
+        "public_wrong_oracle_correct": 69,
+        "both_wrong": 330,
+        "public_correct_oracle_wrong": 82,
+        "public_macro_f1": 0.3046,
+        "oracle_macro_f1": 0.4095
+      }
+    }
+  }
+}

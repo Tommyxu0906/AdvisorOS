@@ -19,3 +19,5 @@ data/berkshire/episodes/*.audit.json
 backend/app/advisors/custom/
 *.tsbuildinfo
 .claude/settings.local.json
+data/berkshire/snapshots/
+data/berkshire/episodes/*.audit.json

@@ -1,0 +1,428 @@
+{
+  "result_name": "Berkshire Behavioral Reconstruction",
+  "task": {
+    "version": "incumbent-security-policy-v1",
+    "classes": [
+      "exit",
+      "reduce",
+      "hold",
+      "increase"
+    ],
+    "population": "positions visible in the last public book at the decision window opening",
+    "excluded": "new-to-book rows, which belong to security-discovery-and-initiation rather than to position management",
+    "reserved_from": "2025-01-01"
+  },
+  "coverage": 0.8515,
+  "abstention_rate": 0.1485,
+  "parse_failure_rate": 0.0,
+  "vanilla_nuwa": {
+    "model_name": "vanilla_nuwa",
+    "view": "berkshire-v2.0-natural",
+    "split": "validation/incumbent",
+    "information_set": "public_observer",
+    "n": 304,
+    "accuracy": 0.2566,
+    "balanced_accuracy": 0.2263,
+    "macro_f1": 0.1913,
+    "macro_f1_low": 0.1489,
+    "macro_f1_high": 0.2335,
+    "per_class": [
+      {
+        "label": "exit",
+        "support": 18,
+        "predicted": 71,
+        "precision": 0.0423,
+        "recall": 0.1667,
+        "f1": 0.0674,
+        "f1_low": 0.0,
+        "f1_high": 0.1443,
+        "recall_low": 0.0,
+        "recall_high": 0.3571
+      },
+      {
+        "label": "reduce",
+        "support": 61,
+        "predicted": 70,
+        "precision": 0.2143,
+        "recall": 0.2459,
+        "f1": 0.229,
+        "f1_low": 0.1311,
+        "f1_high": 0.3309,
+        "recall_low": 0.1373,
+        "recall_high": 0.3585
+      },
+      {
+        "label": "hold",
+        "support": 207,
+        "predicted": 81,
+        "precision": 0.6914,
+        "recall": 0.2705,
+        "f1": 0.3889,
+        "f1_low": 0.3226,
+        "f1_high": 0.4548,
+        "recall_low": 0.2157,
+        "recall_high": 0.3301
+      },
+      {
+        "label": "increase",
+        "support": 18,
+        "predicted": 82,
+        "precision": 0.0488,
+        "recall": 0.2222,
+        "f1": 0.08,
+        "f1_low": 0.0194,
+        "f1_high": 0.1538,
+        "recall_low": 0.0526,
+        "recall_high": 0.4167
+      }
+    ],
+    "confusion": {
+      "exit": {
+        "exit": 3,
+        "reduce": 6,
+        "hold": 4,
+        "increase": 5,
+        "enter": 0
+      },
+      "reduce": {
+        "exit": 16,
+        "reduce": 15,
+        "hold": 14,
+        "increase": 16,
+        "enter": 0
+      },
+      "hold": {
+        "exit": 50,
+        "reduce": 44,
+        "hold": 56,
+        "increase": 57,
+        "enter": 0
+      },
+      "increase": {
+        "exit": 2,
+        "reduce": 5,
+        "hold": 7,
+        "increase": 4,
+        "enter": 0
+      },
+      "enter": {
+        "exit": 0,
+        "reduce": 0,
+        "hold": 0,
+        "increase": 0,
+        "enter": 0
+      }
+    },
+    "calibration": null,
+    "majority_class_rate": 0.6809
+  },
+  "ladder": [
+    {
+      "model": "always_hold",
+      "model_name": "always_hold",
+      "view": "berkshire-v2.0-natural",
+      "split": "validation/incumbent",
+      "information_set": "public_observer",
+      "n": 304,
+      "accuracy": 0.6809,
+      "balanced_accuracy": 0.25,
+      "macro_f1": 0.2026,
+      "macro_f1_low": null,
+      "macro_f1_high": null,
+      "per_class": [
+        {
+          "label": "exit",
+          "support": 18,
+          "predicted": 0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "f1_low": null,
+          "f1_high": null,
+          "recall_low": null,
+          "recall_high": null
+        },
+        {
+          "label": "reduce",
+          "support": 61,
+          "predicted": 0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "f1_low": null,
+          "f1_high": null,
+          "recall_low": null,
+          "recall_high": null
+        },
+        {
+          "label": "hold",
+          "support": 207,
+          "predicted": 304,
+          "precision": 0.6809,
+          "recall": 1.0,
+          "f1": 0.8102,
+          "f1_low": null,
+          "f1_high": null,
+          "recall_low": null,
+          "recall_high": null
+        },
+        {
+          "label": "increase",
+          "support": 18,
+          "predicted": 0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "f1_low": null,
+          "f1_high": null,
+          "recall_low": null,
+          "recall_high": null
+        }
+      ],
+      "confusion": {
+        "exit": {
+          "exit": 0,
+          "reduce": 0,
+          "hold": 18,
+          "increase": 0,
+          "enter": 0
+        },
+        "reduce": {
+          "exit": 0,
+          "reduce": 0,
+          "hold": 61,
+          "increase": 0,
+          "enter": 0
+        },
+        "hold": {
+          "exit": 0,
+          "reduce": 0,
+          "hold": 207,
+          "increase": 0,
+          "enter": 0
+        },
+        "increase": {
+          "exit": 0,
+          "reduce": 0,
+          "hold": 18,
+          "increase": 0,
+          "enter": 0
+        },
+        "enter": {
+          "exit": 0,
+          "reduce": 0,
+          "hold": 0,
+          "increase": 0,
+          "enter": 0
+        }
+      },
+      "calibration": null,
+      "majority_class_rate": 0.6809
+    },
+    {
+      "model": "boosted_trees",
+      "model_name": "boosted_trees",
+      "view": "berkshire-v2.0-natural",
+      "split": "validation/incumbent",
+      "information_set": "public_observer",
+      "n": 304,
+      "accuracy": 0.3914,
+      "balanced_accuracy": 0.3722,
+      "macro_f1": 0.2988,
+      "macro_f1_low": null,
+      "macro_f1_high": null,
+      "per_class": [
+        {
+          "label": "exit",
+          "support": 18,
+          "predicted": 59,
+          "precision": 0.1186,
+          "recall": 0.3889,
+          "f1": 0.1818,
+          "f1_low": null,
+          "f1_high": null,
+          "recall_low": null,
+          "recall_high": null
+        },
+        {
+          "label": "reduce",
+          "support": 61,
+          "predicted": 89,
+          "precision": 0.2472,
+          "recall": 0.3607,
+          "f1": 0.2933,
+          "f1_low": null,
+          "f1_high": null,
+          "recall_low": null,
+          "recall_high": null
+        },
+        {
+          "label": "hold",
+          "support": 207,
+          "predicted": 112,
+          "precision": 0.75,
+          "recall": 0.4058,
+          "f1": 0.5266,
+          "f1_low": null,
+          "f1_high": null,
+          "recall_low": null,
+          "recall_high": null
+        },
+        {
+          "label": "increase",
+          "support": 18,
+          "predicted": 44,
+          "precision": 0.1364,
+          "recall": 0.3333,
+          "f1": 0.1935,
+          "f1_low": null,
+          "f1_high": null,
+          "recall_low": null,
+          "recall_high": null
+        }
+      ],
+      "confusion": {
+        "exit": {
+          "exit": 7,
+          "reduce": 6,
+          "hold": 2,
+          "increase": 3,
+          "enter": 0
+        },
+        "reduce": {
+          "exit": 6,
+          "reduce": 22,
+          "hold": 19,
+          "increase": 14,
+          "enter": 0
+        },
+        "hold": {
+          "exit": 46,
+          "reduce": 56,
+          "hold": 84,
+          "increase": 21,
+          "enter": 0
+        },
+        "increase": {
+          "exit": 0,
+          "reduce": 5,
+          "hold": 7,
+          "increase": 6,
+          "enter": 0
+        },
+        "enter": {
+          "exit": 0,
+          "reduce": 0,
+          "hold": 0,
+          "increase": 0,
+          "enter": 0
+        }
+      },
+      "calibration": null,
+      "majority_class_rate": 0.6809
+    },
+    {
+      "model": "logistic",
+      "model_name": "logistic",
+      "view": "berkshire-v2.0-natural",
+      "split": "validation/incumbent",
+      "information_set": "public_observer",
+      "n": 304,
+      "accuracy": 0.3684,
+      "balanced_accuracy": 0.3833,
+      "macro_f1": 0.2922,
+      "macro_f1_low": null,
+      "macro_f1_high": null,
+      "per_class": [
+        {
+          "label": "exit",
+          "support": 18,
+          "predicted": 87,
+          "precision": 0.1034,
+          "recall": 0.5,
+          "f1": 0.1714,
+          "f1_low": null,
+          "f1_high": null,
+          "recall_low": null,
+          "recall_high": null
+        },
+        {
+          "label": "reduce",
+          "support": 61,
+          "predicted": 79,
+          "precision": 0.2532,
+          "recall": 0.3279,
+          "f1": 0.2857,
+          "f1_low": null,
+          "f1_high": null,
+          "recall_low": null,
+          "recall_high": null
+        },
+        {
+          "label": "hold",
+          "support": 207,
+          "predicted": 98,
+          "precision": 0.7857,
+          "recall": 0.372,
+          "f1": 0.5049,
+          "f1_low": null,
+          "f1_high": null,
+          "recall_low": null,
+          "recall_high": null
+        },
+        {
+          "label": "increase",
+          "support": 18,
+          "predicted": 40,
+          "precision": 0.15,
+          "recall": 0.3333,
+          "f1": 0.2069,
+          "f1_low": null,
+          "f1_high": null,
+          "recall_low": null,
+          "recall_high": null
+        }
+      ],
+      "confusion": {
+        "exit": {
+          "exit": 9,
+          "reduce": 5,
+          "hold": 2,
+          "increase": 2,
+          "enter": 0
+        },
+        "reduce": {
+          "exit": 12,
+          "reduce": 20,
+          "hold": 13,
+          "increase": 16,
+          "enter": 0
+        },
+        "hold": {
+          "exit": 62,
+          "reduce": 52,
+          "hold": 77,
+          "increase": 16,
+          "enter": 0
+        },
+        "increase": {
+          "exit": 4,
+          "reduce": 2,
+          "hold": 6,
+          "increase": 6,
+          "enter": 0
+        },
+        "enter": {
+          "exit": 0,
+          "reduce": 0,
+          "hold": 0,
+          "increase": 0,
+          "enter": 0
+        }
+      },
+      "calibration": null,
+      "majority_class_rate": 0.6809
+    }
+  ],
+  "usage": "357 LLM calls \u00b7 468,756 in / 22,246 out \u00b7 estimated $3.1127"
+}

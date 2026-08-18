@@ -1,0 +1,586 @@
+{
+  "model_a": "quant",
+  "model_b": "persona",
+  "split": "validation",
+  "n": 357,
+  "both_correct": 31,
+  "both_wrong": 138,
+  "quant_only": 88,
+  "persona_only": 47,
+  "compared": 304,
+  "persona_abstained": 53,
+  "persona_win_reasons": {
+    "valuation_discipline": 11,
+    "long_holding_horizon": 33,
+    "concentration_tolerance": 2,
+    "hold_through_drawdown": 1
+  },
+  "persona_loss_reasons": {
+    "long_holding_horizon": 9,
+    "concentration_tolerance": 26,
+    "hold_through_drawdown": 33,
+    "valuation_discipline": 20
+  },
+  "cases": [
+    {
+      "episode_id": "berkshire_public_equity-00287y109-com-2021-12-31",
+      "actual": "reduce",
+      "quant": "reduce",
+      "persona": "hold",
+      "cell": "quant_correct_persona_wrong",
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "confidence": 0.38,
+      "weight": 0.007891035000302297,
+      "quarters_held": 4,
+      "drawdown": 0.0
+    },
+    {
+      "episode_id": "berkshire_public_equity-023135106-com-2021-06-30",
+      "actual": "hold",
+      "quant": "hold",
+      "persona": "exit",
+      "cell": "quant_correct_persona_wrong",
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "confidence": 0.41,
+      "weight": 0.0064347679277824525,
+      "quarters_held": 8,
+      "drawdown": 0.0
+    },
+    {
+      "episode_id": "berkshire_public_equity-023135106-com-2021-09-30",
+      "actual": "hold",
+      "quant": "hold",
+      "persona": "exit",
+      "cell": "quant_correct_persona_wrong",
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "confidence": 0.69,
+      "weight": 0.006101546692146584,
+      "quarters_held": 9,
+      "drawdown": -0.0500011226762761
+    },
+    {
+      "episode_id": "berkshire_public_equity-023135106-com-2021-12-31",
+      "actual": "hold",
+      "quant": "hold",
+      "persona": "increase",
+      "cell": "quant_correct_persona_wrong",
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "confidence": 0.84,
+      "weight": 0.006261059440533714,
+      "quarters_held": 10,
+      "drawdown": 0.0
+    },
+    {
+      "episode_id": "berkshire_public_equity-02376r102-com-2020-03-31",
+      "actual": "reduce",
+      "quant": "hold",
+      "persona": "reduce",
+      "cell": "persona_correct_quant_wrong",
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "confidence": 0.67,
+      "weight": 0.005490151498152465,
+      "quarters_held": 13,
+      "drawdown": -0.48164498811095113
+    },
+    {
+      "episode_id": "berkshire_public_equity-02376r102-com-2020-06-30",
+      "actual": "exit",
+      "quant": "exit",
+      "persona": "hold",
+      "cell": "quant_correct_persona_wrong",
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "confidence": 0.5,
+      "weight": 0.0050357215012918136,
+      "quarters_held": 14,
+      "drawdown": -0.4487793199489091
+    },
+    {
+      "episode_id": "berkshire_public_equity-025816109-com-2020-03-31",
+      "actual": "hold",
+      "quant": "reduce",
+      "persona": "hold",
+      "cell": "persona_correct_quant_wrong",
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "confidence": 0.5,
+      "weight": 0.08353396105210302,
+      "quarters_held": 23,
+      "drawdown": -0.04180178013954183
+    },
+    {
+      "episode_id": "berkshire_public_equity-025816109-com-2020-06-30",
+      "actual": "hold",
+      "quant": "reduce",
+      "persona": "hold",
+      "cell": "persona_correct_quant_wrong",
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "confidence": 0.62,
+      "weight": 0.07797545999419618,
+      "quarters_held": 24,
+      "drawdown": 0.0
+    },
+    {
+      "episode_id": "berkshire_public_equity-025816109-com-2020-09-30",
+      "actual": "hold",
+      "quant": "reduce",
+      "persona": "hold",
+      "cell": "persona_correct_quant_wrong",
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "confidence": 0.46,
+      "weight": 0.07394533255613787,
+      "quarters_held": 25,
+      "drawdown": -0.31231429495450247
+    },
+    {
+      "episode_id": "berkshire_public_equity-025816109-com-2020-12-31",
+      "actual": "hold",
+      "quant": "reduce",
+      "persona": "hold",
+      "cell": "persona_correct_quant_wrong",
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "confidence": 0.62,
+      "weight": 0.07130702957365505,
+      "quarters_held": 26,
+      "drawdown": -0.23527992134795273
+    },
+    {
+      "episode_id": "berkshire_public_equity-037833100-com-2021-03-31",
+      "actual": "hold",
+      "quant": "hold",
+      "persona": "increase",
+      "cell": "quant_correct_persona_wrong",
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "confidence": 0.64,
+      "weight": 0.47777773802080614,
+      "quarters_held": 19,
+      "drawdown": -0.682538375816139
+    },
+    {
+      "episode_id": "berkshire_public_equity-037833100-com-2021-06-30",
+      "actual": "hold",
+      "quant": "reduce",
+      "persona": "hold",
+      "cell": "persona_correct_quant_wrong",
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "confidence": 0.54,
+      "weight": 0.4360948913665449,
+      "quarters_held": 20,
+      "drawdown": -0.6362664474694071
+    },
+    {
+      "episode_id": "berkshire_public_equity-060505104-com-2020-03-31",
+      "actual": "hold",
+      "quant": "increase",
+      "persona": "hold",
+      "cell": "persona_correct_quant_wrong",
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "confidence": 0.5,
+      "weight": 0.12599536884210072,
+      "quarters_held": 9,
+      "drawdown": -0.02734235160172671
+    },
+    {
+      "episode_id": "berkshire_public_equity-060505104-com-2021-12-31",
+      "actual": "hold",
+      "quant": "hold",
+      "persona": "exit",
+      "cell": "quant_correct_persona_wrong",
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "confidence": 0.37,
+      "weight": 0.1421266912283446,
+      "quarters_held": 16,
+      "drawdown": 0.0
+    },
+    {
+      "episode_id": "berkshire_public_equity-064058100-com-2020-03-31",
+      "actual": "hold",
+      "quant": "reduce",
+      "persona": "hold",
+      "cell": "persona_correct_quant_wrong",
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "confidence": 0.3,
+      "weight": 0.017045304714194305,
+      "quarters_held": 23,
+      "drawdown": -0.16169150000935206
+    },
+    {
+      "episode_id": "berkshire_public_equity-09062x103-com-2021-03-31",
+      "actual": "hold",
+      "quant": "exit",
+      "persona": "hold",
+      "cell": "persona_correct_quant_wrong",
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "confidence": 0.78,
+      "weight": 0.0007969394191959932,
+      "quarters_held": 4,
+      "drawdown": -0.10336217066456954
+    },
+    {
+      "episode_id": "berkshire_public_equity-09062x103-com-2021-06-30",
+      "actual": "exit",
+      "quant": "hold",
+      "persona": "exit",
+      "cell": "persona_correct_quant_wrong",
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "confidence": 0.81,
+      "weight": 0.0005833047157754136,
+      "quarters_held": 5,
+      "drawdown": -0.22606173810460095
+    },
+    {
+      "episode_id": "berkshire_public_equity-110122108-com-2021-09-30",
+      "actual": "reduce",
+      "quant": "increase",
+      "persona": "reduce",
+      "cell": "persona_correct_quant_wrong",
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "confidence": 0.75,
+      "weight": 0.007244116150560282,
+      "quarters_held": 3,
+      "drawdown": 0.0
+    },
+    {
+      "episode_id": "berkshire_public_equity-16119p108-cl-a-2020-03-31",
+      "actual": "hold",
+      "quant": "hold",
+      "persona": "reduce",
+      "cell": "quant_correct_persona_wrong",
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "confidence": 0.79,
+      "weight": 0.010417755190816431,
+      "quarters_held": 14,
+      "drawdown": 0.0
+    },
+    {
+      "episode_id": "berkshire_public_equity-16119p108-cl-a-2020-06-30",
+      "actual": "reduce",
+      "quant": "reduce",
+      "persona": "increase",
+      "cell": "quant_correct_persona_wrong",
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "confidence": 0.48,
+      "weight": 0.010875154730485677,
+      "quarters_held": 15,
+      "drawdown": 0.0
+    },
+    {
+      "episode_id": "berkshire_public_equity-166764100-com-2021-09-30",
+      "actual": "increase",
+      "quant": "reduce",
+      "persona": "increase",
+      "cell": "persona_correct_quant_wrong",
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "confidence": 0.76,
+      "weight": 0.009172685360485617,
+      "quarters_held": 3,
+      "drawdown": 0.0
+    },
+    {
+      "episode_id": "berkshire_public_equity-191216100-com-2020-06-30",
+      "actual": "hold",
+      "quant": "reduce",
+      "persona": "hold",
+      "cell": "persona_correct_quant_wrong",
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "confidence": 0.82,
+      "weight": 0.09146843386545309,
+      "quarters_held": 24,
+      "drawdown": 0.0
+    },
+    {
+      "episode_id": "berkshire_public_equity-191216100-com-2021-12-31",
+      "actual": "hold",
+      "quant": "reduce",
+      "persona": "hold",
+      "cell": "persona_correct_quant_wrong",
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "confidence": 0.42,
+      "weight": 0.07386440848624068,
+      "quarters_held": 30,
+      "drawdown": -0.022402845528455284
+    },
+    {
+      "episode_id": "berkshire_public_equity-23918k108-com-2020-03-31",
+      "actual": "reduce",
+      "quant": "reduce",
+      "persona": "increase",
+      "cell": "quant_correct_persona_wrong",
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "confidence": 0.84,
+      "weight": 0.010252494777983836,
+      "quarters_held": 23,
+      "drawdown": -0.2978593828259337
+    },
+    {
+      "episode_id": "berkshire_public_equity-23918k108-com-2020-12-31",
+      "actual": "hold",
+      "quant": "hold",
+      "persona": "reduce",
+      "cell": "quant_correct_persona_wrong",
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "confidence": 0.51,
+      "weight": 0.014894845277458655,
+      "quarters_held": 26,
+      "drawdown": -0.026329018619816624
+    },
+    {
+      "episode_id": "berkshire_public_equity-23918k108-com-2021-12-31",
+      "actual": "hold",
+      "quant": "hold",
+      "persona": "reduce",
+      "cell": "quant_correct_persona_wrong",
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "confidence": 0.79,
+      "weight": 0.014834957965747802,
+      "quarters_held": 30,
+      "drawdown": 0.0
+    },
+    {
+      "episode_id": "berkshire_public_equity-247361702-com-new-2020-06-30",
+      "actual": "exit",
+      "quant": "reduce",
+      "persona": "exit",
+      "cell": "persona_correct_quant_wrong",
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "confidence": 0.33,
+      "weight": 0.017132128553042046,
+      "quarters_held": 14,
+      "drawdown": 0.0
+    },
+    {
+      "episode_id": "berkshire_public_equity-37045v100-com-2020-12-31",
+      "actual": "reduce",
+      "quant": "reduce",
+      "persona": "increase",
+      "cell": "quant_correct_persona_wrong",
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "confidence": 0.76,
+      "weight": 0.009334608546249864,
+      "quarters_held": 26,
+      "drawdown": -0.38277638490085397
+    },
+    {
+      "episode_id": "berkshire_public_equity-37045v100-com-2021-03-31",
+      "actual": "reduce",
+      "quant": "reduce",
+      "persona": "hold",
+      "cell": "quant_correct_persona_wrong",
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "confidence": 0.46,
+      "weight": 0.010342059678421235,
+      "quarters_held": 27,
+      "drawdown": -0.2781163088558185
+    },
+    {
+      "episode_id": "berkshire_public_equity-37045v100-com-2021-06-30",
+      "actual": "reduce",
+      "quant": "reduce",
+      "persona": "increase",
+      "cell": "quant_correct_persona_wrong",
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "confidence": 0.68,
+      "weight": 0.011184109388057672,
+      "quarters_held": 28,
+      "drawdown": 0.0
+    },
+    {
+      "episode_id": "berkshire_public_equity-37045v100-com-2021-09-30",
+      "actual": "hold",
+      "quant": "hold",
+      "persona": "exit",
+      "cell": "quant_correct_persona_wrong",
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "confidence": 0.69,
+      "weight": 0.014235646838873047,
+      "quarters_held": 29,
+      "drawdown": 0.0
+    },
+    {
+      "episode_id": "berkshire_public_equity-37045v100-com-2021-12-31",
+      "actual": "hold",
+      "quant": "hold",
+      "persona": "exit",
+      "cell": "quant_correct_persona_wrong",
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "confidence": 0.45,
+      "weight": 0.012115755446871938,
+      "quarters_held": 30,
+      "drawdown": 0.0
+    },
+    {
+      "episode_id": "berkshire_public_equity-37959e102-com-2021-09-30",
+      "actual": "hold",
+      "quant": "hold",
+      "persona": "reduce",
+      "cell": "quant_correct_persona_wrong",
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "confidence": 0.67,
+      "weight": 0.002270270290258073,
+      "quarters_held": 7,
+      "drawdown": -0.08190001943983372
+    },
+    {
+      "episode_id": "berkshire_public_equity-37959e102-com-2021-12-31",
+      "actual": "hold",
+      "quant": "hold",
+      "persona": "exit",
+      "cell": "quant_correct_persona_wrong",
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "confidence": 0.77,
+      "weight": 0.0020653400896171394,
+      "quarters_held": 8,
+      "drawdown": -0.09501143959445513
+    },
+    {
+      "episode_id": "berkshire_public_equity-46625h100-com-2020-03-31",
+      "actual": "reduce",
+      "quant": "increase",
+      "persona": "reduce",
+      "cell": "persona_correct_quant_wrong",
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "confidence": 0.43,
+      "weight": 0.03262777271833293,
+      "quarters_held": 5,
+      "drawdown": 0.0
+    },
+    {
+      "episode_id": "berkshire_public_equity-46625h100-com-2020-06-30",
+      "actual": "reduce",
+      "quant": "reduce",
+      "persona": "exit",
+      "cell": "quant_correct_persona_wrong",
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "confidence": 0.81,
+      "weight": 0.034275387004947394,
+      "quarters_held": 6,
+      "drawdown": 0.0
+    },
+    {
+      "episode_id": "berkshire_public_equity-46625h100-com-2020-09-30",
+      "actual": "reduce",
+      "quant": "reduce",
+      "persona": "exit",
+      "cell": "quant_correct_persona_wrong",
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "confidence": 0.33,
+      "weight": 0.029602480295236433,
+      "quarters_held": 7,
+      "drawdown": -0.3541607760590041
+    },
+    {
+      "episode_id": "berkshire_public_equity-478160104-com-2020-06-30",
+      "actual": "hold",
+      "quant": "hold",
+      "persona": "increase",
+      "cell": "quant_correct_persona_wrong",
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "confidence": 0.6,
+      "weight": 0.0001971239771208775,
+      "quarters_held": 24,
+      "drawdown": 0.0
+    },
+    {
+      "episode_id": "berkshire_public_equity-478160104-com-2020-09-30",
+      "actual": "hold",
+      "quant": "hold",
+      "persona": "exit",
+      "cell": "quant_correct_persona_wrong",
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "confidence": 0.65,
+      "weight": 0.0002443671778845727,
+      "quarters_held": 25,
+      "drawdown": -0.10103952718279763
+    },
+    {
+      "episode_id": "berkshire_public_equity-478160104-com-2021-03-31",
+      "actual": "hold",
+      "quant": "hold",
+      "persona": "reduce",
+      "cell": "quant_correct_persona_wrong",
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "confidence": 0.71,
+      "weight": 0.00021276096295981444,
+      "quarters_held": 27,
+      "drawdown": 0.0
+    }
+  ]
+}

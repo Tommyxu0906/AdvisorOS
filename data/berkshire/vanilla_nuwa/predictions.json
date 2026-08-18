@@ -1,0 +1,5360 @@
+{
+  "predictions": [
+    {
+      "episode_id": "berkshire_public_equity-00287y109-com-2021-03-31",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.41,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-00287y109-com-2021-06-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.59,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-00287y109-com-2021-09-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.62,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-00287y109-com-2021-12-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.38,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-023135106-com-2020-03-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.48,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-023135106-com-2020-06-30",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.79,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-023135106-com-2020-09-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.85,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-023135106-com-2020-12-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.68,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-023135106-com-2021-03-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.3,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-023135106-com-2021-06-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.41,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-023135106-com-2021-09-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.69,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-023135106-com-2021-12-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.84,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-02376r102-com-2020-03-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.67,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-02376r102-com-2020-06-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.5,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-025816109-com-2020-03-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.5,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-025816109-com-2020-06-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.62,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-025816109-com-2020-09-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.46,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-025816109-com-2020-12-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.62,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-025816109-com-2021-03-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.76,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-025816109-com-2021-06-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.79,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-025816109-com-2021-09-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.82,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-025816109-com-2021-12-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.66,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-037833100-com-2020-03-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.59,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-037833100-com-2020-06-30",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.55,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-037833100-com-2020-09-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.66,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-037833100-com-2020-12-31",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.3,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-037833100-com-2021-03-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.64,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-037833100-com-2021-06-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.54,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-037833100-com-2021-09-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.61,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-037833100-com-2021-12-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.35,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-060505104-com-2020-03-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.5,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-060505104-com-2020-06-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.45,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-060505104-com-2020-09-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.66,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-060505104-com-2020-12-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.43,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-060505104-com-2021-03-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.87,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-060505104-com-2021-06-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.69,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-060505104-com-2021-09-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.42,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-060505104-com-2021-12-31",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.37,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-064058100-com-2020-03-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.3,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-064058100-com-2020-06-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.55,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-064058100-com-2020-09-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.6,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-064058100-com-2020-12-31",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.45,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-064058100-com-2021-03-31",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.65,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-064058100-com-2021-06-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.45,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-064058100-com-2021-09-30",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.44,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-064058100-com-2021-12-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.62,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-067901108-com-2020-12-31",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.71,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-09062x103-com-2020-06-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.56,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-09062x103-com-2020-09-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.85,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-09062x103-com-2020-12-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.44,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-09062x103-com-2021-03-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.78,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-09062x103-com-2021-06-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.81,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-110122108-com-2021-03-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.6,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-110122108-com-2021-06-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.37,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-110122108-com-2021-09-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.75,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-110122108-com-2021-12-31",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.46,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-16119p108-cl-a-2020-03-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.79,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-16119p108-cl-a-2020-06-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.48,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-16119p108-cl-a-2020-09-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.74,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-16119p108-cl-a-2020-12-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.4,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-16119p108-cl-a-2021-03-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.38,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-16119p108-cl-a-2021-06-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.3,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-16119p108-cl-a-2021-09-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.64,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-16119p108-cl-a-2021-12-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.64,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-166764100-com-2021-06-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.88,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-166764100-com-2021-09-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.76,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-166764100-com-2021-12-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.64,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-191216100-com-2020-03-31",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.55,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-191216100-com-2020-06-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.82,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-191216100-com-2020-09-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.63,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-191216100-com-2020-12-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.48,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-191216100-com-2021-03-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.59,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-191216100-com-2021-06-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.88,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-191216100-com-2021-09-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.33,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-191216100-com-2021-12-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.42,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-22160k105-com-2020-03-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.67,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-22160k105-com-2020-06-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.36,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-22160k105-com-2020-09-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.43,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-23918k108-com-2020-03-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.84,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-23918k108-com-2020-06-30",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.46,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-23918k108-com-2020-09-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.69,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-23918k108-com-2020-12-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.51,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-23918k108-com-2021-03-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.86,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-23918k108-com-2021-06-30",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.79,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-23918k108-com-2021-09-30",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.72,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-23918k108-com-2021-12-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.79,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-247361702-com-new-2020-03-31",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.38,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-247361702-com-new-2020-06-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.33,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-37045v100-com-2020-03-31",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.38,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-37045v100-com-2020-06-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.6,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-37045v100-com-2020-09-30",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.79,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-37045v100-com-2020-12-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.76,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-37045v100-com-2021-03-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.46,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-37045v100-com-2021-06-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.68,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-37045v100-com-2021-09-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.69,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-37045v100-com-2021-12-31",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.45,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-37959e102-com-2020-03-31",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.71,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-37959e102-com-2020-06-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.48,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-37959e102-com-2020-09-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.52,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-37959e102-com-2020-12-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.72,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-37959e102-com-2021-03-31",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.53,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-37959e102-com-2021-06-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.55,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-37959e102-com-2021-09-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.67,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-37959e102-com-2021-12-31",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.77,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-38141g104-com-2020-03-31",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.65,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-38141g104-com-2020-06-30",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.36,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-46625h100-com-2020-03-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.43,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-46625h100-com-2020-06-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.81,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-46625h100-com-2020-09-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.33,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-46625h100-com-2020-12-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.67,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-478160104-com-2020-03-31",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.36,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-478160104-com-2020-06-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.6,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-478160104-com-2020-09-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.65,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-478160104-com-2020-12-31",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.77,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-478160104-com-2021-03-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.71,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-478160104-com-2021-06-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.4,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-478160104-com-2021-09-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.8,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-478160104-com-2021-12-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.72,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-500754106-com-2020-03-31",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.64,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-500754106-com-2020-06-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.42,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-500754106-com-2020-09-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.85,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-500754106-com-2020-12-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.48,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-500754106-com-2021-03-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.66,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-500754106-com-2021-06-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.39,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-500754106-com-2021-09-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.36,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-500754106-com-2021-12-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.3,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-501044101-com-2020-06-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.63,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-501044101-com-2020-09-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.51,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-501044101-com-2020-12-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.38,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-501044101-com-2021-03-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.4,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-501044101-com-2021-06-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.58,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-501044101-com-2021-09-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.87,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-501044101-com-2021-12-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.31,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-531229409-com-a-siriusxm-2020-03-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.78,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-531229409-com-a-siriusxm-2020-06-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.37,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-531229409-com-a-siriusxm-2020-09-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.43,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-531229409-com-a-siriusxm-2020-12-31",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.75,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-531229409-com-a-siriusxm-2021-03-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.82,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-531229409-com-a-siriusxm-2021-06-30",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.77,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-531229409-com-a-siriusxm-2021-09-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.43,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-531229409-com-a-siriusxm-2021-12-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.42,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-531229607-com-c-siriusxm-2020-03-31",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.57,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-531229607-com-c-siriusxm-2020-06-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.47,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-531229607-com-c-siriusxm-2020-09-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.42,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-531229607-com-c-siriusxm-2020-12-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.67,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-531229607-com-c-siriusxm-2021-03-31",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.45,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-531229607-com-c-siriusxm-2021-06-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.61,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-531229607-com-c-siriusxm-2021-09-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.73,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-531229607-com-c-siriusxm-2021-12-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.7,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-55261f104-com-2020-03-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.54,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-55261f104-com-2020-06-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.42,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-55261f104-com-2020-09-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.39,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-55261f104-com-2020-12-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.39,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-571748102-com-2021-06-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.31,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-571748102-com-2021-09-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.58,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-571748102-com-2021-12-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.62,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-57636q104-cl-a-2020-03-31",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.41,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-57636q104-cl-a-2020-06-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.83,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-57636q104-cl-a-2020-09-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.48,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-57636q104-cl-a-2020-12-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.83,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-57636q104-cl-a-2021-03-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.48,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-57636q104-cl-a-2021-06-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.48,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-57636q104-cl-a-2021-09-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.68,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-57636q104-cl-a-2021-12-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.88,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-58933y105-com-2021-03-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.67,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-58933y105-com-2021-06-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.65,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-58933y105-com-2021-09-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.43,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-609207105-cl-a-2020-03-31",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.33,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-609207105-cl-a-2020-06-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.86,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-609207105-cl-a-2020-09-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.63,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-609207105-cl-a-2020-12-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.62,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-609207105-cl-a-2021-03-31",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.69,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-609207105-cl-a-2021-06-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.69,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-609207105-cl-a-2021-09-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.73,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-609207105-cl-a-2021-12-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.4,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-615369105-com-2020-03-31",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.45,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-615369105-com-2020-06-30",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.74,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-615369105-com-2020-09-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.57,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-615369105-com-2020-12-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.64,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-615369105-com-2021-03-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.43,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-615369105-com-2021-06-30",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.65,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-615369105-com-2021-09-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.74,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-615369105-com-2021-12-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.42,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-674599105-com-2020-03-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.62,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-674599105-com-2020-06-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.38,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-693475105-com-2020-03-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.88,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-693475105-com-2020-06-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.34,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-693475105-com-2020-09-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.42,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-693475105-com-2020-12-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.79,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-718546104-com-2020-03-31",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.89,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-742718109-com-2020-03-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.83,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-742718109-com-2020-06-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.74,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-742718109-com-2020-09-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.71,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-742718109-com-2020-12-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.6,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-742718109-com-2021-03-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.3,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-742718109-com-2021-06-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.51,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-742718109-com-2021-09-30",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.39,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-742718109-com-2021-12-31",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.31,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-74967x103-com-2020-03-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.55,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-74967x103-com-2020-06-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.85,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-74967x103-com-2020-09-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.89,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-74967x103-com-2020-12-31",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.73,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-74967x103-com-2021-03-31",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.61,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-74967x103-com-2021-06-30",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.33,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-74967x103-com-2021-09-30",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.87,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-74967x103-com-2021-12-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.47,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-76131d103-com-2020-03-31",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.49,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-76131d103-com-2020-06-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.84,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-78462f103-tr-unit-2020-06-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.56,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-78462f103-tr-unit-2020-09-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.69,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-78462f103-tr-unit-2020-12-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.7,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-78462f103-tr-unit-2021-03-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.88,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-78462f103-tr-unit-2021-06-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.35,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-78462f103-tr-unit-2021-09-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.52,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-78462f103-tr-unit-2021-12-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.75,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-82968b103-com-2020-03-31",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.81,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-82968b103-com-2020-06-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.5,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-82968b103-com-2020-09-30",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.4,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-82968b103-com-2020-12-31",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.38,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-82968b103-com-2021-03-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.34,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-82968b103-com-2021-06-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.66,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-82968b103-com-2021-09-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.45,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-82968b103-com-2021-12-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.64,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-833445109-cl-a-2021-03-31",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.34,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-833445109-cl-a-2021-06-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.52,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-833445109-cl-a-2021-09-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.57,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-833445109-cl-a-2021-12-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.84,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-844741108-com-2020-03-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.88,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-844741108-com-2020-06-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.86,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-862121100-com-2020-03-31",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.45,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-862121100-com-2020-06-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.79,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-862121100-com-2020-09-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.6,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-862121100-com-2020-12-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.67,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-862121100-com-2021-03-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.66,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-862121100-com-2021-06-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.72,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-862121100-com-2021-09-30",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.89,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-862121100-com-2021-12-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.88,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-867224107-com-2020-03-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.64,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-867224107-com-2020-06-30",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.4,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-867224107-com-2020-09-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.45,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-867224107-com-2020-12-31",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.57,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-867224107-com-2021-03-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.88,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-87165b103-com-2020-03-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.38,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-87165b103-com-2020-06-30",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.39,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-87165b103-com-2020-09-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.76,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-87165b103-com-2020-12-31",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.62,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-87165b103-com-2021-03-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.38,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-872590104-com-2021-03-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.64,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-872590104-com-2021-06-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.66,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-872590104-com-2021-09-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.72,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-872590104-com-2021-12-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.3,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-881624209-sponsored-adr-2020-03-31",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.35,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-881624209-sponsored-adr-2020-06-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.65,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-881624209-sponsored-adr-2020-09-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.5,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-881624209-sponsored-adr-2020-12-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.6,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-881624209-sponsored-adr-2021-03-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.88,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-881624209-sponsored-adr-2021-06-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.39,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-881624209-sponsored-adr-2021-09-30",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.74,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-881624209-sponsored-adr-2021-12-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.44,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-89417e109-com-2020-03-31",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.33,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-902973304-com-new-2020-03-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.66,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-902973304-com-new-2020-06-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.54,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-902973304-com-new-2020-09-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.4,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-902973304-com-new-2020-12-31",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.5,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-902973304-com-new-2021-03-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.87,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-902973304-com-new-2021-06-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.48,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-902973304-com-new-2021-09-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.77,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-902973304-com-new-2021-12-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.64,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-910047109-com-2020-03-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.5,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-910047109-com-2020-06-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.36,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-911312106-cl-b-2020-03-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.54,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-911312106-cl-b-2020-06-30",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.5,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-911312106-cl-b-2020-09-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.82,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-911312106-cl-b-2020-12-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.31,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-911312106-cl-b-2021-03-31",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.42,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-911312106-cl-b-2021-06-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.62,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-911312106-cl-b-2021-09-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.84,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-911312106-cl-b-2021-12-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.38,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-922908363-s-p-500-etf-shs-2020-06-30",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.75,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-922908363-s-p-500-etf-shs-2020-09-30",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.53,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-922908363-s-p-500-etf-shs-2020-12-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.48,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-922908363-s-p-500-etf-shs-2021-03-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.38,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-922908363-s-p-500-etf-shs-2021-06-30",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.57,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-922908363-s-p-500-etf-shs-2021-09-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.87,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-922908363-s-p-500-etf-shs-2021-12-31",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.8,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-92343e102-com-2020-03-31",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.61,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-92343e102-com-2020-06-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.42,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-92343e102-com-2020-09-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.63,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-92343e102-com-2020-12-31",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.69,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-92343e102-com-2021-03-31",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.45,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-92343e102-com-2021-06-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.47,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-92343e102-com-2021-09-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.81,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-92343e102-com-2021-12-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.82,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-92343v104-com-2021-06-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.89,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-92343v104-com-2021-09-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.39,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-92343v104-com-2021-12-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.7,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-92826c839-com-cl-a-2020-03-31",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.37,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-92826c839-com-cl-a-2020-06-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.7,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-92826c839-com-cl-a-2020-09-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.41,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-92826c839-com-cl-a-2020-12-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.46,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-92826c839-com-cl-a-2021-03-31",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.72,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-92826c839-com-cl-a-2021-06-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.53,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-92826c839-com-cl-a-2021-09-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.73,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-92826c839-com-cl-a-2021-12-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.88,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-949746101-com-2020-03-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.32,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-949746101-com-2020-06-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.52,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-949746101-com-2020-09-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.89,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-949746101-com-2020-12-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.51,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-949746101-com-2021-03-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.84,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-949746101-com-2021-06-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.74,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-949746101-com-2021-09-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.49,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-949746101-com-2021-12-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.87,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g0403h108-shs-cl-a-2021-09-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.52,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g0403h108-shs-cl-a-2021-12-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.75,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g0750c108-com-2020-03-31",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.77,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g0750c108-com-2020-06-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.84,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g0750c108-com-2020-09-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.6,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g0750c108-com-2020-12-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.6,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g0750c108-com-2021-03-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.59,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g0750c108-com-2021-06-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.83,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g5480u104-shs-cl-a-2020-03-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.46,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g5480u104-shs-cl-a-2020-06-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.77,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g5480u104-shs-cl-a-2020-09-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.89,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g5480u104-shs-cl-a-2020-12-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.51,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g5480u104-shs-cl-a-2021-03-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.31,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g5480u104-shs-cl-a-2021-06-30",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.68,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g5480u120-shs-cl-c-2020-03-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.74,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g5480u120-shs-cl-c-2020-06-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.6,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g5480u120-shs-cl-c-2020-09-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.82,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g5480u120-shs-cl-c-2020-12-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.51,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g5480u120-shs-cl-c-2021-03-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.4,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g5480u120-shs-cl-c-2021-06-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.83,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g5480u120-shs-cl-c-2021-09-30",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.71,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g85158106-com-cl-a-2020-03-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.59,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g85158106-com-cl-a-2020-06-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.44,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g85158106-com-cl-a-2020-09-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.83,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g85158106-com-cl-a-2020-12-31",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.65,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g85158106-com-cl-a-2021-03-31",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.61,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g85158106-com-cl-a-2021-06-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.55,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g85158106-com-cl-a-2021-09-30",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.87,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g85158106-com-cl-a-2021-12-31",
+      "action": "reduce",
+      "abstain": false,
+      "confidence": 0.55,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g9001e102-com-cl-a-2020-03-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.66,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g9001e102-com-cl-a-2020-06-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.7,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g9001e102-com-cl-a-2020-09-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.53,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g9001e102-com-cl-a-2020-12-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.68,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g9001e102-com-cl-a-2021-03-31",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.7,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g9001e102-com-cl-a-2021-06-30",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.79,
+      "reason_codes": [
+        "valuation_discipline"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g9001e102-com-cl-a-2021-09-30",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.36,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g9001e102-com-cl-a-2021-12-31",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.89,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g9001e128-com-cl-c-2020-03-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.88,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g9001e128-com-cl-c-2020-06-30",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.81,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g9001e128-com-cl-c-2020-09-30",
+      "action": "hold",
+      "abstain": false,
+      "confidence": 0.5,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g9001e128-com-cl-c-2020-12-31",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.77,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g9001e128-com-cl-c-2021-03-31",
+      "action": "increase",
+      "abstain": false,
+      "confidence": 0.6,
+      "reason_codes": [
+        "hold_through_drawdown"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g9001e128-com-cl-c-2021-06-30",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.58,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g9001e128-com-cl-c-2021-09-30",
+      "action": null,
+      "abstain": true,
+      "confidence": 0.42,
+      "reason_codes": [
+        "long_holding_horizon"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    },
+    {
+      "episode_id": "berkshire_public_equity-g9001e128-com-cl-c-2021-12-31",
+      "action": "exit",
+      "abstain": false,
+      "confidence": 0.41,
+      "reason_codes": [
+        "concentration_tolerance"
+      ],
+      "evidence_refs": [
+        "Berkshire Hathaway shareholder letters"
+      ],
+      "note": "[mock] deterministic placeholder, not a judgment",
+      "parse_failed": false,
+      "raw_text": ""
+    }
+  ],
+  "decision_mapping_version": "abstain-is-not-hold-v1"
+}

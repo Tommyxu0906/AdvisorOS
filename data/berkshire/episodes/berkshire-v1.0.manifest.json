@@ -1,0 +1,762 @@
+{
+  "version": {
+    "name": "berkshire-v1.0",
+    "entity": "Berkshire Hathaway Inc",
+    "cik": "1067983",
+    "requested_start": "2014-01-01",
+    "requested_end": "2024-12-31",
+    "actual_quarters": [
+      "2014-03-31",
+      "2014-06-30",
+      "2014-09-30",
+      "2014-12-31",
+      "2015-03-31",
+      "2015-06-30",
+      "2015-09-30",
+      "2015-12-31",
+      "2016-03-31",
+      "2016-06-30",
+      "2016-09-30",
+      "2016-12-31",
+      "2017-03-31",
+      "2017-06-30",
+      "2017-09-30",
+      "2017-12-31",
+      "2018-03-31",
+      "2018-06-30",
+      "2018-09-30",
+      "2018-12-31",
+      "2019-03-31",
+      "2019-06-30",
+      "2019-09-30",
+      "2019-12-31",
+      "2020-03-31",
+      "2020-06-30",
+      "2020-09-30",
+      "2020-12-31",
+      "2021-03-31",
+      "2021-06-30",
+      "2021-09-30",
+      "2021-12-31",
+      "2022-03-31",
+      "2022-06-30",
+      "2022-09-30",
+      "2022-12-31",
+      "2023-03-31",
+      "2023-06-30",
+      "2023-09-30",
+      "2023-12-31",
+      "2024-03-31",
+      "2024-06-30",
+      "2024-09-30",
+      "2024-12-31"
+    ],
+    "parser_version": "13f-parser-1",
+    "builder_version": "episode-builder-1",
+    "created_at": "2026-08-16T03:52:58.391587Z"
+  },
+  "lineage": [
+    {
+      "period_end": "2014-03-31",
+      "filings": [
+        {
+          "accession": "0000950123-14-006252",
+          "form_type": "13F-HR",
+          "period_end": "2014-03-31",
+          "filed_at": "2014-05-15",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-14-006252",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2014-06-30",
+      "filings": [
+        {
+          "accession": "0000950123-14-009048",
+          "form_type": "13F-HR",
+          "period_end": "2014-06-30",
+          "filed_at": "2014-08-14",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-14-009048",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2014-09-30",
+      "filings": [
+        {
+          "accession": "0000950123-14-012218",
+          "form_type": "13F-HR",
+          "period_end": "2014-09-30",
+          "filed_at": "2014-11-14",
+          "amendment_type": "unknown"
+        },
+        {
+          "accession": "0000950123-15-002964",
+          "form_type": "13F-HR/A",
+          "period_end": "2014-09-30",
+          "filed_at": "2015-02-17",
+          "amendment_type": "new_holdings"
+        }
+      ],
+      "canonical_accession": "0000950123-14-012218",
+      "reason": "amendment 0000950123-15-002964 is new_holdings, which supplements rather than replaces \u2014 needs review before the quarter can be trusted",
+      "needs_review": true
+    },
+    {
+      "period_end": "2014-12-31",
+      "filings": [
+        {
+          "accession": "0000950123-15-002961",
+          "form_type": "13F-HR",
+          "period_end": "2014-12-31",
+          "filed_at": "2015-02-17",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-15-002961",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2015-03-31",
+      "filings": [
+        {
+          "accession": "0000950123-15-006438",
+          "form_type": "13F-HR",
+          "period_end": "2015-03-31",
+          "filed_at": "2015-05-15",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-15-006438",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2015-06-30",
+      "filings": [
+        {
+          "accession": "0000950123-15-009404",
+          "form_type": "13F-HR",
+          "period_end": "2015-06-30",
+          "filed_at": "2015-08-14",
+          "amendment_type": "unknown"
+        },
+        {
+          "accession": "0000950123-15-009742",
+          "form_type": "13F-HR/A",
+          "period_end": "2015-06-30",
+          "filed_at": "2015-09-04",
+          "amendment_type": "new_holdings"
+        }
+      ],
+      "canonical_accession": "0000950123-15-009404",
+      "reason": "amendment 0000950123-15-009742 is new_holdings, which supplements rather than replaces \u2014 needs review before the quarter can be trusted",
+      "needs_review": true
+    },
+    {
+      "period_end": "2015-09-30",
+      "filings": [
+        {
+          "accession": "0000950123-15-011992",
+          "form_type": "13F-HR",
+          "period_end": "2015-09-30",
+          "filed_at": "2015-11-16",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-15-011992",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2015-12-31",
+      "filings": [
+        {
+          "accession": "0000950123-16-015025",
+          "form_type": "13F-HR",
+          "period_end": "2015-12-31",
+          "filed_at": "2016-02-16",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-16-015025",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2016-03-31",
+      "filings": [
+        {
+          "accession": "0000950123-16-017295",
+          "form_type": "13F-HR",
+          "period_end": "2016-03-31",
+          "filed_at": "2016-05-16",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-16-017295",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2016-06-30",
+      "filings": [
+        {
+          "accession": "0000950123-16-020120",
+          "form_type": "13F-HR",
+          "period_end": "2016-06-30",
+          "filed_at": "2016-08-15",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-16-020120",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2016-09-30",
+      "filings": [
+        {
+          "accession": "0000950123-16-022377",
+          "form_type": "13F-HR",
+          "period_end": "2016-09-30",
+          "filed_at": "2016-11-14",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-16-022377",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2016-12-31",
+      "filings": [
+        {
+          "accession": "0000950123-17-002417",
+          "form_type": "13F-HR",
+          "period_end": "2016-12-31",
+          "filed_at": "2017-02-14",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-17-002417",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2017-03-31",
+      "filings": [
+        {
+          "accession": "0000950123-17-005259",
+          "form_type": "13F-HR",
+          "period_end": "2017-03-31",
+          "filed_at": "2017-05-15",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-17-005259",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2017-06-30",
+      "filings": [
+        {
+          "accession": "0000950123-17-007953",
+          "form_type": "13F-HR",
+          "period_end": "2017-06-30",
+          "filed_at": "2017-08-14",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-17-007953",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2017-09-30",
+      "filings": [
+        {
+          "accession": "0000950123-17-010896",
+          "form_type": "13F-HR",
+          "period_end": "2017-09-30",
+          "filed_at": "2017-11-14",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-17-010896",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2017-12-31",
+      "filings": [
+        {
+          "accession": "0000950123-18-002390",
+          "form_type": "13F-HR",
+          "period_end": "2017-12-31",
+          "filed_at": "2018-02-14",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-18-002390",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2018-03-31",
+      "filings": [
+        {
+          "accession": "0000950123-18-005732",
+          "form_type": "13F-HR",
+          "period_end": "2018-03-31",
+          "filed_at": "2018-05-15",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-18-005732",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2018-06-30",
+      "filings": [
+        {
+          "accession": "0000950123-18-008866",
+          "form_type": "13F-HR",
+          "period_end": "2018-06-30",
+          "filed_at": "2018-08-14",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-18-008866",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2018-09-30",
+      "filings": [
+        {
+          "accession": "0000950123-18-011885",
+          "form_type": "13F-HR",
+          "period_end": "2018-09-30",
+          "filed_at": "2018-11-14",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-18-011885",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2018-12-31",
+      "filings": [
+        {
+          "accession": "0000950123-19-002221",
+          "form_type": "13F-HR",
+          "period_end": "2018-12-31",
+          "filed_at": "2019-02-14",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-19-002221",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2019-03-31",
+      "filings": [
+        {
+          "accession": "0000950123-19-005436",
+          "form_type": "13F-HR",
+          "period_end": "2019-03-31",
+          "filed_at": "2019-05-15",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-19-005436",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2019-06-30",
+      "filings": [
+        {
+          "accession": "0000950123-19-008356",
+          "form_type": "13F-HR",
+          "period_end": "2019-06-30",
+          "filed_at": "2019-08-14",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-19-008356",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2019-09-30",
+      "filings": [
+        {
+          "accession": "0000950123-19-011362",
+          "form_type": "13F-HR",
+          "period_end": "2019-09-30",
+          "filed_at": "2019-11-14",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-19-011362",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2019-12-31",
+      "filings": [
+        {
+          "accession": "0000950123-20-002466",
+          "form_type": "13F-HR",
+          "period_end": "2019-12-31",
+          "filed_at": "2020-02-14",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-20-002466",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2020-03-31",
+      "filings": [
+        {
+          "accession": "0000950123-20-005345",
+          "form_type": "13F-HR",
+          "period_end": "2020-03-31",
+          "filed_at": "2020-05-15",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-20-005345",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2020-06-30",
+      "filings": [
+        {
+          "accession": "0000950123-20-009058",
+          "form_type": "13F-HR",
+          "period_end": "2020-06-30",
+          "filed_at": "2020-08-14",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-20-009058",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2020-09-30",
+      "filings": [
+        {
+          "accession": "0000950123-20-012127",
+          "form_type": "13F-HR",
+          "period_end": "2020-09-30",
+          "filed_at": "2020-11-16",
+          "amendment_type": "unknown"
+        },
+        {
+          "accession": "0000950123-21-002781",
+          "form_type": "13F-HR/A",
+          "period_end": "2020-09-30",
+          "filed_at": "2021-02-16",
+          "amendment_type": "new_holdings"
+        }
+      ],
+      "canonical_accession": "0000950123-20-012127",
+      "reason": "amendment 0000950123-21-002781 is new_holdings, which supplements rather than replaces \u2014 needs review before the quarter can be trusted",
+      "needs_review": true
+    },
+    {
+      "period_end": "2020-12-31",
+      "filings": [
+        {
+          "accession": "0000950123-21-002786",
+          "form_type": "13F-HR",
+          "period_end": "2020-12-31",
+          "filed_at": "2021-02-16",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-21-002786",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2021-03-31",
+      "filings": [
+        {
+          "accession": "0000950123-21-007024",
+          "form_type": "13F-HR",
+          "period_end": "2021-03-31",
+          "filed_at": "2021-05-17",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-21-007024",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2021-06-30",
+      "filings": [
+        {
+          "accession": "0000950123-21-011396",
+          "form_type": "13F-HR",
+          "period_end": "2021-06-30",
+          "filed_at": "2021-08-16",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-21-011396",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2021-09-30",
+      "filings": [
+        {
+          "accession": "0000950123-21-015518",
+          "form_type": "13F-HR",
+          "period_end": "2021-09-30",
+          "filed_at": "2021-11-15",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-21-015518",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2021-12-31",
+      "filings": [
+        {
+          "accession": "0000950123-22-002973",
+          "form_type": "13F-HR",
+          "period_end": "2021-12-31",
+          "filed_at": "2022-02-14",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-22-002973",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2022-03-31",
+      "filings": [
+        {
+          "accession": "0000950123-22-006442",
+          "form_type": "13F-HR",
+          "period_end": "2022-03-31",
+          "filed_at": "2022-05-16",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-22-006442",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2022-06-30",
+      "filings": [
+        {
+          "accession": "0000950123-22-009450",
+          "form_type": "13F-HR",
+          "period_end": "2022-06-30",
+          "filed_at": "2022-08-15",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-22-009450",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2022-09-30",
+      "filings": [
+        {
+          "accession": "0000950123-22-012275",
+          "form_type": "13F-HR",
+          "period_end": "2022-09-30",
+          "filed_at": "2022-11-14",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-22-012275",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2022-12-31",
+      "filings": [
+        {
+          "accession": "0000950123-23-002585",
+          "form_type": "13F-HR",
+          "period_end": "2022-12-31",
+          "filed_at": "2023-02-14",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-23-002585",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2023-03-31",
+      "filings": [
+        {
+          "accession": "0000950123-23-005270",
+          "form_type": "13F-HR",
+          "period_end": "2023-03-31",
+          "filed_at": "2023-05-15",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-23-005270",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2023-06-30",
+      "filings": [
+        {
+          "accession": "0000950123-23-008074",
+          "form_type": "13F-HR",
+          "period_end": "2023-06-30",
+          "filed_at": "2023-08-14",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-23-008074",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2023-09-30",
+      "filings": [
+        {
+          "accession": "0000950123-23-010898",
+          "form_type": "13F-HR",
+          "period_end": "2023-09-30",
+          "filed_at": "2023-11-14",
+          "amendment_type": "unknown"
+        },
+        {
+          "accession": "0000950123-23-011029",
+          "form_type": "13F-HR/A",
+          "period_end": "2023-09-30",
+          "filed_at": "2023-11-16",
+          "amendment_type": "restatement"
+        },
+        {
+          "accession": "0000950123-24-005653",
+          "form_type": "13F-HR/A",
+          "period_end": "2023-09-30",
+          "filed_at": "2024-05-15",
+          "amendment_type": "new_holdings"
+        }
+      ],
+      "canonical_accession": "0000950123-23-010898",
+      "reason": "amendment 0000950123-24-005653 is new_holdings, which supplements rather than replaces \u2014 needs review before the quarter can be trusted",
+      "needs_review": true
+    },
+    {
+      "period_end": "2023-12-31",
+      "filings": [
+        {
+          "accession": "0000950123-24-002518",
+          "form_type": "13F-HR",
+          "period_end": "2023-12-31",
+          "filed_at": "2024-02-14",
+          "amendment_type": "unknown"
+        },
+        {
+          "accession": "0000950123-24-005664",
+          "form_type": "13F-HR/A",
+          "period_end": "2023-12-31",
+          "filed_at": "2024-05-15",
+          "amendment_type": "new_holdings"
+        }
+      ],
+      "canonical_accession": "0000950123-24-002518",
+      "reason": "amendment 0000950123-24-005664 is new_holdings, which supplements rather than replaces \u2014 needs review before the quarter can be trusted",
+      "needs_review": true
+    },
+    {
+      "period_end": "2024-03-31",
+      "filings": [
+        {
+          "accession": "0000950123-24-005622",
+          "form_type": "13F-HR",
+          "period_end": "2024-03-31",
+          "filed_at": "2024-05-15",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-24-005622",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2024-06-30",
+      "filings": [
+        {
+          "accession": "0000950123-24-008740",
+          "form_type": "13F-HR",
+          "period_end": "2024-06-30",
+          "filed_at": "2024-08-14",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-24-008740",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2024-09-30",
+      "filings": [
+        {
+          "accession": "0000950123-24-011775",
+          "form_type": "13F-HR",
+          "period_end": "2024-09-30",
+          "filed_at": "2024-11-14",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-24-011775",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    },
+    {
+      "period_end": "2024-12-31",
+      "filings": [
+        {
+          "accession": "0000950123-25-002701",
+          "form_type": "13F-HR",
+          "period_end": "2024-12-31",
+          "filed_at": "2025-02-14",
+          "amendment_type": "unknown"
+        }
+      ],
+      "canonical_accession": "0000950123-25-002701",
+      "reason": "single original filing, no amendments",
+      "needs_review": false
+    }
+  ]
+}
