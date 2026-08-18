@@ -21,7 +21,7 @@ of an instruction is worse than one that admits it does not know.
 
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, computed_field
 
 from app.analytics.guardrails import evaluate_guardrails
 from app.analytics.portfolio_analytics import PortfolioAnalytics, analyze_portfolio
@@ -50,6 +50,9 @@ class MetricChange(BaseModel):
     def delta(self) -> float:
         return self.after - self.before
 
+    @computed_field(
+        description="Did this move the right way? None where no direction is inherently good."
+    )
     @property
     def improved(self) -> bool | None:
         if self.higher_is_better is None or abs(self.delta) < 1e-9:
@@ -90,9 +93,17 @@ class Counterfactual(BaseModel):
     def introduces_blocking_guardrail(self) -> bool:
         return bool(self.introduced_guardrails)
 
+    @computed_field(
+        description="The bar a plan must clear before it is worth showing as a recommendation"
+    )
     @property
     def holds_up(self) -> bool:
-        """The bar a plan must clear before it is worth showing as a recommendation."""
+        """The bar a plan must clear before it is worth showing as a recommendation.
+
+        Serialized rather than left as a bare property: the client must not re-derive this from
+        the component fields, or the definition of "good enough to show" ends up living in two
+        languages and drifting.
+        """
         return (
             self.feasible
             and not self.introduced_guardrails
@@ -457,6 +468,14 @@ def _ineffective(
     A policy producing one of these has a bug: it recommended something whose stated purpose it
     did not achieve. Unapplied actions are excluded — they are already reported separately, and
     blaming them twice would obscure which problem is which.
+
+    Trims and buys are judged on the position's **value**, not its weight. Weight was the
+    obvious choice and it is wrong: a plan that trims several positions onto the same target
+    leaves every weight unchanged, because the whole portfolio shrinks by exactly what was sold.
+    A trim taking a holding from $20,000 to $19,000 plainly did something, and calling it
+    ineffective because the percentages did not move blames one action for what the rest of the
+    plan did. Whether the *portfolio* ended up where it should is a plan-level question, and
+    `changes` and the guardrail diff already answer it.
     """
     skip = set(unapplied)
     failures: list[str] = []
@@ -468,13 +487,13 @@ def _ineffective(
         moved: bool | None = None
         if action.kind is ActionKind.trim_position and before_pa and after_pa and action.symbol:
             moved = (
-                after_pa.weights.get(action.symbol, 0.0)
-                < before_pa.weights.get(action.symbol, 0.0) - 1e-9
+                _position_value(after_pa, action.symbol)
+                < _position_value(before_pa, action.symbol) - 1e-9
             )
         elif action.kind is ActionKind.add_position and before_pa and after_pa and action.symbol:
             moved = (
-                after_pa.weights.get(action.symbol, 0.0)
-                > before_pa.weights.get(action.symbol, 0.0) + 1e-9
+                _position_value(after_pa, action.symbol)
+                > _position_value(before_pa, action.symbol) + 1e-9
             )
         elif action.kind is ActionKind.pay_down_debt:
             moved = after.total_debt < before.total_debt - 1e-9
@@ -487,3 +506,12 @@ def _ineffective(
             failures.append(action.action_id)
 
     return failures
+
+
+def _position_value(pa: PortfolioAnalytics, symbol: str) -> float:
+    """Dollar value of one symbol, aggregated across accounts.
+
+    Reconstructed from the symbol-aggregated weights rather than by re-walking holdings, so it
+    inherits the duplicate-symbol handling `analyze_portfolio` already got right.
+    """
+    return pa.weights.get(symbol, 0.0) * pa.total_value
