@@ -13,6 +13,12 @@ from pydantic import BaseModel, ConfigDict, Field, SecretStr
 from app.advisors.selection import CommitteeSelection
 from app.analytics.portfolio_analytics import PortfolioAnalytics
 from app.analytics.profile_analytics import ProfileAnalytics
+from app.consult.models import (
+    AdvisorConsultResponse,
+    ChatMessage,
+    ConsultSynthesis,
+    DecisionCandidate,
+)
 from app.core.run_context import DEFAULT_MODEL
 from app.domain.needs import ExpertiseVector
 from app.domain.portfolio import Portfolio
@@ -291,3 +297,42 @@ class SavedProfileResponse(BaseModel):
 
     profile: FinancialProfile | None
     portfolio: Portfolio | None
+
+
+# --- advisory consultation -------------------------------------------------------------
+
+
+class ConsultRequest(CredentialedRequest):
+    """One turn of the consultation.
+
+    The whole conversation is sent each time. That is a deliberate v1 choice: chat state lives
+    in browser memory, exactly like the API key, so there is no table, no migration, and nothing
+    of a household's finances persisted server-side for a feature that is still a prototype.
+    """
+
+    profile: FinancialProfile
+    portfolio: Portfolio | None = None
+    question: str = Field(min_length=1, max_length=4000)
+    advisor_ids: list[str] = Field(
+        default_factory=lambda: ["buffett", "munger"],
+        min_length=1,
+        max_length=4,
+        description="Built-in lenses. Nothing is re-distilled to answer a question.",
+    )
+    history: list[ChatMessage] = Field(
+        default_factory=list, max_length=40, description="Prior turns, oldest first."
+    )
+    model: str = DEFAULT_MODEL
+
+
+class ConsultResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    responses: list[AdvisorConsultResponse]
+    candidates: list[DecisionCandidate]
+    synthesis: ConsultSynthesis
+    # Recomputed server-side from the profile in this request, never taken from the client: a
+    # scenario the browser could edit would let a chat turn silently move the numbers.
+    scenario: PortfolioScenario | None = None
+    guardrails: list[Guardrail] = Field(default_factory=list)
+    usage: RunUsage

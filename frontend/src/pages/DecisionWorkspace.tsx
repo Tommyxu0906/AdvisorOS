@@ -17,7 +17,10 @@
  */
 
 import { useState } from "react";
+import { useAnthropicConnection } from "../context/AnthropicConnectionContext";
 import type {
+  ChatTurn,
+  DecisionCandidate,
   AdvisorSummary,
   AnalysisDepth,
   EstimateResponse,
@@ -30,6 +33,10 @@ import { navigate } from "../lib/router";
 import { Advanced, Card, EmptyState, InlineAlert, Metric, SectionHeader, StatusBadge } from "../ui";
 import { CommitteeSetup } from "../components/CommitteeSetup";
 import { ScenarioPanel } from "../components/ScenarioPanel";
+import { CommitteeConsult } from "../components/CommitteeConsult";
+
+/** Display names for the two lenses the demo convenes. Ids live in App; these are for copy. */
+const CONSULT_LENS_NAMES = ["Warren Buffett", "Charlie Munger"];
 import { RunPreflight } from "../components/RunPreflight";
 import { ReportView } from "../components/ReportView";
 
@@ -51,6 +58,12 @@ export function DecisionWorkspace({
   onToggleAdvisor,
   onResetAdvisors,
   onRun,
+  turns,
+  candidates,
+  consulting,
+  consultError,
+  onConsult,
+  mockLLM,
 }: {
   profile: ProfileDraft;
   holdings: HoldingDraft[];
@@ -69,7 +82,14 @@ export function DecisionWorkspace({
   onToggleAdvisor: (id: string) => void;
   onResetAdvisors: () => void;
   onRun: () => void;
+  turns: ChatTurn[];
+  candidates: DecisionCandidate[];
+  consulting: boolean;
+  consultError: string | null;
+  onConsult: (question: string) => void;
+  mockLLM: boolean;
 }) {
+  const { isConnected } = useAnthropicConnection();
   const analytics = selection?.analytics ?? null;
   const portfolio = selection?.portfolio_analytics ?? null;
   const guardrails = selection?.guardrails ?? [];
@@ -231,7 +251,21 @@ export function DecisionWorkspace({
              thing computed without a key, and the thing the committee argues about. */}
       <ScenarioPanel scenario={selection?.scenario ?? null} />
 
-      {/* --- the committee, in the same flow -------------------------------------- */}
+      {/* 6. The committee, arguing about the computed scenario rather than inventing one. */}
+      {selection && (
+        <CommitteeConsult
+          turns={turns}
+          candidates={candidates}
+          running={consulting}
+          error={consultError}
+          isConnected={isConnected}
+          advisorNames={CONSULT_LENS_NAMES}
+          onAsk={onConsult}
+          mockLLM={mockLLM}
+        />
+      )}
+
+      {/* --- the full committee report, a separate and heavier step ------------------ */}
       {selection && (
         <CommitteeSetup
           selection={selection.selection}

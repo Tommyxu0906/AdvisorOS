@@ -410,3 +410,121 @@ def test_committee_failure_returns_incurred_usage(monkeypatch: pytest.MonkeyPatc
     detail = resp.json()["detail"]
     assert detail["code"] == "committee_failed"
     assert detail["usage"]["total_calls"] > 0
+
+
+# --- the advisory consultation ---------------------------------------------------------
+
+CONSULT_BODY = {
+    "anthropic_api_key": "sk-ant-" + "mock" * 12,
+    "profile": {
+        "age": 38,
+        "income": {"annual_gross": 165_000},
+        "expenses": {"monthly_essential": 6_200},
+        "assets": [{"name": "Cash", "value": 14_000, "account_type": "cash"}],
+        "debts": [
+            {
+                "name": "Card",
+                "balance": 9_000,
+                "apr": 0.229,
+                "minimum_monthly_payment": 260,
+            }
+        ],
+    },
+    "portfolio": {
+        "holdings": [
+            {
+                "symbol": "NVDA",
+                "name": "NVIDIA",
+                "asset_class": "us_equity",
+                "quantity": 300,
+                "market_value": 96_000,
+                "cost_basis": 31_000,
+                "account_type": "taxable",
+            },
+            {
+                "symbol": "VTI",
+                "name": "Total",
+                "asset_class": "us_equity",
+                "quantity": 200,
+                "market_value": 58_000,
+                "cost_basis": 44_000,
+                "account_type": "taxable",
+            },
+        ]
+    },
+    "question": "Should I reduce NVDA to pay down the card?",
+    "advisor_ids": ["buffett", "munger"],
+    "history": [],
+}
+
+
+def test_consult_runs_with_no_real_key(client: TestClient) -> None:
+    """The whole point of the mock path: the UI is demonstrable at zero cost."""
+    response = client.post("/api/committee/consult", json=CONSULT_BODY)
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert len(body["responses"]) == 2
+    assert {r["advisor_id"] for r in body["responses"]} == {"buffett", "munger"}
+
+
+def test_consult_recomputes_the_scenario_server_side(client: TestClient) -> None:
+    """The client cannot supply a scenario — a chat turn must not be able to move the numbers."""
+    assert "scenario" not in CONSULT_BODY
+    body = client.post("/api/committee/consult", json=CONSULT_BODY).json()
+    assert body["scenario"] is not None
+    assert body["scenario"]["has_actions"] is True
+
+
+def test_consult_offers_hold_but_blocks_it_behind_the_guardrail(client: TestClient) -> None:
+    body = client.post("/api/committee/consult", json=CONSULT_BODY).json()
+    hold = next(c for c in body["candidates"] if c["candidate_id"] == "hold")
+    assert hold["feasible"] is False
+    assert hold["blocked_by"], "22.9% card debt is not a matter of taste"
+
+
+def test_the_two_lenses_disagree_and_both_are_reported(client: TestClient) -> None:
+    """The mock is seeded to disagree precisely so this path is exercised without a key."""
+    body = client.post("/api/committee/consult", json=CONSULT_BODY).json()
+    stances = {r["advisor_id"]: r["stance"] for r in body["responses"]}
+    assert stances["buffett"] != stances["munger"]
+    synthesis = body["synthesis"]
+    assert synthesis["endorsing"] and synthesis["opposing"]
+
+
+def test_a_persona_preference_cannot_override_a_blocking_guardrail(client: TestClient) -> None:
+    """The architectural claim, asserted end to end through the HTTP layer."""
+    body = client.post("/api/committee/consult", json=CONSULT_BODY).json()
+    selected = next(
+        c
+        for c in body["candidates"]
+        if c["candidate_id"] == body["synthesis"]["selected_candidate_id"]
+    )
+    assert selected["feasible"] is True
+    # The Munger mock prefers `hold`; the override must be recorded rather than silently dropped.
+    assert body["synthesis"]["overrides"], "an overruled preference must be reported"
+
+
+def test_consult_carries_history_without_mutating_the_profile(client: TestClient) -> None:
+    """Chat text alone must never change the figures the scenario was computed from."""
+    first = client.post("/api/committee/consult", json=CONSULT_BODY).json()
+
+    with_history = {
+        **CONSULT_BODY,
+        "question": "What if I ignore the card for now?",
+        "history": [
+            {"role": "user", "text": "Should I reduce NVDA?", "advisor_responses": []},
+            {"role": "committee", "text": "", "advisor_responses": first["responses"]},
+        ],
+    }
+    second = client.post("/api/committee/consult", json=with_history)
+    assert second.status_code == 200, second.text
+    assert second.json()["scenario"] == first["scenario"], (
+        "the same figures must produce the same scenario no matter what was said in between"
+    )
+
+
+def test_an_unknown_advisor_in_a_consult_is_a_404(client: TestClient) -> None:
+    response = client.post(
+        "/api/committee/consult", json={**CONSULT_BODY, "advisor_ids": ["nobody"]}
+    )
+    assert response.status_code == 404

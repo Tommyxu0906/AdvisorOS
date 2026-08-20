@@ -7,6 +7,8 @@ to the client.
 
 from __future__ import annotations
 
+import os
+
 from fastapi import HTTPException
 from pydantic import SecretStr
 
@@ -28,8 +30,23 @@ def registry() -> AdvisorRegistry:
     return get_registry()
 
 
+def mock_llm_enabled() -> bool:
+    """Dev-only: serve canned answers instead of calling Anthropic.
+
+    Exists so the consultation UI can be demonstrated end to end with no key and no spend. It is
+    opt-in, off by default, and reported on `/api/health` — a server answering with canned text
+    must never be able to do so silently, because the whole product rests on not presenting
+    fabricated model output as real.
+    """
+    return os.environ.get("AIFA_MOCK_LLM") == "1"
+
+
 def provider() -> LLMProvider:
     """The real provider. Tests override this with `MockLLMProvider`."""
+    if mock_llm_enabled():
+        from app.llm.mock_provider import MockLLMProvider
+
+        return MockLLMProvider()
     return AnthropicBYOKProvider(_client_factory)
 
 

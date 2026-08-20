@@ -368,3 +368,75 @@ export interface PortfolioScenario {
   worth_showing: boolean;
   headline: string;
 }
+
+/* ---------------------------------------------------------------------------------------
+ * Advisory consultation.
+ *
+ * The lenses rank a choice set the engine computed; the constraint layer overrules any
+ * preference the arithmetic forbids, and records that it did. `corrections` and
+ * `synthesis.overrides` are shown, never hidden — a preference overruled by arithmetic is
+ * information, and a transcript where every lens happens to agree with the engine would give
+ * exactly the wrong impression.
+ * ------------------------------------------------------------------------------------- */
+
+export type Stance = "endorse" | "oppose" | "mixed" | "abstain";
+export type ConfidenceSignal = "low" | "medium" | "high";
+export type CandidateKind = "act" | "hold" | "alternative_threshold";
+
+export interface DecisionCandidate {
+  candidate_id: string;
+  kind: CandidateKind;
+  label: string;
+  summary: string;
+  action_ids: string[];
+  feasible: boolean;
+  /** Guardrail codes forbidding it. Non-empty means infeasible. */
+  blocked_by: string[];
+}
+
+export interface AdvisorConsultResponse {
+  advisor_id: string;
+  display_name: string;
+  stance: Stance;
+  supported_action_ids: string[];
+  opposed_action_ids: string[];
+  preferred_candidate_id: string | null;
+  rationale: string;
+  risks_or_missing_information: string[];
+  confidence_signal: ConfidenceSignal;
+  declined: boolean;
+  declined_reason: string;
+  /** What the constraint layer had to change. Rendered, not swallowed. */
+  corrections: string[];
+  /** Distinct from abstaining: this lens contributed nothing readable at all. */
+  parse_failed: boolean;
+}
+
+export interface ConsultSynthesis {
+  selected_candidate_id: string;
+  selected_label: string;
+  headline: string;
+  endorsing: string[];
+  opposing: string[];
+  abstaining: string[];
+  overrides: string[];
+  unresolved_disagreement: boolean;
+}
+
+export interface ConsultResponse {
+  responses: AdvisorConsultResponse[];
+  candidates: DecisionCandidate[];
+  synthesis: ConsultSynthesis;
+  /** Recomputed server-side from the profile sent, never accepted from the browser. */
+  scenario: PortfolioScenario | null;
+  guardrails: Guardrail[];
+  usage: RunUsage;
+}
+
+/** One turn, held in memory only. No persistence in v1. */
+export interface ChatTurn {
+  role: "user" | "committee";
+  text: string;
+  advisor_responses: AdvisorConsultResponse[];
+  synthesis?: ConsultSynthesis;
+}

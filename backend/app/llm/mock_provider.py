@@ -172,6 +172,31 @@ class MockLLMProvider:
         seed = self._seed(advisor_id, role)
         confidence = round(0.4 + (seed % 50) / 100.0, 2)
 
+        if role == "advisor_consult":
+            # Deliberately different per advisor, so the disagreement UI is testable without a
+            # key. Keyed on advisor_id rather than a wheel over the seed, because a demo where
+            # Buffett and Munger happen to agree exercises none of the interesting paths.
+            opposes = advisor_id in ("munger", "marks")
+            return {
+                "stance": "oppose" if opposes else "endorse",
+                "preferred_candidate_id": "hold" if opposes else "act",
+                "supported_action_ids": [] if opposes else ["trim_nvda", "pay_card"],
+                "opposed_action_ids": ["trim_nvda"] if opposes else [],
+                "rationale": (
+                    f"[mock:{who}] This framework reads the concentration as the thing worth "
+                    "arguing about, and reaches the opposite conclusion from the computation."
+                    if opposes
+                    else f"[mock:{who}] This framework treats the computed sequence as sound: "
+                    "the certain return on the debt outranks anything the portfolio promises."
+                ),
+                "risks_or_missing_information": [
+                    f"[mock:{who}] The computation cannot see whether this income is stable."
+                ],
+                "confidence_signal": ("medium" if opposes else "high"),
+                "declined": False,
+                "declined_reason": "",
+            }
+
         if role == "independent":
             return {
                 "thesis": f"{who}: the binding constraint here is balance-sheet fragility, not asset selection.",

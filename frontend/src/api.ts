@@ -7,6 +7,7 @@
  */
 
 import type {
+  ConsultResponse,
   AdvisorSummary,
   AnalysisDepth,
   EstimateResponse,
@@ -70,6 +71,11 @@ async function getWithSession<T>(path: string, accessToken: string): Promise<T> 
 }
 
 // --- free -----------------------------------------------------------------------------
+
+/** Server capabilities. `mock_llm` means canned answers — the UI must say so, never hide it. */
+export function getHealth(): Promise<{ byok_only: boolean; mock_llm: boolean }> {
+  return postFree<{ byok_only: boolean; mock_llm: boolean }>("/health");
+}
 
 export function listAdvisors(): Promise<AdvisorSummary[]> {
   return postFree<AdvisorSummary[]>("/advisors");
@@ -137,6 +143,26 @@ export function runCommittee(
 }
 
 // --- run history (session required, no Anthropic key involved) ------------------------
+
+/** One turn of the consultation. The whole history goes up each time — see ConsultRequest. */
+export function consultCommittee(
+  apiKey: string,
+  profile: ProfileInput,
+  portfolio: PortfolioInput | null,
+  question: string,
+  advisorIds: string[],
+  history: { role: "user" | "committee"; text: string; advisor_responses: unknown[] }[],
+  model: string,
+): Promise<ConsultResponse> {
+  return postWithKey<ConsultResponse>("/committee/consult", apiKey, {
+    profile,
+    portfolio,
+    question,
+    advisor_ids: advisorIds,
+    history,
+    model,
+  });
+}
 
 export function listRuns(accessToken: string): Promise<RunSummary[]> {
   return getWithSession<RunSummary[]>("/runs", accessToken);
