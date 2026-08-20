@@ -136,3 +136,45 @@ def analyzed(stressed_profile: FinancialProfile, concentrated_portfolio: Portfol
     pa = analyze_portfolio(concentrated_portfolio)
     rails = evaluate_guardrails(stressed_profile, analytics, concentrated_portfolio, pa)
     return analytics, pa, rails
+
+
+@pytest.fixture
+def scenario_with_actions():
+    """A concentrated book with card debt — the situation the whole demo is built around."""
+    from app.analytics.guardrails import evaluate_guardrails
+    from app.analytics.portfolio_analytics import analyze_portfolio
+    from app.analytics.profile_analytics import analyze_profile
+    from app.domain.portfolio import Holding, Portfolio
+    from app.domain.profile import Asset, Debt, Expenses, FinancialProfile, Income
+    from app.policy.engine import compute_scenario
+
+    profile = FinancialProfile(
+        age=38,
+        income=Income(annual_gross=165_000),
+        expenses=Expenses(monthly_essential=6_200),
+        assets=[Asset(name="Cash", value=14_000, account_type="cash")],
+        debts=[Debt(name="Card", balance=9_000, apr=0.229, minimum_monthly_payment=260)],
+    )
+    portfolio = Portfolio(
+        holdings=[
+            Holding(
+                symbol=sym,
+                name=sym,
+                asset_class="us_equity",
+                quantity=qty,
+                market_value=value,
+                cost_basis=basis,
+                account_type="taxable",
+            )
+            for sym, qty, value, basis in [
+                ("NVDA", 300, 96_000, 31_000),
+                ("VTI", 200, 58_000, 44_000),
+                ("BND", 400, 29_000, 30_500),
+            ]
+        ]
+    )
+    analytics = analyze_profile(profile)
+    pa = analyze_portfolio(portfolio)
+    return compute_scenario(
+        profile, analytics, portfolio, pa, evaluate_guardrails(profile, analytics)
+    )

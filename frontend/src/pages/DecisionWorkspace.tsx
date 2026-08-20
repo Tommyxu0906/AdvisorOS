@@ -17,7 +17,10 @@
  */
 
 import { useState } from "react";
+import { useAnthropicConnection } from "../context/AnthropicConnectionContext";
 import type {
+  ChatTurn,
+  DecisionCandidate,
   AdvisorSummary,
   AnalysisDepth,
   EstimateResponse,
@@ -29,6 +32,14 @@ import { money, months, percent, years } from "../lib/units";
 import { navigate } from "../lib/router";
 import { Advanced, Card, EmptyState, InlineAlert, Metric, SectionHeader, StatusBadge } from "../ui";
 import { CommitteeSetup } from "../components/CommitteeSetup";
+import { ScenarioPanel } from "../components/ScenarioPanel";
+import { CommitteeConsult } from "../components/CommitteeConsult";
+import { AssumptionPanel } from "../components/AssumptionPanel";
+import { DecisionCard } from "../components/DecisionCard";
+import type { AssumptionChange } from "../components/AssumptionPanel";
+
+/** Display names for the two lenses the demo convenes. Ids live in App; these are for copy. */
+const CONSULT_LENS_NAMES = ["Warren Buffett", "Charlie Munger"];
 import { RunPreflight } from "../components/RunPreflight";
 import { ReportView } from "../components/ReportView";
 
@@ -50,6 +61,13 @@ export function DecisionWorkspace({
   onToggleAdvisor,
   onResetAdvisors,
   onRun,
+  turns,
+  candidates,
+  consulting,
+  consultError,
+  onConsult,
+  mockLLM,
+  onApplyAssumption,
 }: {
   profile: ProfileDraft;
   holdings: HoldingDraft[];
@@ -68,7 +86,20 @@ export function DecisionWorkspace({
   onToggleAdvisor: (id: string) => void;
   onResetAdvisors: () => void;
   onRun: () => void;
+  turns: ChatTurn[];
+  candidates: DecisionCandidate[];
+  consulting: boolean;
+  consultError: string | null;
+  onConsult: (question: string) => void;
+  mockLLM: boolean;
+  onApplyAssumption: (next: ProfileDraft, changes: AssumptionChange[]) => void;
 }) {
+  const { isConnected } = useAnthropicConnection();
+  // The latest round that produced a decision. Assumption markers carry no synthesis, so this
+  // skips them rather than blanking the card whenever the figures move.
+  const latestSynthesis = [...turns]
+    .reverse()
+    .find((t) => t.synthesis && t.advisor_responses.length > 0);
   const analytics = selection?.analytics ?? null;
   const portfolio = selection?.portfolio_analytics ?? null;
   const guardrails = selection?.guardrails ?? [];
@@ -226,7 +257,41 @@ export function DecisionWorkspace({
         </section>
       )}
 
-      {/* --- the committee, in the same flow -------------------------------------- */}
+      {latestSynthesis?.synthesis && (
+        <DecisionCard
+          synthesis={latestSynthesis.synthesis}
+          responses={latestSynthesis.advisor_responses}
+          candidates={candidates}
+          scenario={selection?.scenario ?? null}
+          onViewCalculations={() =>
+            document.getElementById("computed-scenario")?.scrollIntoView({ block: "start" })
+          }
+        />
+      )}
+
+      {/* 5. What those numbers imply — still deterministic, still free. This is the last
+             thing computed without a key, and the thing the committee argues about. */}
+      <ScenarioPanel scenario={selection?.scenario ?? null} />
+
+      {/* 6. The committee, arguing about the computed scenario rather than inventing one. */}
+      {selection && (
+        <CommitteeConsult
+          turns={turns}
+          candidates={candidates}
+          running={consulting}
+          error={consultError}
+          isConnected={isConnected}
+          advisorNames={CONSULT_LENS_NAMES}
+          onAsk={onConsult}
+          mockLLM={mockLLM}
+        />
+      )}
+
+      {selection && (
+        <AssumptionPanel profile={profile} onApply={onApplyAssumption} />
+      )}
+
+      {/* --- the full committee report, a separate and heavier step ------------------ */}
       {selection && (
         <CommitteeSetup
           selection={selection.selection}

@@ -1759,3 +1759,185 @@ button.step-button {
   color: var(--amber);
   font-size: 13px;
 }
+
+/* ---- computed scenario -------------------------------------------------------------
+   An ordered list because sequence is real information: blocking guardrails resolve
+   before anything optional, and the numbering says so. */
+.scenario-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: scenario;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.scenario-item {
+  counter-increment: scenario;
+  position: relative;
+  padding-left: 34px;
+}
+.scenario-item + .scenario-item {
+  border-top: 1px solid var(--hairline);
+  padding-top: 18px;
+}
+.scenario-item::before {
+  content: counter(scenario);
+  position: absolute;
+  left: 0;
+  top: 1px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--paper);
+  background: var(--ink);
+  border-radius: 50%;
+}
+.scenario-item + .scenario-item::before { top: 19px; }
+
+.scenario-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.scenario-kind {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.scenario-symbol { font-size: 16px; }
+.scenario-size {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+.scenario-rationale {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  max-width: 68ch;
+}
+.scenario-tax { margin: 8px 0 0; max-width: 68ch; line-height: 1.55; }
+
+/* ---- investment committee ----------------------------------------------------------
+   Minutes of a consultation, not a chat log: no bubbles, no alignment games. Each round
+   puts every lens side by side so disagreement is visible without scrolling back. */
+.consult-thread { display: flex; flex-direction: column; gap: 24px; }
+
+.consult-question {
+  border-left: 3px solid var(--ink);
+  padding-left: 14px;
+}
+.consult-question-text {
+  margin: 2px 0 0;
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.45;
+  max-width: 60ch;
+}
+
+.consult-round { display: flex; flex-direction: column; gap: 14px; }
+.consult-lenses {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+
+.lens-name { font-size: 15px; margin: 0; }
+.lens-badges { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+.lens-rationale {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+.lens-correction {
+  margin-top: 12px;
+  padding: 9px 11px;
+  background: var(--amber-wash);
+  border-left: 2px solid var(--amber);
+}
+.lens-correction p { color: var(--ink-soft); line-height: 1.5; }
+
+.candidate-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.candidate-list li { padding-bottom: 12px; border-bottom: 1px solid var(--hairline); }
+.candidate-list li:last-child { border-bottom: none; padding-bottom: 0; }
+.candidate-blocked strong { text-decoration: line-through; opacity: 0.75; }
+
+.consult-composer { margin-top: 8px; }
+.consult-input-row { display: flex; gap: 10px; align-items: stretch; }
+.consult-input-row input { flex: 1; min-width: 0; }
+.consult-input-row button { white-space: nowrap; }
+
+@media (max-width: 560px) {
+  .consult-input-row { flex-direction: column; }
+}
+
+/* ---- decision card ------------------------------------------------------------------
+   Sits above the working material rather than beside it: this is the conclusion, and the
+   scenario and transcript below are the evidence for it. */
+.card-raised {
+  background: var(--paper-raised);
+  border: 1px solid var(--hairline-strong);
+  box-shadow: var(--lift);
+}
+
+.decision-headline {
+  font-family: var(--serif);
+  font-size: clamp(21px, 3vw, 26px);
+  line-height: 1.22;
+  margin: 2px 0 8px;
+  text-wrap: balance;
+}
+
+.decision-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 22px;
+  margin-top: 18px;
+}
+
+.check-list, .position-list { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 9px; }
+.check-list li { display: flex; gap: 9px; align-items: baseline; font-size: 14px; line-height: 1.5; }
+.check-list li > span:first-child { font-weight: 700; flex: none; width: 14px; }
+.check-ok > span:first-child { color: var(--green-deep); }
+.check-no > span:first-child { color: var(--oxblood); }
+
+.position-list li { padding-bottom: 9px; border-bottom: 1px solid var(--hairline); }
+.position-list li:last-child { border-bottom: none; padding-bottom: 0; }
+
+.decision-disagreement {
+  margin-top: 18px;
+  padding: 12px 14px;
+  background: var(--paper-sunk);
+  border-left: 3px solid var(--amber);
+}
+
+/* ---- assumption panel ---------------------------------------------------------------- */
+.assumption-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+  margin-top: 4px;
+}
+.assumption-diff {
+  margin-top: 14px;
+  padding: 10px 12px;
+  background: var(--amber-wash);
+  border-left: 2px solid var(--amber);
+  display: grid;
+  gap: 4px;
+}
+.assumption-applied {
+  border-left: 3px solid var(--green-deep);
+  padding: 8px 0 8px 14px;
+}

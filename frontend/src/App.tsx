@@ -11,10 +11,18 @@
  * household's balance sheet saved as their own.
  */
 
-import { useCallback, useEffect, useState } from "react";
-import { estimateRun, listAdvisors, runCommittee, selectCommittee } from "./api";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  consultCommittee,
+  estimateRun,
+  getHealth,
+  listAdvisors,
+  runCommittee,
+  selectCommittee,
+} from "./api";
 import { useAnthropicConnection } from "./context/AnthropicConnectionContext";
 import { useAuth } from "./context/AuthContext";
+import type { AssumptionChange } from "./components/AssumptionPanel";
 import type { HoldingDraft, ProfileDraft } from "./lib/draft";
 import {
   EMPTY_PORTFOLIO,
@@ -39,10 +47,18 @@ import { SettingsPage } from "./components/SettingsPage";
 import type {
   AdvisorSummary,
   AnalysisDepth,
+  ChatTurn,
+  DecisionCandidate,
   EstimateResponse,
   RunResponse,
   SelectResponse,
 } from "./types";
+
+/** The two lenses the demo convenes. Built-in manifests — nothing is distilled to answer. */
+const CONSULT_ADVISORS = ["buffett", "munger"];
+
+/** Never reaches Anthropic: only sent when the server reported it is serving canned answers. */
+const DEMO_PLACEHOLDER_KEY = "sk-ant-" + "demo".repeat(12);
 
 export function App() {
   const { model, withKey } = useAnthropicConnection();
@@ -63,6 +79,26 @@ export function App() {
   const [result, setResult] = useState<RunResponse | null>(null);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Consultation state lives here and nowhere else: no table, no migration, no persistence.
+  // It is discarded on refresh for the same reason the API key is.
+  const [turns, setTurns] = useState<ChatTurn[]>([]);
+  const [candidates, setCandidates] = useState<DecisionCandidate[]>([]);
+  const [consulting, setConsulting] = useState(false);
+  const [consultError, setConsultError] = useState<string | null>(null);
+  // True when the server was started with AIFA_MOCK_LLM=1. It then answers with canned text and
+  // needs no key — which the interface must state plainly rather than pass off as a real run.
+  const [mockLLM, setMockLLM] = useState(false);
+  // Set for exactly one profile change: the one the user asked for by pressing Apply. Without
+  // it the clearing effect below would throw away the very transcript the change is meant to be
+  // compared against.
+  const applying = useRef<AssumptionChange[] | null>(null);
+
+  useEffect(() => {
+    getHealth()
+      .then((h) => setMockLLM(h.mock_llm))
+      .catch(() => setMockLLM(false));
+  }, []);
 
   // null until we know what the account holds — see the readiness effect below.
   const [known, setKnown] = useState<boolean | null>(null);
@@ -154,6 +190,82 @@ export function App() {
     return () => clearTimeout(t);
   }, [refreshAnalysis]);
 
+  // A changed question or a changed balance sheet is a different decision, and carrying the old
+  // transcript into it would have the committee answering about a scenario that no longer holds.
+  useEffect(() => {
+    const pending = applying.current;
+    applying.current = null;
+
+    if (pending) {
+      // Keep the conversation and record the move, so the next answers can be read against the
+      // earlier ones rather than appearing out of nowhere.
+      setTurns((prev) => [
+        ...prev,
+        {
+          role: "committee",
+          text: "",
+          advisor_responses: [],
+          assumption: pending,
+        },
+      ]);
+      return;
+    }
+
+    setTurns([]);
+    setCandidates([]);
+    setConsultError(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [question, JSON.stringify(profileInput), JSON.stringify(portfolioInput)]);
+
+  function onApplyAssumption(next: ProfileDraft, changes: AssumptionChange[]) {
+    applying.current = changes;
+    setProfile(next);
+  }
+
+  async function onConsult(userQuestion: string) {
+    if (!profileInput) return;
+    setConsulting(true);
+    setConsultError(null);
+
+    // The user's turn lands immediately; the committee's arrives when it answers.
+    const asked: ChatTurn = { role: "user", text: userQuestion, advisor_responses: [] };
+    const priorHistory = turns.map((turn) => ({
+      role: turn.role,
+      text: turn.text,
+      advisor_responses: turn.advisor_responses,
+    }));
+    setTurns((prev) => [...prev, asked]);
+
+    try {
+      const call = (key: string) =>
+        consultCommittee(
+          key,
+          profileInput,
+          portfolioInput.holdings.length ? portfolioInput : null,
+          userQuestion,
+          CONSULT_ADVISORS,
+          priorHistory,
+          model,
+        );
+      // One call path either way: in demo mode the server ignores the key entirely.
+      const response = mockLLM ? await call(DEMO_PLACEHOLDER_KEY) : await withKey(call);
+      setCandidates(response.candidates);
+      setTurns((prev) => [
+        ...prev,
+        {
+          role: "committee",
+          text: "",
+          advisor_responses: response.responses,
+          synthesis: response.synthesis,
+        },
+      ]);
+    } catch (e) {
+      setConsultError(e instanceof Error ? e.message : "The consultation failed.");
+    } finally {
+      setConsulting(false);
+    }
+  }
+
   async function onRun() {
     if (!profileInput) return;
     setRunning(true);
@@ -238,6 +350,13 @@ export function App() {
           onToggleAdvisor={toggleAdvisor}
           onResetAdvisors={() => setManualIds(null)}
           onRun={onRun}
+          turns={turns}
+          candidates={candidates}
+          consulting={consulting}
+          consultError={consultError}
+          onConsult={onConsult}
+          mockLLM={mockLLM}
+          onApplyAssumption={onApplyAssumption}
         />
       )}
 

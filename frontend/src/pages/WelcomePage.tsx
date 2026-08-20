@@ -38,7 +38,7 @@ export function WelcomePage({
 
         <div className="welcome-actions">
           <button className="primary large" onClick={onTryDemo}>
-            Try a demo portfolio
+            Try the Buffett + Munger demo
           </button>
           <button className="secondary large" onClick={onUseMyData}>
             Use my financial data

@@ -72,6 +72,8 @@ export interface SelectResponse {
   portfolio_analytics: PortfolioAnalytics | null;
   guardrails: Guardrail[];
   question_topics: string[];
+  /** Deterministic, free, and already on the wire — see PortfolioScenario. */
+  scenario: PortfolioScenario | null;
 }
 
 export interface EstimateResponse {
@@ -258,4 +260,185 @@ export interface RunDetail {
   pricing_version: string;
   guardrails: Guardrail[];
   report: CommitteeReport | null;
+}
+
+/* ---------------------------------------------------------------------------------------
+ * The computed scenario.
+ *
+ * Everything below is produced by the deterministic policy engine on the server and arrives
+ * on both the free `/committee/select` response and the paid `/committee/analyze` one. No
+ * model touched any of it, which is why the UI can show it before a key is connected.
+ *
+ * `headline`, `has_actions`, `worth_showing`, `holds_up`, `fragile` and `summary` are computed
+ * server-side and rendered as given. Recomputing any of them here would put the same rule in
+ * two languages, and the copy that drifted would be the one users read.
+ * ------------------------------------------------------------------------------------- */
+
+export type ActionKind =
+  | "trim_position"
+  | "add_position"
+  | "rebalance_to_target"
+  | "pay_down_debt"
+  | "build_emergency_fund"
+  | "redirect_cashflow"
+  | "hold";
+
+export type Provenance = "direct" | "derived" | "house_default" | "unknown";
+export type Binding = "threshold" | "arithmetic_floor" | "nothing";
+
+export interface TaxRange {
+  low_usd: number;
+  high_usd: number;
+  /** Why it is a range and not a number. Travels with the figure wherever it is shown. */
+  assumption: string;
+}
+
+export interface ProposedAction {
+  action_id: string;
+  kind: ActionKind;
+  symbol: string | null;
+  asset_class: string | null;
+  account_type: string | null;
+  /** Exactly one of these three is non-null — the server validates that. */
+  shares: number | null;
+  amount_usd: number | null;
+  target_weight: number | null;
+  /** Lower runs first. Blocking guardrails resolve before anything optional. */
+  sequence: number;
+  /** "house" for AdvisorOS policy, otherwise an advisor_id. */
+  proposed_by: string;
+  rationale: string;
+  estimated_tax: TaxRange | null;
+}
+
+export interface ActionSet {
+  actions: ProposedAction[];
+}
+
+export interface MetricChange {
+  label: string;
+  before: number;
+  after: number;
+  higher_is_better: boolean | null;
+  improved: boolean | null;
+}
+
+export interface Infeasibility {
+  reason: string;
+  action_id: string | null;
+  message: string;
+}
+
+export interface Counterfactual {
+  feasible: boolean;
+  infeasibilities: Infeasibility[];
+  unapplied: string[];
+  changes: MetricChange[];
+  estimated_tax: TaxRange | null;
+  resolved_guardrails: string[];
+  introduced_guardrails: string[];
+  ineffective_actions: string[];
+  /** Feasible, and it actually moved what it targeted. Computed server-side. */
+  holds_up: boolean;
+}
+
+export interface Sensitivity {
+  parameter: string;
+  baseline: number;
+  baseline_provenance: Provenance;
+  baseline_acts: boolean;
+  binding_at_baseline: Binding;
+  position_count: number;
+  flip_at: number | null;
+  declined: boolean;
+  /** Would a threshold a reasonable person might pick instead reverse this? */
+  fragile: boolean;
+  /** Plain sentences, authored server-side so the wording lives in one place. */
+  summary: string[];
+}
+
+export interface PortfolioScenario {
+  action_set: ActionSet;
+  counterfactual: Counterfactual;
+  sensitivity: Sensitivity | null;
+  /** Whose thresholds produced this. Rendered next to every action. */
+  policy_owner: string;
+  is_house_policy: boolean;
+  has_actions: boolean;
+  worth_showing: boolean;
+  headline: string;
+}
+
+/* ---------------------------------------------------------------------------------------
+ * Advisory consultation.
+ *
+ * The lenses rank a choice set the engine computed; the constraint layer overrules any
+ * preference the arithmetic forbids, and records that it did. `corrections` and
+ * `synthesis.overrides` are shown, never hidden — a preference overruled by arithmetic is
+ * information, and a transcript where every lens happens to agree with the engine would give
+ * exactly the wrong impression.
+ * ------------------------------------------------------------------------------------- */
+
+export type Stance = "endorse" | "oppose" | "mixed" | "abstain";
+export type ConfidenceSignal = "low" | "medium" | "high";
+export type CandidateKind = "act" | "hold" | "alternative_threshold";
+
+export interface DecisionCandidate {
+  candidate_id: string;
+  kind: CandidateKind;
+  label: string;
+  summary: string;
+  action_ids: string[];
+  feasible: boolean;
+  /** Guardrail codes forbidding it. Non-empty means infeasible. */
+  blocked_by: string[];
+}
+
+export interface AdvisorConsultResponse {
+  advisor_id: string;
+  display_name: string;
+  stance: Stance;
+  supported_action_ids: string[];
+  opposed_action_ids: string[];
+  preferred_candidate_id: string | null;
+  rationale: string;
+  risks_or_missing_information: string[];
+  confidence_signal: ConfidenceSignal;
+  declined: boolean;
+  declined_reason: string;
+  /** What the constraint layer had to change. Rendered, not swallowed. */
+  corrections: string[];
+  /** Distinct from abstaining: this lens contributed nothing readable at all. */
+  parse_failed: boolean;
+}
+
+export interface ConsultSynthesis {
+  selected_candidate_id: string;
+  selected_label: string;
+  headline: string;
+  endorsing: string[];
+  opposing: string[];
+  abstaining: string[];
+  overrides: string[];
+  unresolved_disagreement: boolean;
+}
+
+export interface ConsultResponse {
+  responses: AdvisorConsultResponse[];
+  candidates: DecisionCandidate[];
+  synthesis: ConsultSynthesis;
+  /** Recomputed server-side from the profile sent, never accepted from the browser. */
+  scenario: PortfolioScenario | null;
+  guardrails: Guardrail[];
+  usage: RunUsage;
+}
+
+/** One turn, held in memory only. No persistence in v1. */
+export interface ChatTurn {
+  role: "user" | "committee";
+  text: string;
+  advisor_responses: AdvisorConsultResponse[];
+  synthesis?: ConsultSynthesis;
+  /** Present on a marker turn: the figures moved here, and the scenario was recomputed. */
+  assumption?: { label: string; from: string; to: string }[];
 }

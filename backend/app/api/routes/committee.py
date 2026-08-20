@@ -20,12 +20,15 @@ from app.analytics.profile_analytics import analyze_profile
 from app.api import deps
 from app.api.schemas import (
     AdvisorSummary,
+    ConsultRequest,
+    ConsultResponse,
     DistillRequest,
     DistillResponse,
     RunCommitteeRequest,
     RunCommitteeResponse,
 )
 from app.committee.orchestrator import CommitteeError, CommitteeOrchestrator
+from app.consult.service import consult as run_consult
 from app.core.run_context import RunContext
 from app.core.supabase_auth import AuthUser, current_user_optional
 from app.db.repositories.runs import save_run_best_effort
@@ -198,5 +201,62 @@ async def distill_advisor(req: DistillRequest) -> DistillResponse:
         advisor=AdvisorSummary(**deps.advisor_summary_payload(result.manifest)),
         warnings=result.warnings,
         research_pass_count=result.research_pass_count,
+        usage=context.usage_tracker.aggregate(),
+    )
+
+
+@router.post("/committee/consult", response_model=ConsultResponse)
+async def consult_committee(
+    req: ConsultRequest,
+    registry=Depends(deps.registry),
+) -> ConsultResponse:
+    """One turn of a multi-turn consultation over the *computed* scenario.
+
+    The scenario is recomputed here from the profile in the request rather than accepted from
+    the client. That is the difference between a committee arguing about this household's real
+    numbers and one arguing about whatever the browser last held: a scenario the client could
+    supply would let a chat turn move the figures without anything recomputing.
+    """
+    credentials = deps.credentials_from(req.anthropic_api_key)
+
+    try:
+        advisors = [registry.runtime_profile(a) for a in req.advisor_ids]
+    except AdvisorNotFound as exc:
+        raise HTTPException(
+            status_code=404, detail={"code": "advisor_not_found", "message": str(exc)}
+        ) from exc
+
+    analytics = analyze_profile(req.profile)
+    portfolio = req.portfolio if req.portfolio and req.portfolio.holdings else None
+    pa = analyze_portfolio(portfolio) if portfolio else None
+    guardrails = evaluate_guardrails(req.profile, analytics)
+    scenario = compute_scenario(req.profile, analytics, portfolio, pa, guardrails)
+
+    context = RunContext.create(credentials, model=req.model)
+
+    try:
+        result = await run_consult(
+            # Resolved here rather than via Depends so that replacing deps.provider — which is
+            # how every test injects the mock — actually takes effect.
+            provider=deps.provider(),
+            context=context,
+            advisors=advisors,
+            profile=req.profile,
+            analytics=analytics,
+            portfolio_analytics=pa,
+            scenario=scenario,
+            guardrails=guardrails,
+            history=req.history,
+            question=req.question,
+        )
+    except Exception as exc:  # noqa: BLE001 - sanitized before it reaches the client
+        raise deps.provider_error(exc) from exc
+
+    return ConsultResponse(
+        responses=result.responses,
+        candidates=result.candidates,
+        synthesis=result.synthesis,
+        scenario=scenario,
+        guardrails=guardrails,
         usage=context.usage_tracker.aggregate(),
     )

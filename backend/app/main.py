@@ -86,6 +86,8 @@ def health() -> dict:
         "models_priced": sorted(pricing.models),
         # True when the server can run without any project-owned key — the BYOK invariant.
         "byok_only": os.environ.get("AIFA_ALLOW_DEV_KEY") != "1",
+        # A server serving canned answers says so. See deps.mock_llm_enabled.
+        "mock_llm": os.environ.get("AIFA_MOCK_LLM") == "1",
         "storage_configured": bool(os.environ.get("DATABASE_URL", "").strip()),
         "accounts_configured": bool(os.environ.get("SUPABASE_URL", "").strip()),
     }

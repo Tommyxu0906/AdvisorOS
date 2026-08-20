@@ -20,7 +20,7 @@ export function Card({
 }: {
   children: ReactNode;
   className?: string;
-  tone?: "default" | "sunk" | "quiet";
+  tone?: "default" | "sunk" | "quiet" | "raised";
   as?: "section" | "div" | "article";
 }) {
   return <Tag className={`card card-${tone} ${className}`}>{children}</Tag>;
