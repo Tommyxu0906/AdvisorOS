@@ -315,3 +315,60 @@ def test_proceeds_beyond_the_blocking_guardrails_are_left_unallocated():
     )
     _, _, actions = _run(_profile_with_cap(0.20), profile=profile)
     assert {a.kind for a in actions} == {ActionKind.trim_position}
+
+
+def test_a_position_inside_the_cap_explains_why_it_is_still_trimmed():
+    """The second-order case, which otherwise reads as a contradiction.
+
+    Proceeds leave the portfolio, so trimming the big names shrinks the book every surviving
+    position is weighed against. A holding comfortably inside the threshold today can be over it
+    afterwards. Stating only today's weight produces "VXUS is 12% of the portfolio, so under a
+    20% threshold this implies reducing it" — nonsense on its face, and exactly the sentence that
+    makes a computed panel look broken.
+    """
+    profile = FinancialProfile(
+        age=41,
+        income=Income(annual_gross=180_000),
+        expenses=Expenses(monthly_essential=6_000),
+        assets=[Asset(name="Cash", value=40_000, account_type="cash")],
+    )
+    # Five positions, 20% cap: the arithmetic floor is exactly 20%, so all but the smallest trim.
+    portfolio = Portfolio(
+        holdings=[
+            Holding(
+                symbol=symbol,
+                name=symbol,
+                asset_class="us_equity",
+                quantity=qty,
+                market_value=value,
+                account_type="taxable",
+            )
+            for symbol, qty, value in [
+                ("BIG", 310, 92_070),
+                ("MID", 420, 77_280),
+                ("SMALLISH", 480, 30_240),
+                ("SMALL", 380, 27_740),
+                ("TINY", 95, 21_090),
+            ]
+        ]
+    )
+    analytics = analyze_profile(profile)
+    pa = analyze_portfolio(portfolio)
+
+    actions = concentration.propose(
+        profile, analytics, portfolio, pa, [], PolicyProfile(), display_name="AdvisorOS"
+    )
+    by_symbol = {a.symbol: a for a in actions if a.kind is ActionKind.trim_position}
+
+    # SMALLISH is 12% of the book today — comfortably inside a 20% cap — and is still trimmed.
+    assert "SMALLISH" in by_symbol
+    assert pa.weights["SMALLISH"] < 0.20
+
+    rationale = by_symbol["SMALLISH"].rationale
+    assert "inside the 20% single-name threshold" in rationale
+    assert "smaller book that remains" in rationale
+    # And it names what the weight would actually become, rather than only today's figure.
+    assert "about 29%" in rationale
+
+    # The genuinely over-weight position keeps the plain wording.
+    assert "is 37% of the portfolio. Under a 20%" in by_symbol["BIG"].rationale

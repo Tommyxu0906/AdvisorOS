@@ -72,6 +72,8 @@ export interface SelectResponse {
   portfolio_analytics: PortfolioAnalytics | null;
   guardrails: Guardrail[];
   question_topics: string[];
+  /** Deterministic, free, and already on the wire — see PortfolioScenario. */
+  scenario: PortfolioScenario | null;
 }
 
 export interface EstimateResponse {
@@ -258,4 +260,111 @@ export interface RunDetail {
   pricing_version: string;
   guardrails: Guardrail[];
   report: CommitteeReport | null;
+}
+
+/* ---------------------------------------------------------------------------------------
+ * The computed scenario.
+ *
+ * Everything below is produced by the deterministic policy engine on the server and arrives
+ * on both the free `/committee/select` response and the paid `/committee/analyze` one. No
+ * model touched any of it, which is why the UI can show it before a key is connected.
+ *
+ * `headline`, `has_actions`, `worth_showing`, `holds_up`, `fragile` and `summary` are computed
+ * server-side and rendered as given. Recomputing any of them here would put the same rule in
+ * two languages, and the copy that drifted would be the one users read.
+ * ------------------------------------------------------------------------------------- */
+
+export type ActionKind =
+  | "trim_position"
+  | "add_position"
+  | "rebalance_to_target"
+  | "pay_down_debt"
+  | "build_emergency_fund"
+  | "redirect_cashflow"
+  | "hold";
+
+export type Provenance = "direct" | "derived" | "house_default" | "unknown";
+export type Binding = "threshold" | "arithmetic_floor" | "nothing";
+
+export interface TaxRange {
+  low_usd: number;
+  high_usd: number;
+  /** Why it is a range and not a number. Travels with the figure wherever it is shown. */
+  assumption: string;
+}
+
+export interface ProposedAction {
+  action_id: string;
+  kind: ActionKind;
+  symbol: string | null;
+  asset_class: string | null;
+  account_type: string | null;
+  /** Exactly one of these three is non-null — the server validates that. */
+  shares: number | null;
+  amount_usd: number | null;
+  target_weight: number | null;
+  /** Lower runs first. Blocking guardrails resolve before anything optional. */
+  sequence: number;
+  /** "house" for AdvisorOS policy, otherwise an advisor_id. */
+  proposed_by: string;
+  rationale: string;
+  estimated_tax: TaxRange | null;
+}
+
+export interface ActionSet {
+  actions: ProposedAction[];
+}
+
+export interface MetricChange {
+  label: string;
+  before: number;
+  after: number;
+  higher_is_better: boolean | null;
+  improved: boolean | null;
+}
+
+export interface Infeasibility {
+  reason: string;
+  action_id: string | null;
+  message: string;
+}
+
+export interface Counterfactual {
+  feasible: boolean;
+  infeasibilities: Infeasibility[];
+  unapplied: string[];
+  changes: MetricChange[];
+  estimated_tax: TaxRange | null;
+  resolved_guardrails: string[];
+  introduced_guardrails: string[];
+  ineffective_actions: string[];
+  /** Feasible, and it actually moved what it targeted. Computed server-side. */
+  holds_up: boolean;
+}
+
+export interface Sensitivity {
+  parameter: string;
+  baseline: number;
+  baseline_provenance: Provenance;
+  baseline_acts: boolean;
+  binding_at_baseline: Binding;
+  position_count: number;
+  flip_at: number | null;
+  declined: boolean;
+  /** Would a threshold a reasonable person might pick instead reverse this? */
+  fragile: boolean;
+  /** Plain sentences, authored server-side so the wording lives in one place. */
+  summary: string[];
+}
+
+export interface PortfolioScenario {
+  action_set: ActionSet;
+  counterfactual: Counterfactual;
+  sensitivity: Sensitivity | null;
+  /** Whose thresholds produced this. Rendered next to every action. */
+  policy_owner: string;
+  is_house_policy: boolean;
+  has_actions: boolean;
+  worth_showing: boolean;
+  headline: string;
 }

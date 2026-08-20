@@ -99,6 +99,12 @@ def propose(
     if not targets:
         return []
 
+    # Selling raises cash that leaves the portfolio, so the book the surviving positions are
+    # weighed against is smaller than today's. A position inside the cap now can be over it
+    # afterwards, purely because the denominator moved — and the rationale has to say so, or it
+    # reads as "this is 12% of the portfolio, so reduce it under a 20% threshold".
+    post_trim_total = sum(targets.get(s, v) for s, v in value_by_symbol.items())
+
     actions: list[ProposedAction] = []
     proceeds = 0.0
 
@@ -128,6 +134,9 @@ def propose(
                 rationale=_trim_rationale(
                     symbol=symbol,
                     weight=portfolio_analytics.weights[symbol],
+                    share_of_remaining=(
+                        value_by_symbol[symbol] / post_trim_total if post_trim_total > 0 else None
+                    ),
                     cap=cap,
                     effective_cap=effective_cap,
                     holding_count=len(value_by_symbol),
@@ -252,6 +261,7 @@ def _trim_rationale(
     *,
     symbol: str,
     weight: float,
+    share_of_remaining: float | None,
     cap: ResolvedParameter,
     effective_cap: float,
     holding_count: int,
@@ -266,12 +276,35 @@ def _trim_rationale(
     reducing about 40 shares" is a scenario, which is what this product produces and what its
     disclaimer says it produces. The distinction costs nothing and is the difference between
     educational analysis and a personalized recommendation.
+
+    `share_of_remaining` handles the case that otherwise reads as a contradiction. Trimming is
+    solved against the *post-trim* book, because proceeds leave the portfolio — so a position
+    comfortably inside the threshold today can still need trimming once the larger positions are
+    sold and the denominator shrinks. Stating only today's weight produces the sentence "VXUS is
+    12% of the portfolio, so under a 20% threshold this implies reducing it", which is nonsense
+    on its face and makes the whole panel look broken.
     """
-    parts = [
-        f"{symbol} is {weight:.0%} of the portfolio. Under a {cap.value:.0%} single-name "
-        f"threshold — {cap.attribution(display_name, is_house_run=is_house_run)} — this "
-        f"scenario implies reducing it."
-    ]
+    attribution = cap.attribution(display_name, is_house_run=is_house_run)
+
+    second_order = (
+        share_of_remaining is not None
+        and weight <= cap.value + 1e-9
+        and share_of_remaining > cap.value + 1e-9
+    )
+
+    if second_order:
+        parts = [
+            f"{symbol} is {weight:.0%} of the portfolio today, which is inside the "
+            f"{cap.value:.0%} single-name threshold — {attribution}. It appears here because "
+            f"selling the larger positions takes that cash out of the portfolio: against the "
+            f"smaller book that remains, {symbol} would be about {share_of_remaining:.0%}, and "
+            f"the same threshold then applies to it."
+        ]
+    else:
+        parts = [
+            f"{symbol} is {weight:.0%} of the portfolio. Under a {cap.value:.0%} single-name "
+            f"threshold — {attribution} — this scenario implies reducing it."
+        ]
 
     if cap.is_house_number and cap.direction is not Direction.neutral:
         # The persona has a documented lean but no number. Say both, separately.

@@ -1759,3 +1759,70 @@ button.step-button {
   color: var(--amber);
   font-size: 13px;
 }
+
+/* ---- computed scenario -------------------------------------------------------------
+   An ordered list because sequence is real information: blocking guardrails resolve
+   before anything optional, and the numbering says so. */
+.scenario-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: scenario;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.scenario-item {
+  counter-increment: scenario;
+  position: relative;
+  padding-left: 34px;
+}
+.scenario-item + .scenario-item {
+  border-top: 1px solid var(--hairline);
+  padding-top: 18px;
+}
+.scenario-item::before {
+  content: counter(scenario);
+  position: absolute;
+  left: 0;
+  top: 1px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--paper);
+  background: var(--ink);
+  border-radius: 50%;
+}
+.scenario-item + .scenario-item::before { top: 19px; }
+
+.scenario-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.scenario-kind {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.scenario-symbol { font-size: 16px; }
+.scenario-size {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+.scenario-rationale {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  max-width: 68ch;
+}
+.scenario-tax { margin: 8px 0 0; max-width: 68ch; line-height: 1.55; }

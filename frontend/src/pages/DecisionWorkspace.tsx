@@ -29,6 +29,7 @@ import { money, months, percent, years } from "../lib/units";
 import { navigate } from "../lib/router";
 import { Advanced, Card, EmptyState, InlineAlert, Metric, SectionHeader, StatusBadge } from "../ui";
 import { CommitteeSetup } from "../components/CommitteeSetup";
+import { ScenarioPanel } from "../components/ScenarioPanel";
 import { RunPreflight } from "../components/RunPreflight";
 import { ReportView } from "../components/ReportView";
 
@@ -225,6 +226,10 @@ export function DecisionWorkspace({
           </Advanced>
         </section>
       )}
+
+      {/* 5. What those numbers imply — still deterministic, still free. This is the last
+             thing computed without a key, and the thing the committee argues about. */}
+      <ScenarioPanel scenario={selection?.scenario ?? null} />
 
       {/* --- the committee, in the same flow -------------------------------------- */}
       {selection && (
