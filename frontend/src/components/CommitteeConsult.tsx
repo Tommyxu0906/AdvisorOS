@@ -109,6 +109,21 @@ export function CommitteeConsult({
               <p className="metric-label">You asked</p>
               <p className="consult-question-text">{turn.text}</p>
             </div>
+          ) : turn.assumption ? (
+            <div key={`a${i}`} className="assumption-applied">
+              <p className="metric-label" style={{ margin: 0 }}>
+                Assumption applied — scenario recomputed
+              </p>
+              {turn.assumption.map((c) => (
+                <p key={c.label} className="small" style={{ margin: "3px 0 0" }}>
+                  <strong>{c.label}</strong> {c.from} → {c.to}
+                </p>
+              ))}
+              <p className="tiny muted" style={{ margin: "6px 0 0" }}>
+                The figures above changed and the engine recomputed before anyone was asked
+                again. Ask a follow-up to see how the frameworks read the new scenario.
+              </p>
+            </div>
           ) : (
             <div key={`c${i}`} className="consult-round">
               <div className="consult-lenses">

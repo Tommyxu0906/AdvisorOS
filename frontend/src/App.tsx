@@ -11,7 +11,7 @@
  * household's balance sheet saved as their own.
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   consultCommittee,
   estimateRun,
@@ -22,6 +22,7 @@ import {
 } from "./api";
 import { useAnthropicConnection } from "./context/AnthropicConnectionContext";
 import { useAuth } from "./context/AuthContext";
+import type { AssumptionChange } from "./components/AssumptionPanel";
 import type { HoldingDraft, ProfileDraft } from "./lib/draft";
 import {
   EMPTY_PORTFOLIO,
@@ -88,6 +89,10 @@ export function App() {
   // True when the server was started with AIFA_MOCK_LLM=1. It then answers with canned text and
   // needs no key — which the interface must state plainly rather than pass off as a real run.
   const [mockLLM, setMockLLM] = useState(false);
+  // Set for exactly one profile change: the one the user asked for by pressing Apply. Without
+  // it the clearing effect below would throw away the very transcript the change is meant to be
+  // compared against.
+  const applying = useRef<AssumptionChange[] | null>(null);
 
   useEffect(() => {
     getHealth()
@@ -188,11 +193,34 @@ export function App() {
   // A changed question or a changed balance sheet is a different decision, and carrying the old
   // transcript into it would have the committee answering about a scenario that no longer holds.
   useEffect(() => {
+    const pending = applying.current;
+    applying.current = null;
+
+    if (pending) {
+      // Keep the conversation and record the move, so the next answers can be read against the
+      // earlier ones rather than appearing out of nowhere.
+      setTurns((prev) => [
+        ...prev,
+        {
+          role: "committee",
+          text: "",
+          advisor_responses: [],
+          assumption: pending,
+        },
+      ]);
+      return;
+    }
+
     setTurns([]);
     setCandidates([]);
     setConsultError(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [question, JSON.stringify(profileInput), JSON.stringify(portfolioInput)]);
+
+  function onApplyAssumption(next: ProfileDraft, changes: AssumptionChange[]) {
+    applying.current = changes;
+    setProfile(next);
+  }
 
   async function onConsult(userQuestion: string) {
     if (!profileInput) return;
@@ -328,6 +356,7 @@ export function App() {
           consultError={consultError}
           onConsult={onConsult}
           mockLLM={mockLLM}
+          onApplyAssumption={onApplyAssumption}
         />
       )}
 

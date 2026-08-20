@@ -439,4 +439,6 @@ export interface ChatTurn {
   text: string;
   advisor_responses: AdvisorConsultResponse[];
   synthesis?: ConsultSynthesis;
+  /** Present on a marker turn: the figures moved here, and the scenario was recomputed. */
+  assumption?: { label: string; from: string; to: string }[];
 }

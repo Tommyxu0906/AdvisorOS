@@ -54,7 +54,7 @@ export function ScenarioPanel({ scenario }: { scenario: PortfolioScenario | null
   const actions = [...action_set.actions].sort((a, b) => a.sequence - b.sequence);
 
   return (
-    <section>
+    <section id="computed-scenario">
       <SectionHeader
         title="What the thresholds imply"
         hint={scenario.headline}
