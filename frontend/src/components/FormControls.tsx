@@ -55,7 +55,16 @@ export const GOAL_TYPES = [
  * The id is derived from the label so callers do not have to invent one, and the control is
  * cloned to receive it.
  */
-export function Field({ label, children }: { label: string; children: React.ReactNode }) {
+export function Field({
+  label,
+  children,
+  hint,
+}: {
+  label: string;
+  children: React.ReactNode;
+  /** One sentence on why the answer matters. Rendered under the control, not as a tooltip. */
+  hint?: string;
+}) {
   const id = `sf-${label.replace(/\W+/g, "-").toLowerCase()}`;
   return (
     <div className="field">
@@ -63,6 +72,11 @@ export function Field({ label, children }: { label: string; children: React.Reac
       {React.isValidElement(children)
         ? React.cloneElement(children as React.ReactElement<{ id?: string }>, { id })
         : children}
+      {hint && (
+        <p className="tiny muted" style={{ margin: "4px 0 0" }}>
+          {hint}
+        </p>
+      )}
     </div>
   );
 }

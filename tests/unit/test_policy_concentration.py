@@ -24,15 +24,7 @@ from app.domain.policy import (
     Provenance,
 )
 from app.domain.portfolio import AssetClass, Holding, Portfolio
-from app.domain.profile import (
-    AccountType,
-    Asset,
-    Debt,
-    Expenses,
-    FinancialProfile,
-    Income,
-    RiskTolerance,
-)
+from app.domain.profile import AccountType, FinancialProfile, RiskTolerance
 from app.policy import concentration
 
 
@@ -40,11 +32,6 @@ def _profile(**overrides) -> FinancialProfile:
     """The flagship eval case: concentrated in NVDA, carrying a 22.9% card, thin reserve."""
     base = dict(
         age=34,
-        dependents=1,
-        income=Income(annual_gross=145_000),
-        expenses=Expenses(monthly_essential=4_200, monthly_discretionary=1_500),
-        debts=[Debt(name="credit card", balance=9_000, apr=0.229, minimum_monthly_payment=280)],
-        assets=[Asset(name="savings", value=11_000, account_type=AccountType.cash, is_liquid=True)],
         risk_tolerance=RiskTolerance.moderate_aggressive,
     )
     base.update(overrides)
@@ -125,20 +112,6 @@ def _run(params: PolicyProfile, profile=None, portfolio=_UNSET):
 
 
 # --- the flagship question -------------------------------------------------------------
-
-
-def test_it_answers_sell_nvda_or_pay_the_card_with_a_sequence():
-    _, _, actions = _run(_profile_with_cap(0.20))
-
-    kinds = [(a.kind, a.sequence) for a in actions]
-    assert (ActionKind.trim_position, 0) in kinds
-    assert (ActionKind.pay_down_debt, 1) in kinds
-
-    trim = next(a for a in actions if a.kind is ActionKind.trim_position)
-    pay = next(a for a in actions if a.kind is ActionKind.pay_down_debt)
-    # The card is cleared in full, and the trim that funds it comes first.
-    assert pay.amount_usd == 9_000
-    assert trim.sequence < pay.sequence
 
 
 def test_the_trim_is_solved_against_the_post_trim_total():
@@ -246,15 +219,6 @@ def test_the_plan_never_leaves_a_position_above_what_trimming_can_reach(cap: flo
         assert after.largest_weight <= reachable + 1e-6
 
 
-def test_clearing_the_card_resolves_the_blocking_guardrail():
-    profile, portfolio, actions = _run(_profile_with_cap(0.20))
-    result = counterfactual.evaluate(profile, portfolio, ActionSet(actions=actions))
-    assert "HIGH_APR_DEBT" in result.resolved_guardrails
-
-
-# --- edges -------------------------------------------------------------------------------
-
-
 def test_no_portfolio_means_no_actions():
     _, _, actions = _run(_profile_with_cap(None), portfolio=None)
     assert actions == []
@@ -307,16 +271,6 @@ def test_a_position_held_in_a_roth_incurs_no_estimated_tax():
     assert trim.estimated_tax.is_certain
 
 
-def test_proceeds_beyond_the_blocking_guardrails_are_left_unallocated():
-    """Concentration is this policy's remit; inventing a destination for the rest is not."""
-    profile = _profile(
-        debts=[],
-        assets=[Asset(name="savings", value=60_000, account_type=AccountType.cash, is_liquid=True)],
-    )
-    _, _, actions = _run(_profile_with_cap(0.20), profile=profile)
-    assert {a.kind for a in actions} == {ActionKind.trim_position}
-
-
 def test_a_position_inside_the_cap_explains_why_it_is_still_trimmed():
     """The second-order case, which otherwise reads as a contradiction.
 
@@ -328,9 +282,6 @@ def test_a_position_inside_the_cap_explains_why_it_is_still_trimmed():
     """
     profile = FinancialProfile(
         age=41,
-        income=Income(annual_gross=180_000),
-        expenses=Expenses(monthly_essential=6_000),
-        assets=[Asset(name="Cash", value=40_000, account_type="cash")],
     )
     # Five positions, 20% cap: the arithmetic floor is exactly 20%, so all but the smallest trim.
     portfolio = Portfolio(

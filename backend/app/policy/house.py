@@ -1,117 +1,90 @@
-"""AdvisorOS's own financial rules, which belong to no persona.
+"""AdvisorOS's own portfolio rules, which belong to no persona.
 
-A 22.9% credit card balance outranks a marginal investment decision. An emergency reserve below
-three months of essential expenses has to be rebuilt before new market risk is added. Neither of
-those is Buffett's opinion or Bogle's opinion — they are this product's policy, and they would
-be the same if every persona were deleted tomorrow.
+Money needed within three years does not belong in growth assets. That is not Buffett's opinion
+or Bogle's opinion — it is this product's policy, and it would be the same if every persona were
+deleted tomorrow. A drawdown does not care about the date the money is needed.
 
-Keeping them here rather than inside a persona policy matters for two reasons.
+**Redomained when the product narrowed to the portfolio.** This module used to settle credit-card
+balances and rebuild emergency reserves, which is household finance and no longer this product's
+business. What is left is the one constraint that binds an investment decision regardless of who
+is advising.
 
-**Attribution.** If the reserve top-up were emitted by "the Bogle policy", the report would
+Keeping it here rather than inside a persona policy matters for two reasons.
+
+**Attribution.** If the de-risking action were emitted by "the Bogle policy", the output would
 imply Bogle prescribed it, which is both false and the exact class of error `domain/policy.py`
 exists to prevent. House actions carry `proposed_by="house"` and say so.
 
-**Non-negotiability.** These correspond to blocking guardrails already computed in
+**Non-negotiability.** It corresponds to a blocking guardrail already computed in
 `analytics/guardrails.py`, and the committee charter tells every advisor they may not recommend
-anything contradicting one. Rules that cannot be argued with should not be expressed as one
-advisor's argument.
+anything contradicting one. A rule that cannot be argued with should not be expressed as one
+advisor's argument — and this is the rule a lens can find itself overruled by.
 
-Where the two layers meet: house rules claim resources first. A persona policy proposes raising
-cash; the house decides that the first $9,000 of it clears a 22.9% card. What is left over is
-where personas legitimately differ.
+Where the two layers meet: the house claims first. A persona may hold whatever view it likes
+about which growth assets are worth owning; if the money is needed in eighteen months, the
+growth share comes down before that question is reached.
 """
 
 from __future__ import annotations
 
-from app.analytics.profile_analytics import ProfileAnalytics
+from app.analytics.profile_analytics import NEAR_TERM_EQUITY_CEILING, ProfileAnalytics
 from app.domain.action import ActionKind, ProposedAction
+from app.domain.portfolio import Portfolio
 from app.domain.profile import FinancialProfile
 from app.domain.report import Guardrail, GuardrailSeverity
 
-# Matches HIGH_APR_THRESHOLD in analytics/profile_analytics.py. Debt above this is treated as a
-# guaranteed return no position can promise, rather than as one option among several.
-HIGH_APR_THRESHOLD = 0.08
-
-# Matches the EMERGENCY_FUND_THIN blocking guardrail in analytics/guardrails.py.
-EMERGENCY_FUND_FLOOR_MONTHS = 3.0
-
 HOUSE = "house"
 
-# Sequence bands, shared with the persona policies so a merged plan orders correctly.
-SEQ_RAISE_CASH = 0
-SEQ_RESOLVE_BLOCKING = 1
-SEQ_DISCRETIONARY = 2
+# Sequence bands. The house de-risks first; everything a persona wants comes after, because a
+# near-term need is settled before the question of which growth assets to own is even reached.
+SEQ_HOUSE_DERISK = 0
+SEQ_RAISE_CASH = 10
 
 
-def claim_proceeds(
+def claim_first(
     profile: FinancialProfile,
     analytics: ProfileAnalytics,
+    portfolio: Portfolio | None,
     guardrails: list[Guardrail],
-    available: float,
-) -> tuple[list[ProposedAction], float]:
-    """Spend `available` against blocking guardrails, and return what remains.
+) -> list[ProposedAction]:
+    """Actions the house requires before any persona's view is reached.
 
-    Order is not arbitrary. High-APR debt is settled before the emergency reserve because it
-    compounds against the holder every day it stands, while a thin reserve is a risk that may
-    never be realized. Both come before anything discretionary.
-
-    Returns the actions and the unclaimed remainder — deliberately not allocating the surplus,
-    because where surplus cash should go is a portfolio question and this module only enforces
-    constraints.
+    Returns an empty list in the ordinary case, which is the point: most books do not trip a
+    blocking rule, and a house layer that always had something to say would be a house layer
+    nobody read.
     """
     blocking = {g.code for g in guardrails if g.severity is GuardrailSeverity.blocking}
-    actions: list[ProposedAction] = []
-    remaining = available
+    if "HORIZON_RISK_MISMATCH" not in blocking or portfolio is None:
+        return []
 
-    if "HIGH_APR_DEBT" in blocking:
-        for debt in sorted(profile.debts, key=lambda d: d.apr, reverse=True):
-            if remaining <= 0:
-                break
-            if debt.apr <= HIGH_APR_THRESHOLD:
-                continue
-            pay = min(debt.balance, remaining)
-            actions.append(
-                ProposedAction(
-                    action_id=f"pay_{_slug(debt.name)}",
-                    kind=ActionKind.pay_down_debt,
-                    symbol=debt.name,
-                    amount_usd=round(pay, 2),
-                    sequence=SEQ_RESOLVE_BLOCKING,
-                    proposed_by=HOUSE,
-                    rationale=(
-                        f"{debt.name} costs {debt.apr:.1%} a year — "
-                        f"${debt.balance * debt.apr:,.0f} on the current balance. Clearing it "
-                        "returns more than any position in the portfolio can promise. This is "
-                        "an AdvisorOS rule, not an advisor's view."
-                    ),
-                )
-            )
-            remaining -= pay
+    total = sum(h.market_value for h in portfolio.holdings)
+    if total <= 0:
+        return []
 
-    if "EMERGENCY_FUND_THIN" in blocking and remaining > 0:
-        monthly = profile.expenses.monthly_essential
-        shortfall = max(0.0, monthly * EMERGENCY_FUND_FLOOR_MONTHS - analytics.liquid_assets)
-        if shortfall > 0:
-            top_up = min(shortfall, remaining)
-            actions.append(
-                ProposedAction(
-                    action_id="build_reserve",
-                    kind=ActionKind.build_emergency_fund,
-                    amount_usd=round(top_up, 2),
-                    sequence=SEQ_RESOLVE_BLOCKING,
-                    proposed_by=HOUSE,
-                    rationale=(
-                        f"Holding ${top_up:,.0f} takes the reserve to "
-                        f"{(analytics.liquid_assets + top_up) / monthly:.1f} months of essential "
-                        f"expenses, above the {EMERGENCY_FUND_FLOOR_MONTHS:.0f}-month floor "
-                        "AdvisorOS applies before adding market risk."
-                    ),
-                )
-            )
-            remaining -= top_up
+    # Bring the growth share down to the ceiling, and no further. The house enforces the
+    # constraint; it does not express a preference about what the book should look like beyond
+    # that, because that is exactly where the personas differ.
+    excess_share = analytics.growth_asset_share - NEAR_TERM_EQUITY_CEILING
+    amount = round(total * excess_share, 2)
+    if amount <= 0:
+        return []
 
-    return actions, remaining
-
-
-def _slug(name: str) -> str:
-    return "".join(c if c.isalnum() else "_" for c in name.lower()).strip("_") or "debt"
+    return [
+        ProposedAction(
+            action_id="derisk_near_term",
+            kind=ActionKind.rebalance_to_target,
+            asset_class=None,
+            target_weight=NEAR_TERM_EQUITY_CEILING,
+            sequence=SEQ_HOUSE_DERISK,
+            proposed_by=HOUSE,
+            rationale=(
+                f"This money is needed in {profile.horizon_years:.0f} year"
+                f"{'s' if profile.horizon_years != 1 else ''} while "
+                f"{analytics.growth_asset_share:.0%} of the book sits in growth assets. Under "
+                f"AdvisorOS policy a near-term need caps that share at "
+                f"{NEAR_TERM_EQUITY_CEILING:.0%}, which implies moving about "
+                f"{amount:,.0f} out of growth. This is a house rule, not an advisor's view, and "
+                "no advisor may recommend against it."
+            ),
+        )
+    ]

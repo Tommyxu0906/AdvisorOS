@@ -10,17 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from app.domain.portfolio import AssetClass, Holding, Portfolio, PriceSeries
-from app.domain.profile import (
-    AccountType,
-    Asset,
-    Debt,
-    Expenses,
-    FinancialProfile,
-    Goal,
-    GoalType,
-    Income,
-    RiskTolerance,
-)
+from app.domain.profile import AccountType, FinancialProfile, RiskTolerance
 
 
 @dataclass(slots=True)
@@ -50,28 +40,10 @@ BND_RETURNS = [0.003, -0.004, 0.006, 0.002, -0.001, 0.004, 0.001, 0.002, -0.003,
 def all_cases() -> list[EvalCase]:
     return [
         EvalCase(
-            case_id="concentrated_with_card_debt",
+            case_id="concentrated_single_name",
             description="Thin buffer, 22.9% APR card, 68% of portfolio in one stock, house in 2 years",
             profile=FinancialProfile(
                 age=34,
-                dependents=1,
-                income=Income(annual_gross=145_000, employer_match_pct=0.04, stability=0.7),
-                expenses=Expenses(monthly_essential=4_200, monthly_discretionary=1_500),
-                debts=[
-                    Debt(name="credit card", balance=9_000, apr=0.229, minimum_monthly_payment=280)
-                ],
-                assets=[
-                    Asset(name="savings", value=11_000, account_type=AccountType.cash),
-                    Asset(
-                        name="401k",
-                        value=88_000,
-                        account_type=AccountType.traditional_401k,
-                        is_liquid=False,
-                    ),
-                ],
-                goals=[
-                    Goal(name="house down payment", years_until_needed=2.0, target_amount=80_000)
-                ],
                 risk_tolerance=RiskTolerance.moderate_aggressive,
                 self_reported_experience=0.35,
             ),
@@ -93,8 +65,8 @@ def all_cases() -> list[EvalCase]:
                 price_series=[_series("NVDA", NVDA_RETURNS), _series("VTI", VTI_RETURNS)],
             ),
             question="Should I sell some NVDA right now and pay off my credit card, or keep riding it?",
-            expected_guardrails={"EMERGENCY_FUND_THIN", "HIGH_APR_DEBT", "POSITION_CONCENTRATION"},
-            expected_top_needs={"concentration_risk", "liquidity_risk", "debt_pressure"},
+            expected_guardrails={"POSITION_CONCENTRATION"},
+            expected_top_needs={"concentration_risk"},
             expected_any_advisor={"housel", "munger", "buffett"},
         ),
         EvalCase(
@@ -102,21 +74,6 @@ def all_cases() -> list[EvalCase]:
             description="Well-funded 61-year-old, four years from retirement, worried about valuations",
             profile=FinancialProfile(
                 age=61,
-                income=Income(annual_gross=180_000, annual_net=128_000, stability=0.95),
-                expenses=Expenses(monthly_essential=5_000, monthly_discretionary=2_000),
-                assets=[
-                    Asset(name="cash", value=90_000, account_type=AccountType.cash),
-                    Asset(name="ira", value=1_400_000, account_type=AccountType.traditional_ira),
-                    Asset(name="brokerage", value=600_000, account_type=AccountType.taxable),
-                ],
-                goals=[
-                    Goal(
-                        name="retirement",
-                        goal_type=GoalType.retirement,
-                        years_until_needed=4,
-                        priority=1,
-                    )
-                ],
                 risk_tolerance=RiskTolerance.moderate_conservative,
                 self_reported_experience=0.8,
             ),
@@ -146,16 +103,6 @@ def all_cases() -> list[EvalCase]:
             description="26-year-old, no debt, everything in cash, wants long-term growth",
             profile=FinancialProfile(
                 age=26,
-                income=Income(annual_gross=72_000, stability=0.85),
-                expenses=Expenses(monthly_essential=2_600, monthly_discretionary=900),
-                assets=[Asset(name="savings", value=42_000, account_type=AccountType.cash)],
-                goals=[
-                    Goal(
-                        name="long-term wealth",
-                        goal_type=GoalType.wealth_growth,
-                        years_until_needed=25,
-                    )
-                ],
                 risk_tolerance=RiskTolerance.aggressive,
                 self_reported_experience=0.1,
             ),
@@ -164,31 +111,38 @@ def all_cases() -> list[EvalCase]:
             expected_any_advisor={"bogle", "housel"},
         ),
         EvalCase(
-            case_id="cash_flow_negative",
-            description="Spending exceeds income; a blocking guardrail must fire",
+            case_id="near_term_need_in_equities",
+            description="Money needed in two years, sitting in equities. The one blocking rule.",
             profile=FinancialProfile(
                 age=41,
-                dependents=2,
-                income=Income(annual_gross=95_000, annual_net=68_000, stability=0.6),
-                expenses=Expenses(monthly_essential=5_200, monthly_discretionary=1_400),
-                debts=[
-                    Debt(
-                        name="auto",
-                        balance=28_000,
-                        apr=0.079,
-                        minimum_monthly_payment=560,
-                        is_secured=True,
-                    ),
-                    Debt(name="card", balance=14_000, apr=0.244, minimum_monthly_payment=420),
-                ],
-                assets=[Asset(name="checking", value=4_000, account_type=AccountType.cash)],
-                goals=[Goal(name="stability", years_until_needed=1)],
+                horizon_years=2.0,
+                investable_cash=3_000,
                 risk_tolerance=RiskTolerance.conservative,
                 self_reported_experience=0.2,
             ),
-            question="Should I start investing in index funds to catch up on retirement?",
-            expected_guardrails={"CASH_FLOW_NEGATIVE", "EMERGENCY_FUND_THIN", "HIGH_APR_DEBT"},
-            expected_top_needs={"debt_pressure", "liquidity_risk"},
+            portfolio=Portfolio(
+                holdings=[
+                    Holding(
+                        symbol="VTI",
+                        name="Total market",
+                        asset_class=AssetClass.us_equity,
+                        quantity=300,
+                        market_value=96_000,
+                        account_type=AccountType.taxable,
+                    ),
+                    Holding(
+                        symbol="BND",
+                        name="Bonds",
+                        asset_class=AssetClass.bonds,
+                        quantity=200,
+                        market_value=14_000,
+                        account_type=AccountType.taxable,
+                    ),
+                ]
+            ),
+            question="I need this money in two years. Should I stay invested?",
+            expected_guardrails={"HORIZON_RISK_MISMATCH"},
+            expected_top_needs={"horizon_pressure"},
             expected_any_advisor={"housel", "munger", "buffett"},
         ),
         EvalCase(
@@ -196,20 +150,6 @@ def all_cases() -> list[EvalCase]:
             description="Retiree drawing down; longevity and sequence risk dominate",
             profile=FinancialProfile(
                 age=71,
-                income=Income(annual_gross=42_000, annual_net=38_000, stability=1.0),
-                expenses=Expenses(monthly_essential=4_100, monthly_discretionary=800),
-                assets=[
-                    Asset(name="cash", value=120_000, account_type=AccountType.cash),
-                    Asset(name="ira", value=890_000, account_type=AccountType.traditional_ira),
-                ],
-                goals=[
-                    Goal(
-                        name="lifetime income",
-                        goal_type=GoalType.income,
-                        years_until_needed=0,
-                        priority=1,
-                    )
-                ],
                 risk_tolerance=RiskTolerance.conservative,
                 self_reported_experience=0.6,
             ),
@@ -222,22 +162,6 @@ def all_cases() -> list[EvalCase]:
             description="High earner, taxable-heavy, asking about tax placement",
             profile=FinancialProfile(
                 age=45,
-                income=Income(annual_gross=420_000, annual_net=250_000, stability=0.8),
-                expenses=Expenses(monthly_essential=9_000, monthly_discretionary=4_000),
-                assets=[
-                    Asset(name="cash", value=180_000, account_type=AccountType.cash),
-                    Asset(name="brokerage", value=1_900_000, account_type=AccountType.taxable),
-                    Asset(
-                        name="401k",
-                        value=340_000,
-                        account_type=AccountType.traditional_401k,
-                        is_liquid=False,
-                    ),
-                ],
-                goals=[
-                    Goal(name="retirement", goal_type=GoalType.retirement, years_until_needed=18),
-                    Goal(name="college", goal_type=GoalType.education, years_until_needed=8),
-                ],
                 risk_tolerance=RiskTolerance.moderate,
                 self_reported_experience=0.7,
             ),

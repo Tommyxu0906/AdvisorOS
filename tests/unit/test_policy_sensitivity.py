@@ -24,7 +24,7 @@ from app.domain.policy import (
     Provenance,
 )
 from app.domain.portfolio import Holding, Portfolio
-from app.domain.profile import AccountType, Asset, Expenses, FinancialProfile, Income
+from app.domain.profile import FinancialProfile
 from app.policy import sensitivity
 from app.policy.sensitivity import FRAGILE_BAND, Binding
 
@@ -34,9 +34,6 @@ NAME = PolicyParameterName.single_name_concentration
 def _profile() -> FinancialProfile:
     return FinancialProfile(
         age=34,
-        income=Income(annual_gross=145_000),
-        expenses=Expenses(monthly_essential=4_200, monthly_discretionary=1_500),
-        assets=[Asset(name="savings", value=40_000, account_type=AccountType.cash)],
     )
 
 

@@ -29,14 +29,10 @@ GUARDRAIL_BONUS = 0.5
 
 # Which need dimension each guardrail code makes mandatory to cover.
 GUARDRAIL_DIMENSION: dict[str, str] = {
-    "EMERGENCY_FUND_THIN": "liquidity_risk",
-    "EMERGENCY_FUND_BELOW_TARGET": "liquidity_risk",
-    "HIGH_APR_DEBT": "debt_pressure",
-    "DEBT_SERVICE_HIGH": "debt_pressure",
-    "CASH_FLOW_NEGATIVE": "liquidity_risk",
+    "HORIZON_RISK_MISMATCH": "horizon_pressure",
     "POSITION_CONCENTRATION": "concentration_risk",
-    "SHORT_HORIZON_GOAL": "liquidity_risk",
-    "UNMATCHED_EMPLOYER_MATCH": "tax_complexity",
+    "THIN_BOOK": "concentration_risk",
+    "NO_DEPLOYABLE_CASH": "liquidity_risk",
 }
 
 

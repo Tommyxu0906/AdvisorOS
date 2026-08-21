@@ -12,15 +12,7 @@ from app.analytics.guardrails import (
 from app.analytics.portfolio_analytics import analyze_portfolio, compute_series_metrics
 from app.analytics.profile_analytics import analyze_profile
 from app.domain.portfolio import AssetClass, Holding, Portfolio, PriceSeries
-from app.domain.profile import (
-    AccountType,
-    Asset,
-    Debt,
-    Expenses,
-    FinancialProfile,
-    Income,
-    LifeStage,
-)
+from app.domain.profile import AccountType
 from app.domain.report import GuardrailSeverity
 
 
@@ -30,18 +22,6 @@ def test_analytics_are_deterministic(stressed_profile, concentrated_portfolio) -
     assert a.model_dump() == b.model_dump()
 
 
-def test_core_ratios(stressed_profile) -> None:
-    a = analyze_profile(stressed_profile)
-    # Net income defaults to 75% of gross: 108,750. Annual expenses: 68,400.
-    assert a.annual_savings == pytest.approx(108_750 - 68_400)
-    assert a.savings_rate == pytest.approx((108_750 - 68_400) / 145_000)
-    # Liquid assets 11,000 / 4,200 essential per month.
-    assert a.emergency_fund_months == pytest.approx(11_000 / 4_200)
-    assert a.high_apr_debt_balance == 9_000
-    assert a.weighted_avg_apr == pytest.approx(0.229)
-    assert a.life_stage is LifeStage.accumulation
-
-
 def test_need_vector_is_bounded_and_responsive(stressed_profile, healthy_profile) -> None:
     stressed = analyze_profile(stressed_profile).need_vector
     healthy = analyze_profile(healthy_profile).need_vector
@@ -49,30 +29,18 @@ def test_need_vector_is_bounded_and_responsive(stressed_profile, healthy_profile
     for v in (*stressed.as_tuple(), *healthy.as_tuple()):
         assert 0.0 <= v <= 1.0
 
-    assert stressed.debt_pressure > healthy.debt_pressure
-    assert stressed.liquidity_risk > healthy.liquidity_risk
+    assert stressed.horizon_pressure > healthy.horizon_pressure
+    assert stressed.behavioral_risk > healthy.behavioral_risk
     assert healthy.longevity_risk > stressed.longevity_risk
-
-
-def test_zero_income_does_not_divide_by_zero() -> None:
-    profile = FinancialProfile(
-        age=70,
-        income=Income(annual_gross=0),
-        expenses=Expenses(monthly_essential=0),
-        assets=[],
-    )
-    a = analyze_profile(profile)
-    assert a.savings_rate == pytest.approx(0.0, abs=1.0)
-    assert a.emergency_fund_months >= 0
 
 
 def test_guardrails_fire_on_stressed_profile(analyzed) -> None:
     _, _, rails = analyzed
     codes = {g.code for g in rails}
-    assert "EMERGENCY_FUND_THIN" in codes
-    assert "HIGH_APR_DEBT" in codes
+    assert "HORIZON_RISK_MISMATCH" in codes
     assert "POSITION_CONCENTRATION" in codes
-    assert "SHORT_HORIZON_GOAL" in codes
+    assert "POSITION_CONCENTRATION" in codes
+    assert "HORIZON_RISK_MISMATCH" in codes
     # Blocking items sort first so prompts lead with them.
     assert rails[0].severity is GuardrailSeverity.blocking
 
@@ -92,11 +60,11 @@ def test_render_guardrails_states_they_are_binding(analyzed) -> None:
 
 def test_guardrail_verification_catches_contradiction(analyzed) -> None:
     _, _, rails = analyzed
-    bad = "You should invest all your cash into the index fund immediately."
+    bad = "Put the whole balance into equities now and ignore when you need the money."
     violations = verify_report_against_guardrails(bad, rails)
-    assert any("EMERGENCY_FUND_THIN" in v for v in violations)
+    assert any("HORIZON_RISK_MISMATCH" in v for v in violations)
 
-    good = "Rebuild the emergency fund to three months before adding market risk."
+    good = "Bring the growth share down before adding any further market risk."
     assert verify_report_against_guardrails(good, rails) == []
 
 
@@ -204,26 +172,3 @@ def test_weighted_portfolio_series_skipped_when_data_incomplete() -> None:
         price_series=[PriceSeries(symbol="A", returns=[0.01, 0.02])],
     )
     assert analyze_portfolio(portfolio).portfolio_metrics is None
-
-
-def test_tax_advantaged_share() -> None:
-    profile = FinancialProfile(
-        age=40,
-        income=Income(annual_gross=100_000),
-        expenses=Expenses(monthly_essential=3_000),
-        assets=[
-            Asset(name="ira", value=75_000, account_type=AccountType.roth_ira),
-            Asset(name="brokerage", value=25_000, account_type=AccountType.taxable),
-        ],
-    )
-    assert analyze_profile(profile).tax_advantaged_share == pytest.approx(0.75)
-
-
-def test_debt_validation_rejects_impossible_apr() -> None:
-    with pytest.raises(ValueError):
-        Debt(name="x", balance=100, apr=1.5)
-
-
-def test_income_validation_rejects_net_above_gross() -> None:
-    with pytest.raises(ValueError):
-        Income(annual_gross=100, annual_net=200)

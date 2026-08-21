@@ -16,17 +16,7 @@ from app.analytics.profile_analytics import analyze_profile
 from app.core.credentials import UserLLMCredentials
 from app.core.run_context import RunContext
 from app.domain.portfolio import AssetClass, Holding, Portfolio, PriceSeries
-from app.domain.profile import (
-    AccountType,
-    Asset,
-    Debt,
-    Expenses,
-    FinancialProfile,
-    Goal,
-    GoalType,
-    Income,
-    RiskTolerance,
-)
+from app.domain.profile import FinancialProfile, RiskTolerance
 from app.domain.report import AnalysisDepth
 from app.llm.mock_provider import MockLLMProvider
 
@@ -63,23 +53,11 @@ def context(credentials: UserLLMCredentials) -> RunContext:
 
 @pytest.fixture
 def stressed_profile() -> FinancialProfile:
-    """Thin buffer, high-APR debt, near-term goal, concentrated equity."""
+    """Money needed soon, little cash, and an aggressive book. Trips the one blocking rule."""
     return FinancialProfile(
         age=34,
-        dependents=1,
-        income=Income(annual_gross=145_000, employer_match_pct=0.04, stability=0.7),
-        expenses=Expenses(monthly_essential=4_200, monthly_discretionary=1_500),
-        debts=[Debt(name="credit card", balance=9_000, apr=0.229, minimum_monthly_payment=280)],
-        assets=[
-            Asset(name="savings", value=11_000, account_type=AccountType.cash),
-            Asset(
-                name="401k",
-                value=88_000,
-                account_type=AccountType.traditional_401k,
-                is_liquid=False,
-            ),
-        ],
-        goals=[Goal(name="house down payment", years_until_needed=2.0, target_amount=80_000)],
+        horizon_years=2.0,
+        investable_cash=4_000,
         risk_tolerance=RiskTolerance.moderate_aggressive,
         self_reported_experience=0.35,
     )
@@ -87,19 +65,11 @@ def stressed_profile() -> FinancialProfile:
 
 @pytest.fixture
 def healthy_profile() -> FinancialProfile:
-    """Well-funded pre-retiree with no debt."""
+    """Long horizon, plenty of deployable cash, experienced. Trips nothing blocking."""
     return FinancialProfile(
         age=61,
-        income=Income(annual_gross=180_000, annual_net=128_000, stability=0.95),
-        expenses=Expenses(monthly_essential=5_000, monthly_discretionary=2_000),
-        assets=[
-            Asset(name="cash", value=90_000, account_type=AccountType.cash),
-            Asset(name="ira", value=1_400_000, account_type=AccountType.traditional_ira),
-            Asset(name="brokerage", value=600_000, account_type=AccountType.taxable),
-        ],
-        goals=[
-            Goal(name="retirement", goal_type=GoalType.retirement, years_until_needed=4, priority=1)
-        ],
+        horizon_years=20.0,
+        investable_cash=90_000,
         risk_tolerance=RiskTolerance.moderate_conservative,
         self_reported_experience=0.8,
     )
@@ -145,15 +115,11 @@ def scenario_with_actions():
     from app.analytics.portfolio_analytics import analyze_portfolio
     from app.analytics.profile_analytics import analyze_profile
     from app.domain.portfolio import Holding, Portfolio
-    from app.domain.profile import Asset, Debt, Expenses, FinancialProfile, Income
+    from app.domain.profile import FinancialProfile
     from app.policy.engine import compute_scenario
 
     profile = FinancialProfile(
         age=38,
-        income=Income(annual_gross=165_000),
-        expenses=Expenses(monthly_essential=6_200),
-        assets=[Asset(name="Cash", value=14_000, account_type="cash")],
-        debts=[Debt(name="Card", balance=9_000, apr=0.229, minimum_monthly_payment=260)],
     )
     portfolio = Portfolio(
         holdings=[

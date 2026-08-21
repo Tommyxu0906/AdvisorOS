@@ -20,35 +20,13 @@ export const DEMO_LABEL = "Sample household — not your data";
 
 export const DEMO_PROFILE: ProfileDraft = {
   age: 38,
-  dependents: 1,
-  income: { annual_gross: 165000, employer_match_pct: 0.04 },
-  expenses: { monthly_essential: 5400, monthly_discretionary: 1800 },
-  debts: [
-    {
-      name: "Credit card",
-      balance: 14200,
-      apr: 0.229,
-      minimum_monthly_payment: 420,
-    },
-    {
-      name: "Car loan",
-      balance: 18600,
-      apr: 0.054,
-      minimum_monthly_payment: 390,
-    },
-  ],
-  assets: [
-    { name: "Checking", value: 9800, account_type: "cash", is_liquid: true },
-    { name: "Emergency savings", value: 21500, account_type: "cash", is_liquid: true },
-    { name: "401(k)", value: 142000, account_type: "traditional_401k", is_liquid: false },
-  ],
-  goals: [
-    { name: "Home down payment", goal_type: "home_purchase", years_until_needed: 2, priority: 1 },
-    { name: "Retirement", goal_type: "retirement", years_until_needed: 27, priority: 2 },
-  ],
-  risk_tolerance: "moderate",
-  self_reported_experience: 0.4,
-  notes: "",
+  // Long enough that the near-term guardrail stays quiet, so the demo turns on concentration —
+  // which is where the two lenses actually disagree.
+  horizon_years: 12,
+  investable_cash: 9_800,
+  risk_tolerance: "moderate_aggressive",
+  self_reported_experience: 0.45,
+  notes: "Most of this is one position I have held for years and feel attached to.",
 };
 
 export const DEMO_HOLDINGS: HoldingDraft[] = [

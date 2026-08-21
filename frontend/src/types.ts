@@ -11,7 +11,7 @@ export interface Guardrail {
 
 export interface NeedVector {
   liquidity_risk: number;
-  debt_pressure: number;
+  horizon_pressure: number;
   concentration_risk: number;
   valuation_sensitivity: number;
   behavioral_risk: number;
@@ -208,12 +208,9 @@ export interface AdvisorSummary {
 /** The shape the form collects and posts. */
 export interface ProfileInput {
   age: number;
-  dependents: number;
-  income: { annual_gross: number; annual_net?: number | null; stability: number; employer_match_pct: number };
-  expenses: { monthly_essential: number; monthly_discretionary: number };
-  debts: { name: string; balance: number; apr: number; minimum_monthly_payment: number }[];
-  assets: { name: string; value: number; account_type: string; is_liquid: boolean }[];
-  goals: { name: string; goal_type: string; years_until_needed: number; priority: number }[];
+  currency: string;
+  horizon_years: number;
+  investable_cash: number;
   risk_tolerance: string;
   self_reported_experience: number;
   notes: string;

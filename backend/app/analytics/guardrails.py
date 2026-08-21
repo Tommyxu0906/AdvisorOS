@@ -1,7 +1,20 @@
-"""Hard financial guardrails.
+"""Hard portfolio guardrails.
 
 These are rules code enforces. They are injected into every advisor prompt AND re-checked
-against the synthesized report afterwards, so a persuasive model cannot talk its way past them.
+against the synthesized output afterwards, so a persuasive model cannot talk its way past them.
+
+**Redomained when the product narrowed to the portfolio.** The old set was household finance —
+credit-card APR, emergency-fund months, debt service, cash flow. None of that is this product's
+business any more, and a platform that advises on an equity book has no standing to tell someone
+what to do about their mortgage.
+
+What replaces it is the constraint that actually binds an investment decision: **money needed
+soon cannot sit in growth assets.** That is not a persona's opinion — Buffett and Munger would
+both agree, and it would still hold if every persona were deleted. It is the one blocking rule
+the house keeps, and it is what a lens can find itself overruled by.
+
+The rest are cautions: concentration, a book too thin to be diversified, and no cash to fund a
+purchase with.
 """
 
 from __future__ import annotations
@@ -9,14 +22,13 @@ from __future__ import annotations
 import re
 
 from app.analytics.portfolio_analytics import PortfolioAnalytics
-from app.analytics.profile_analytics import HIGH_APR_THRESHOLD, ProfileAnalytics
+from app.analytics.profile_analytics import NEAR_TERM_EQUITY_CEILING, ProfileAnalytics
 from app.domain.portfolio import Portfolio
-from app.domain.profile import FinancialProfile
+from app.domain.profile import FinancialProfile, HorizonBand
 from app.domain.report import Guardrail, GuardrailSeverity
 
 CONCENTRATION_LIMIT = 0.25
-SHORT_HORIZON_YEARS = 3.0
-DEBT_SERVICE_LIMIT = 0.36
+THIN_BOOK_POSITIONS = 4
 
 
 def evaluate_guardrails(
@@ -28,117 +40,72 @@ def evaluate_guardrails(
     """Return every triggered guardrail, most severe first."""
     rails: list[Guardrail] = []
 
-    if analytics.emergency_fund_months < 3:
+    # --- blocking: the only one, and the one the committee can be overruled by -----------
+    if (
+        profile.horizon_band is HorizonBand.near
+        and analytics.growth_asset_share > NEAR_TERM_EQUITY_CEILING
+    ):
         rails.append(
             Guardrail(
-                code="EMERGENCY_FUND_THIN",
+                code="HORIZON_RISK_MISMATCH",
                 severity=GuardrailSeverity.blocking,
                 message=(
-                    "Emergency reserves are below three months of essential expenses. Do not "
-                    "recommend deploying cash into volatile assets before the buffer is rebuilt."
-                ),
-                detail=f"{analytics.emergency_fund_months:.1f} months of essential expenses covered.",
-            )
-        )
-    elif analytics.emergency_fund_months < 6:
-        rails.append(
-            Guardrail(
-                code="EMERGENCY_FUND_BELOW_TARGET",
-                severity=GuardrailSeverity.caution,
-                message="Emergency reserves are below the six-month target.",
-                detail=f"{analytics.emergency_fund_months:.1f} months covered.",
-            )
-        )
-
-    if analytics.high_apr_debt_balance > 0:
-        rails.append(
-            Guardrail(
-                code="HIGH_APR_DEBT",
-                severity=GuardrailSeverity.blocking,
-                message=(
-                    f"Debt above {HIGH_APR_THRESHOLD:.0%} APR must be prioritized over taking on "
-                    "additional market risk; its return is certain and its rate is high."
+                    f"Money needed within three years is {analytics.growth_asset_share:.0%} "
+                    "invested in growth assets."
                 ),
                 detail=(
-                    f"{analytics.high_apr_debt_balance:,.0f} outstanding at a weighted average of "
-                    f"{analytics.weighted_avg_apr:.1%}, costing {analytics.annual_interest_cost:,.0f}/yr."
+                    "A drawdown does not care about the date the money is needed. Reducing the "
+                    "growth share comes before any question of which growth assets to hold — "
+                    "and no advisor may recommend otherwise."
                 ),
             )
         )
 
-    if analytics.debt_service_ratio > DEBT_SERVICE_LIMIT:
-        rails.append(
-            Guardrail(
-                code="DEBT_SERVICE_HIGH",
-                severity=GuardrailSeverity.caution,
-                message="Required debt payments consume an unusually large share of net income.",
-                detail=f"Debt service ratio {analytics.debt_service_ratio:.0%} of net income.",
-            )
-        )
-
-    if analytics.savings_rate < 0:
-        rails.append(
-            Guardrail(
-                code="CASH_FLOW_NEGATIVE",
-                severity=GuardrailSeverity.blocking,
-                message=(
-                    "Spending exceeds after-tax income. Any investment recommendation must address "
-                    "the cash-flow gap first."
-                ),
-                detail=f"Savings rate {analytics.savings_rate:.1%}.",
-            )
-        )
-
-    if portfolio_analytics is not None and portfolio_analytics.largest_weight > CONCENTRATION_LIMIT:
+    # --- cautions -----------------------------------------------------------------------
+    if analytics.largest_position_weight > CONCENTRATION_LIMIT:
         rails.append(
             Guardrail(
                 code="POSITION_CONCENTRATION",
                 severity=GuardrailSeverity.caution,
                 message=(
-                    f"A single position exceeds {CONCENTRATION_LIMIT:.0%} of the portfolio. "
-                    "Concentration risk must be addressed explicitly in the final report."
+                    f"The largest position is {analytics.largest_position_weight:.0%} of the book."
                 ),
                 detail=(
-                    f"{portfolio_analytics.largest_holding_symbol} is "
-                    f"{portfolio_analytics.largest_weight:.0%} of the portfolio."
+                    "Whether that is too much is exactly where investors legitimately differ, "
+                    "which is why this is a caution and the threshold is a persona's to set."
                 ),
             )
         )
 
-    short_goals = [g for g in profile.goals if g.years_until_needed < SHORT_HORIZON_YEARS]
-    if short_goals:
-        names = ", ".join(g.name for g in short_goals)
+    if analytics.position_count and analytics.position_count < THIN_BOOK_POSITIONS:
         rails.append(
             Guardrail(
-                code="SHORT_HORIZON_GOAL",
+                code="THIN_BOOK",
                 severity=GuardrailSeverity.caution,
-                message=(
-                    f"Money needed within {SHORT_HORIZON_YEARS:.0f} years should not sit in "
-                    "volatile assets."
+                message=f"The book holds {analytics.position_count} positions.",
+                detail=(
+                    "Few enough that single-name risk dominates whatever the asset allocation "
+                    "says. Deliberate for some investors and an accident for others."
                 ),
-                detail=f"Short-horizon goals: {names}.",
             )
         )
 
-    if profile.income.employer_match_pct > 0 and analytics.savings_rate >= 0:
+    if analytics.investable_cash <= 0 and analytics.portfolio_value > 0:
         rails.append(
             Guardrail(
-                code="UNMATCHED_EMPLOYER_MATCH",
+                code="NO_DEPLOYABLE_CASH",
                 severity=GuardrailSeverity.info,
-                message=(
-                    "An employer match is available. Capturing it is an immediate, risk-free "
-                    "return and should precede other discretionary investing."
-                ),
-                detail=f"Match: {profile.income.employer_match_pct:.0%} of salary.",
+                message="There is no cash available to deploy.",
+                detail="Anything bought has to be funded by selling something already held.",
             )
         )
 
-    order = {
+    severity_order = {
         GuardrailSeverity.blocking: 0,
         GuardrailSeverity.caution: 1,
         GuardrailSeverity.info: 2,
     }
-    rails.sort(key=lambda g: (order[g.severity], g.code))
+    rails.sort(key=lambda r: severity_order[r.severity])
     return rails
 
 
@@ -160,24 +127,21 @@ def render_guardrails(rails: list[Guardrail]) -> str:
 # Cheap lexical check that the synthesized report did not sail past a blocking guardrail.
 # Deliberately conservative: it flags for human attention, it does not rewrite the report.
 
+# Lexical net over the prose, secondary to the counterfactual which is the real check. Narrow
+# on purpose: this domain says "stay invested through a drawdown" constantly, and a filter that
+# fired on ordinary investing language would train people to write around it.
 _VIOLATION_PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
-    "EMERGENCY_FUND_THIN": (
+    "HORIZON_RISK_MISMATCH": (
+        re.compile(r"(ignore|don'?t worry about|set aside) (the |your )?(time )?horizon", re.I),
         re.compile(
-            r"invest (all|the rest of|your entire|most of) (your |the )?(cash|savings)", re.I
-        ),
-        re.compile(r"deploy (all|the entire|your full) (cash|balance|reserve)", re.I),
-    ),
-    "HIGH_APR_DEBT": (
-        re.compile(
-            r"(ignore|deprioriti[sz]e|set aside|don'?t worry about) the (credit card|debt|loan)",
+            r"(put|move|invest) (the whole|all of the|your entire) (balance|portfolio|book) "
+            r"(in|into) (equit|stock|growth)",
             re.I,
         ),
         re.compile(
-            r"invest (instead of|rather than|before) paying (off|down) (the |your )?(debt|card)",
-            re.I,
+            r"stay fully invested (despite|regardless of) (the |your )?(need|horizon)", re.I
         ),
     ),
-    "CASH_FLOW_NEGATIVE": (re.compile(r"increase (your )?(monthly )?contributions", re.I),),
 }
 
 

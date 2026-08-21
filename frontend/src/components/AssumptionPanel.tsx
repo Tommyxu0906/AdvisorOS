@@ -2,19 +2,17 @@
  * Test a different assumption, explicitly.
  *
  * This is the control that makes the difference between a chatbot and a decision system
- * visible. Saying "what if I delay the house by three years" in the chat does *not* change
+ * visible. Saying "what if I don't need this for ten years" in the chat does *not* change
  * anything — the committee will answer the hypothetical in words, and the numbers underneath
  * will still be the old ones. Changing it here recomputes the scenario first, and only then do
  * the lenses get asked again.
  *
- * That ordering is the whole point, and it is why this is a form rather than a parsed sentence.
- * A chat turn that silently mutated the balance sheet would mean a user could talk their way
- * into a different recommendation without any figure on screen changing to match.
+ * That ordering is why this is a form rather than a parsed sentence. A chat turn that silently
+ * moved the horizon would mean a user could talk their way into a different recommendation
+ * without any figure on screen changing to match.
  *
- * The fields are the ones that actually move the computed scenario for this household: the
- * nearest goal's horizon, income, essential expenses, and the highest-rate debt. Everything else
- * lives in Settings, where changing it is a decision about your real situation rather than a
- * hypothetical.
+ * The fields are the ones that actually move the computed scenario: when the money is needed —
+ * which is the only thing the house blocks on — and what cash is available to deploy.
  */
 
 import { useState } from "react";
@@ -30,35 +28,11 @@ export interface AssumptionChange {
 
 interface Draft {
   horizon: number | null;
-  income: number | null;
-  expenses: number | null;
-  debtBalance: number | null;
+  cash: number | null;
 }
 
 function readDraft(profile: ProfileDraft): Draft {
-  const nearest = nearestGoal(profile);
-  const debt = highestAprDebt(profile);
-  return {
-    horizon: nearest?.years_until_needed ?? null,
-    income: profile.income.annual_gross,
-    expenses: profile.expenses.monthly_essential,
-    debtBalance: debt?.balance ?? null,
-  };
-}
-
-/** The goal the scenario is most sensitive to: the one that comes due soonest. */
-function nearestGoal(profile: ProfileDraft) {
-  const dated = profile.goals.filter((g) => g.years_until_needed != null);
-  if (dated.length === 0) return null;
-  return dated.reduce((a, b) =>
-    (a.years_until_needed ?? 0) <= (b.years_until_needed ?? 0) ? a : b,
-  );
-}
-
-function highestAprDebt(profile: ProfileDraft) {
-  const rated = profile.debts.filter((d) => d.apr != null && d.balance != null);
-  if (rated.length === 0) return null;
-  return rated.reduce((a, b) => ((a.apr ?? 0) >= (b.apr ?? 0) ? a : b));
+  return { horizon: profile.horizon_years, cash: profile.investable_cash };
 }
 
 export function AssumptionPanel({
@@ -71,28 +45,15 @@ export function AssumptionPanel({
   const current = readDraft(profile);
   const [draft, setDraft] = useState<Draft>(current);
 
-  const goal = nearestGoal(profile);
-  const debt = highestAprDebt(profile);
-
-  const changes = describeChanges(current, draft, goal?.name ?? "goal", debt?.name ?? "debt");
+  const changes = describeChanges(current, draft);
   const dirty = changes.length > 0;
 
   function apply() {
     if (!dirty) return;
-    const next: ProfileDraft = structuredClone(profile);
-
-    if (goal && draft.horizon != null) {
-      const target = next.goals.find((g) => g.name === goal.name);
-      if (target) target.years_until_needed = draft.horizon;
-    }
-    next.income.annual_gross = draft.income;
-    next.expenses.monthly_essential = draft.expenses;
-    if (debt && draft.debtBalance != null) {
-      const target = next.debts.find((d) => d.name === debt.name);
-      if (target) target.balance = draft.debtBalance;
-    }
-
-    onApply(next, changes);
+    onApply(
+      { ...profile, horizon_years: draft.horizon, investable_cash: draft.cash },
+      changes,
+    );
   }
 
   return (
@@ -105,38 +66,20 @@ export function AssumptionPanel({
         />
 
         <div className="assumption-grid">
-          {goal && (
-            <Field
-              label={`${goal.name} — years away`}
-              value={draft.horizon}
-              step={1}
-              min={0}
-              onChange={(v) => setDraft({ ...draft, horizon: v })}
-            />
-          )}
           <Field
-            label="Annual income"
-            value={draft.income}
-            step={5000}
+            label="Years until you need this money"
+            value={draft.horizon}
+            step={1}
             min={0}
-            onChange={(v) => setDraft({ ...draft, income: v })}
+            onChange={(v) => setDraft({ ...draft, horizon: v })}
           />
           <Field
-            label="Monthly essential spending"
-            value={draft.expenses}
-            step={250}
+            label="Cash available to deploy"
+            value={draft.cash}
+            step={1000}
             min={0}
-            onChange={(v) => setDraft({ ...draft, expenses: v })}
+            onChange={(v) => setDraft({ ...draft, cash: v })}
           />
-          {debt && (
-            <Field
-              label={`${debt.name} balance`}
-              value={draft.debtBalance}
-              step={500}
-              min={0}
-              onChange={(v) => setDraft({ ...draft, debtBalance: v })}
-            />
-          )}
         </div>
 
         {dirty && (
@@ -151,8 +94,8 @@ export function AssumptionPanel({
 
         <div className="row-between" style={{ marginTop: 14, gap: 10 }}>
           <span className="tiny muted">
-            Applying replaces the figures the scenario is computed from, then the engine recomputes
-            and the committee can react to the new one.
+            Applying replaces the figures the scenario is computed from, then the engine
+            recomputes and the committee can react to the new one.
           </span>
           <span style={{ display: "flex", gap: 8 }}>
             {dirty && (
@@ -199,35 +142,20 @@ function Field({
   );
 }
 
-function describeChanges(
-  before: Draft,
-  after: Draft,
-  goalName: string,
-  debtName: string,
-): AssumptionChange[] {
+function describeChanges(before: Draft, after: Draft): AssumptionChange[] {
   const out: AssumptionChange[] = [];
   if (before.horizon !== after.horizon) {
     out.push({
-      label: `${goalName} horizon`,
+      label: "Time horizon",
       from: before.horizon == null ? "—" : years(before.horizon),
       to: after.horizon == null ? "—" : years(after.horizon),
     });
   }
-  if (before.income !== after.income) {
-    out.push({ label: "Annual income", from: money(before.income), to: money(after.income) });
-  }
-  if (before.expenses !== after.expenses) {
+  if (before.cash !== after.cash) {
     out.push({
-      label: "Monthly essentials",
-      from: money(before.expenses),
-      to: money(after.expenses),
-    });
-  }
-  if (before.debtBalance !== after.debtBalance) {
-    out.push({
-      label: `${debtName} balance`,
-      from: money(before.debtBalance),
-      to: money(after.debtBalance),
+      label: "Deployable cash",
+      from: money(before.cash),
+      to: money(after.cash),
     });
   }
   return out;

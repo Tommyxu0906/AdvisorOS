@@ -14,7 +14,7 @@ Two rules govern everything here:
 from __future__ import annotations
 
 from app.analytics.guardrails import render_guardrails
-from app.analytics.portfolio_analytics import PortfolioAnalytics, asset_class_summary
+from app.analytics.portfolio_analytics import PortfolioAnalytics
 from app.analytics.profile_analytics import ProfileAnalytics
 from app.domain.advisor import AdvisorRuntimeProfile
 from app.domain.profile import FinancialProfile
@@ -56,9 +56,7 @@ def render_profile_facts(
 ) -> str:
     """The dynamic half of the prompt: this user's computed situation."""
     lines: list[str] = ["## Computed financial facts (deterministic — treat as given)", ""]
-    lines.append(
-        f"Age {profile.age}, {profile.dependents} dependent(s), currency {profile.currency}."
-    )
+    lines.append(f"Age {profile.age}, {profile.horizon_band.label}, currency {profile.currency}.")
     lines.append(f"Stated risk tolerance: {profile.risk_tolerance.value}.")
     lines.append(f"Self-reported investing experience: {profile.self_reported_experience:.0%}.")
     lines.append("")
@@ -69,41 +67,17 @@ def render_profile_facts(
         lines.append("Notable findings:")
         lines.extend(f"- {f}" for f in analytics.notable_findings)
 
-    if profile.goals:
+    if profile.notes:
         lines.append("")
-        lines.append("Stated goals:")
-        for g in sorted(profile.goals, key=lambda g: g.priority):
-            target = f", target {g.target_amount:,.0f}" if g.target_amount else ""
-            lines.append(
-                f"- {g.name} ({g.goal_type.value}): {g.years_until_needed:g} years away"
-                f"{target}, priority {g.priority}"
-            )
+        lines.append(f"What they said about their situation: {profile.notes}")
 
-    if profile.debts:
-        lines.append("")
-        lines.append("Debts:")
-        for d in sorted(profile.debts, key=lambda d: -d.apr):
-            lines.append(
-                f"- {d.name}: {d.balance:,.0f} at {d.apr:.1%} APR, "
-                f"minimum {d.minimum_monthly_payment:,.0f}/month"
-            )
-
-    if portfolio_analytics and portfolio_analytics.holding_count:
-        lines.append("")
-        lines.append("## Portfolio (deterministic)")
-        lines.extend(portfolio_analytics.summary_lines())
-        lines.append(f"Asset class mix: {asset_class_summary(portfolio_analytics)}")
-        top = sorted(portfolio_analytics.weights.items(), key=lambda kv: -kv[1])[:8]
-        lines.append("Largest positions: " + ", ".join(f"{s} {w:.1%}" for s, w in top))
-
-    if profile.notes.strip():
-        lines.append("")
-        lines.append("## The person's own notes")
-        lines.append(profile.notes.strip())
-
+    # The load-bearing half. Guardrails are computed in code and injected as hard constraints,
+    # and the report is re-validated against them afterwards — an advisor never gets to decide
+    # whether one applies.
     lines.append("")
     lines.append("## Guardrails")
     lines.append(render_guardrails(guardrails))
+
     return "\n".join(lines)
 
 

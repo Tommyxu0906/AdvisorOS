@@ -130,7 +130,7 @@ def test_guardrails_reach_the_prompts(
     _run(AnalysisDepth.quick, registry, mock_provider, stressed_profile, analyzed, credentials)
     prompts = "\n".join(str(c["system"]) for c in mock_provider.calls)
     assert "BLOCKING" in prompts
-    assert "HIGH_APR_DEBT" in prompts
+    assert "HORIZON_RISK_MISMATCH" in prompts
     assert "must not recommend" in "\n".join(str(c["stable_system"]) for c in mock_provider.calls)
 
 
@@ -303,11 +303,6 @@ def client(monkeypatch: pytest.MonkeyPatch) -> TestClient:
 def _profile_payload() -> dict:
     return {
         "age": 34,
-        "income": {"annual_gross": 145_000, "employer_match_pct": 0.04},
-        "expenses": {"monthly_essential": 4_200, "monthly_discretionary": 1_500},
-        "debts": [{"name": "card", "balance": 9_000, "apr": 0.229, "minimum_monthly_payment": 280}],
-        "assets": [{"name": "savings", "value": 11_000, "account_type": "cash"}],
-        "goals": [{"name": "house", "years_until_needed": 2.0}],
     }
 
 
@@ -418,17 +413,9 @@ CONSULT_BODY = {
     "anthropic_api_key": "sk-ant-" + "mock" * 12,
     "profile": {
         "age": 38,
-        "income": {"annual_gross": 165_000},
-        "expenses": {"monthly_essential": 6_200},
-        "assets": [{"name": "Cash", "value": 14_000, "account_type": "cash"}],
-        "debts": [
-            {
-                "name": "Card",
-                "balance": 9_000,
-                "apr": 0.229,
-                "minimum_monthly_payment": 260,
-            }
-        ],
+        # Near-term need against a growth book: the one thing the house blocks on now, and what
+        # makes `hold` infeasible so a lens preferring it gets visibly overruled.
+        "horizon_years": 1.5,
     },
     "portfolio": {
         "holdings": [
@@ -479,7 +466,7 @@ def test_consult_offers_hold_but_blocks_it_behind_the_guardrail(client: TestClie
     body = client.post("/api/committee/consult", json=CONSULT_BODY).json()
     hold = next(c for c in body["candidates"] if c["candidate_id"] == "hold")
     assert hold["feasible"] is False
-    assert hold["blocked_by"], "22.9% card debt is not a matter of taste"
+    assert hold["blocked_by"], "money needed in 18 months is not a matter of taste"
 
 
 def test_the_two_lenses_disagree_and_both_are_reported(client: TestClient) -> None:

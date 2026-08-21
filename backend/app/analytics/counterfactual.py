@@ -28,7 +28,7 @@ from app.analytics.portfolio_analytics import PortfolioAnalytics, analyze_portfo
 from app.analytics.profile_analytics import ProfileAnalytics, analyze_profile
 from app.domain.action import ActionKind, ActionSet, Infeasibility, ProposedAction, TaxRange
 from app.domain.portfolio import AssetClass, Holding, Portfolio
-from app.domain.profile import AccountType, Asset, FinancialProfile
+from app.domain.profile import FinancialProfile
 from app.domain.report import GuardrailSeverity
 
 # Where proceeds land and purchases are funded from when the profile has no cash asset yet.
@@ -138,7 +138,7 @@ def evaluate(
         profile, before_profile_analytics, portfolio, before_portfolio_analytics
     )
 
-    infeasibilities = action_set.check_feasible(portfolio, before_profile_analytics.liquid_assets)
+    infeasibilities = action_set.check_feasible(portfolio, before_profile_analytics.investable_cash)
 
     after_profile, after_portfolio, unapplied = apply(profile, portfolio, action_set)
     after_profile_analytics = analyze_profile(after_profile, after_portfolio)
@@ -224,30 +224,14 @@ def _apply_one(
         _add_cash(profile, -amount)
         return True
 
-    if action.kind is ActionKind.pay_down_debt:
-        if action.amount_usd is None:
-            return False
-        paid = _reduce_debt(profile, action.amount_usd, action.symbol)
-        _add_cash(profile, -paid)
-        return True
-
-    if action.kind is ActionKind.build_emergency_fund:
-        if action.amount_usd is None:
-            return False
-        # Money already counted as liquid by a preceding sale; this names where it settles.
-        _add_cash(profile, 0.0)
-        return True
-
-    if action.kind is ActionKind.redirect_cashflow:
-        if action.amount_usd is None:
-            return False
-        # Interpreted as a monthly figure moved out of discretionary spending.
-        monthly = min(action.amount_usd, profile.expenses.monthly_discretionary)
-        profile.expenses.monthly_discretionary -= monthly
-        return True
-
     if action.kind is ActionKind.rebalance_to_target:
-        return _rebalance(portfolio, action)
+        sold = _rebalance(portfolio, action)
+        if sold is None:
+            return False
+        # The proceeds have to land somewhere. Without this the value simply vanished, and the
+        # before/after read as though de-risking destroyed a third of the capital.
+        _add_cash(profile, sold)
+        return True
 
     return False
 
@@ -299,63 +283,55 @@ def _increase_holding(
     )
 
 
-def _reduce_debt(profile: FinancialProfile, amount: float, name: str | None) -> float:
-    """Pay against the named debt, or the highest-APR one. Returns what was actually paid."""
-    candidates = [d for d in profile.debts if name is None or d.name == name]
-    if not candidates:
-        return 0.0
-    remaining = amount
-    for debt in sorted(candidates, key=lambda d: d.apr, reverse=True):
-        if remaining <= 0:
-            break
-        paid = min(debt.balance, remaining)
-        debt.balance -= paid
-        remaining -= paid
-        if debt.balance <= 0:
-            debt.minimum_monthly_payment = 0.0
-    profile.debts = [d for d in profile.debts if d.balance > 0]
-    return amount - remaining
-
-
 def _add_cash(profile: FinancialProfile, amount: float) -> None:
-    """Move cash in or out of the first liquid account, creating one if there is none."""
-    if abs(amount) < 1e-9:
-        return
-    for asset in profile.assets:
-        if asset.is_liquid:
-            asset.value = max(0.0, asset.value + amount)
-            return
-    if amount > 0:
-        profile.assets.append(
-            Asset(
-                name=SYNTHETIC_CASH_NAME,
-                value=amount,
-                account_type=AccountType.cash,
-                is_liquid=True,
-            )
-        )
+    """Move deployable cash. One number now, where it used to be a list of household assets."""
+    profile.investable_cash = max(0.0, round(profile.investable_cash + amount, 2))
 
 
-def _rebalance(portfolio: Portfolio | None, action: ProposedAction) -> bool:
-    """Scale an asset class to its target weight, proportionally across its holdings.
+# Everything the house counts as a growth asset. Mirrors profile_analytics, which is the module
+# that decides whether the growth share breaches the ceiling in the first place.
+_GROWTH_CLASSES = {"us_equity", "intl_developed_equity", "emerging_equity", "crypto", "reit"}
 
-    Returns False when the target class holds nothing: reaching it would mean choosing an
-    instrument, and picking a ticker on the user's behalf is not this module's job.
+
+def _rebalance(portfolio: Portfolio | None, action: ProposedAction) -> float | None:
+    """Scale a group of holdings to a target weight, proportionally within the group.
+
+    With `asset_class` set, the group is that class. With it left unset, the group is every
+    growth asset — which is how the house expresses "money needed soon should not be this
+    exposed" without naming an instrument to sell.
+
+    Returns False when the group holds nothing: reaching the target would mean choosing what to
+    buy, and picking a ticker on the user's behalf is not this module's job.
     """
-    if portfolio is None or action.asset_class is None or action.target_weight is None:
-        return False
+    if portfolio is None or action.target_weight is None:
+        return None
     total = portfolio.total_value
     if total <= 0:
-        return False
+        return None
 
-    in_class = [h for h in portfolio.holdings if h.asset_class is action.asset_class]
+    in_class = (
+        [h for h in portfolio.holdings if h.asset_class is action.asset_class]
+        if action.asset_class is not None
+        else [h for h in portfolio.holdings if h.asset_class.value in _GROWTH_CLASSES]
+    )
     if not in_class:
-        return False
+        return None
 
     current = sum(h.market_value for h in in_class)
-    target = action.target_weight * total
     if current <= 0:
-        return False
+        return None
+
+    # Solved against the *post-sale* total, not the current one. The proceeds leave the
+    # portfolio, so scaling the group to `weight * total` overshoots: the book shrinks by exactly
+    # what was sold and the survivors' weights rise to fill the gap. Same water-filling identity
+    # `policy/concentration.solve_trim_targets` uses, for the same reason.
+    #
+    #   (current - sold) / (total - sold) = w   =>   sold = (current - w*total) / (1 - w)
+    weight = action.target_weight
+    if current <= weight * total:
+        return 0.0
+    sold_total = (current - weight * total) / (1 - weight) if weight < 1 else current
+    target = current - sold_total
 
     scale = target / current
     for lot in in_class:
@@ -364,7 +340,7 @@ def _rebalance(portfolio: Portfolio | None, action: ProposedAction) -> bool:
         if lot.cost_basis is not None:
             lot.cost_basis *= scale
         lot.market_value *= scale
-    return True
+    return round(sold_total, 2)
 
 
 def _changes(
@@ -374,42 +350,30 @@ def _changes(
     after_pa: PortfolioAnalytics | None,
 ) -> list[MetricChange]:
     changes = [
+        # The house's one hard constraint, so it leads: money needed soon should not be sitting
+        # in growth assets, and a plan that claims to fix that has to show the share coming down.
         MetricChange(
-            label="emergency fund (months)",
-            before=before.emergency_fund_months,
-            after=after.emergency_fund_months,
-            higher_is_better=True,
-        ),
-        MetricChange(
-            label="savings rate",
-            before=before.savings_rate,
-            after=after.savings_rate,
-            higher_is_better=True,
-        ),
-        MetricChange(
-            label="high-APR debt",
-            before=before.high_apr_debt_balance,
-            after=after.high_apr_debt_balance,
+            label="growth asset share",
+            before=before.growth_asset_share,
+            after=after.growth_asset_share,
             higher_is_better=False,
         ),
         MetricChange(
-            label="annual interest cost",
-            before=before.annual_interest_cost,
-            after=after.annual_interest_cost,
-            higher_is_better=False,
+            label="deployable cash",
+            before=before.investable_cash,
+            after=after.investable_cash,
         ),
-        # Both ledgers together. `ProfileAnalytics.net_worth` counts only `profile.assets`, and
-        # the portfolio is a separate list — so a sale moves value from an uncounted ledger into
-        # a counted one and reads as though selling made the holder richer. Summing the two is
-        # the number a person would recognize as theirs, and it correctly stays flat when a
-        # position is merely converted to cash.
+        # Both ledgers together. Cash and the portfolio are separate numbers, so a sale moves
+        # value from one into the other and would read as though selling made the holder richer.
+        # Summing them is the figure a person would recognize as theirs, and it correctly stays
+        # flat when a position is merely converted to cash.
         #
-        # No preferred direction: a sale that realizes tax lowers it on purpose, and scoring
-        # that as a regression would penalize the right decision.
+        # No preferred direction: a sale that realizes tax lowers it on purpose, and scoring that
+        # as a regression would penalize the right decision.
         MetricChange(
-            label="net worth (incl. portfolio)",
-            before=before.net_worth + (before_pa.total_value if before_pa else 0.0),
-            after=after.net_worth + (after_pa.total_value if after_pa else 0.0),
+            label="total capital",
+            before=before.investable_cash + (before_pa.total_value if before_pa else 0.0),
+            after=after.investable_cash + (after_pa.total_value if after_pa else 0.0),
         ),
     ]
     if before_pa and after_pa:
@@ -495,12 +459,12 @@ def _ineffective(
                 _position_value(after_pa, action.symbol)
                 > _position_value(before_pa, action.symbol) + 1e-9
             )
-        elif action.kind is ActionKind.pay_down_debt:
-            moved = after.total_debt < before.total_debt - 1e-9
-        elif action.kind is ActionKind.build_emergency_fund:
-            moved = after.emergency_fund_months > before.emergency_fund_months - 1e-9
-        elif action.kind is ActionKind.redirect_cashflow:
-            moved = after.savings_rate > before.savings_rate - 1e-9
+        elif action.kind is ActionKind.rebalance_to_target:
+            # The house's de-risking action targets the growth share rather than one instrument,
+            # so that is the number it has to move. Judged on the share and not on any single
+            # position: selling the right amount across several holdings is a success even
+            # though no individual weight lands on the target.
+            moved = after.growth_asset_share < before.growth_asset_share - 1e-9
 
         if moved is False:
             failures.append(action.action_id)

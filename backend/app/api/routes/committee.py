@@ -226,10 +226,13 @@ async def consult_committee(
             status_code=404, detail={"code": "advisor_not_found", "message": str(exc)}
         ) from exc
 
-    analytics = analyze_profile(req.profile)
     portfolio = req.portfolio if req.portfolio and req.portfolio.holdings else None
+    # Both the analytics and the guardrails need the book. They did not when guardrails came out
+    # of a household balance sheet; now that every one of them is about the portfolio, omitting
+    # it silently produced an empty guardrail list and a committee with nothing to be bound by.
+    analytics = analyze_profile(req.profile, portfolio)
     pa = analyze_portfolio(portfolio) if portfolio else None
-    guardrails = evaluate_guardrails(req.profile, analytics)
+    guardrails = evaluate_guardrails(req.profile, analytics, portfolio, pa)
     scenario = compute_scenario(req.profile, analytics, portfolio, pa, guardrails)
 
     context = RunContext.create(credentials, model=req.model)

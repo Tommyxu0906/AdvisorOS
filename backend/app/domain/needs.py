@@ -13,7 +13,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class NeedDimension(str, Enum):
     liquidity_risk = "liquidity_risk"
-    debt_pressure = "debt_pressure"
+    horizon_pressure = "horizon_pressure"
     concentration_risk = "concentration_risk"
     valuation_sensitivity = "valuation_sensitivity"
     behavioral_risk = "behavioral_risk"
@@ -30,7 +30,16 @@ class NeedVector(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     liquidity_risk: float = Field(default=0.0, ge=0, le=1)
-    debt_pressure: float = Field(default=0.0, ge=0, le=1)
+    horizon_pressure: float = Field(
+        default=0.0,
+        ge=0,
+        le=1,
+        description=(
+            "How close the money is to being needed, against how much risk the book is taking. "
+            "Replaced debt_pressure when the product narrowed to the portfolio: a platform that "
+            "does not ask about debt has no business routing on it."
+        ),
+    )
     concentration_risk: float = Field(default=0.0, ge=0, le=1)
     valuation_sensitivity: float = Field(default=0.0, ge=0, le=1)
     behavioral_risk: float = Field(default=0.0, ge=0, le=1)
@@ -58,7 +67,16 @@ class ExpertiseVector(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     liquidity_risk: float = Field(default=0.0, ge=0, le=1)
-    debt_pressure: float = Field(default=0.0, ge=0, le=1)
+    horizon_pressure: float = Field(
+        default=0.0,
+        ge=0,
+        le=1,
+        description=(
+            "How close the money is to being needed, against how much risk the book is taking. "
+            "Replaced debt_pressure when the product narrowed to the portfolio: a platform that "
+            "does not ask about debt has no business routing on it."
+        ),
+    )
     concentration_risk: float = Field(default=0.0, ge=0, le=1)
     valuation_sensitivity: float = Field(default=0.0, ge=0, le=1)
     behavioral_risk: float = Field(default=0.0, ge=0, le=1)

@@ -6,7 +6,7 @@
   "one_line": "You cannot predict, but you can prepare — and you can know where you are in the cycle.",
   "expertise": {
     "liquidity_risk": 0.7,
-    "debt_pressure": 0.55,
+    "horizon_pressure": 0.55,
     "concentration_risk": 0.6,
     "valuation_sensitivity": 0.95,
     "behavioral_risk": 0.85,

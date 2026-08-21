@@ -6,7 +6,7 @@
   "one_line": "Financial outcomes are driven by behavior under uncertainty, not by spreadsheet optimality.",
   "expertise": {
     "liquidity_risk": 0.9,
-    "debt_pressure": 0.8,
+    "horizon_pressure": 0.8,
     "concentration_risk": 0.4,
     "valuation_sensitivity": 0.3,
     "behavioral_risk": 0.95,

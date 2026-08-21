@@ -45,37 +45,28 @@ assert_rejects() {
 "${PSQL[@]}" -d "$DB" >/dev/null <<'SQL'
 insert into auth.users (id, email) values ('11111111-1111-1111-1111-111111111111', 'a@example.com');
 insert into public.financial_profiles
-  (id, user_id, age, income_annual_gross, expenses_monthly_essential)
+  (id, user_id, age, horizon_years, investable_cash)
 values
   ('22222222-2222-2222-2222-222222222222', '11111111-1111-1111-1111-111111111111',
-   34, 145000, 4200);
+   34, 10, 4200);
 SQL
 
 assert_rejects "age below 16" \
-  "insert into public.financial_profiles (user_id, age, income_annual_gross, expenses_monthly_essential)
-   values ('11111111-1111-1111-1111-111111111111', 4, 1000, 100)"
+  "insert into public.financial_profiles (user_id, age, horizon_years, investable_cash)
+   values ('11111111-1111-1111-1111-111111111111', 4, 10, 100)"
 
-assert_rejects "net pay above gross" \
-  "insert into public.financial_profiles
-     (user_id, age, income_annual_gross, income_annual_net, expenses_monthly_essential)
-   values ('11111111-1111-1111-1111-111111111111', 34, 100000, 200000, 1000)"
+assert_rejects "horizon beyond 60 years" \
+  "insert into public.financial_profiles (user_id, age, horizon_years, investable_cash)
+   values ('11111111-1111-1111-1111-111111111111', 34, 99, 100)"
+
+assert_rejects "negative deployable cash" \
+  "insert into public.financial_profiles (user_id, age, horizon_years, investable_cash)
+   values ('11111111-1111-1111-1111-111111111111', 34, 10, -5)"
 
 assert_rejects "unknown risk tolerance" \
   "insert into public.financial_profiles
-     (user_id, age, income_annual_gross, expenses_monthly_essential, risk_tolerance)
-   values ('11111111-1111-1111-1111-111111111111', 34, 100000, 1000, 'yolo')"
-
-assert_rejects "negative debt balance" \
-  "insert into public.profile_debts (profile_id, name, balance, apr)
-   values ('22222222-2222-2222-2222-222222222222', 'card', -5, 0.2)"
-
-assert_rejects "apr above 1 (percent instead of fraction)" \
-  "insert into public.profile_debts (profile_id, name, balance, apr)
-   values ('22222222-2222-2222-2222-222222222222', 'card', 900, 22.9)"
-
-assert_rejects "goal priority out of range" \
-  "insert into public.profile_goals (profile_id, name, years_until_needed, priority)
-   values ('22222222-2222-2222-2222-222222222222', 'house', 2, 9)"
+     (user_id, age, horizon_years, investable_cash, risk_tolerance)
+   values ('11111111-1111-1111-1111-111111111111', 34, 10, 1000, 'yolo')"
 
 assert_rejects "second default profile for one user" \
   "insert into public.financial_profiles

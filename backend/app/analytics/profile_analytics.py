@@ -1,7 +1,21 @@
-"""Deterministic financial profile analytics.
+"""Deterministic investor analytics.
 
-No LLM. No network. Given a FinancialProfile, produce the numbers and the need vector that
-drive advisor selection and prompt content.
+No LLM. No network. Given an investor profile and their book, produce the numbers and the need
+vector that drive advisor routing and prompt content.
+
+**Rewritten when the product narrowed to the portfolio.** This module used to compute savings
+rate, debt-service ratio, emergency-fund months, and weighted average APR — fifteen fields of
+household finance, most of which never reached a recommendation about which stocks to hold. What
+is left is what actually changes an investment decision:
+
+    horizon and how much risk the book is taking against it
+    concentration
+    what cash is available to deploy
+    how much of the book sits in accounts where a sale is a taxable event
+
+The need vector keeps its shape, because advisor routing is arithmetic over it and that seam is
+still the right one. Only `horizon_pressure` changed meaning, and it changed because a platform
+that does not ask about debt has no business routing on debt.
 """
 
 from __future__ import annotations
@@ -10,12 +24,14 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.domain.needs import NeedVector
 from app.domain.portfolio import Portfolio
-from app.domain.profile import FinancialProfile, GoalType, LifeStage
+from app.domain.profile import FinancialProfile, HorizonBand, LifeStage
 
-# Debt above this APR is treated as materially urgent regardless of other factors.
-HIGH_APR_THRESHOLD = 0.08
-# Emergency fund target in months of essential expenses.
-EMERGENCY_FUND_TARGET_MONTHS = 6.0
+# Above this single-name weight, concentration is a finding rather than a preference.
+CONCENTRATION_NOTABLE = 0.25
+# A book this equity-heavy against a near-term need is the one hard constraint the house keeps.
+NEAR_TERM_EQUITY_CEILING = 0.4
+
+_GROWTH_CLASSES = {"us_equity", "intl_developed_equity", "emerging_equity", "crypto", "reit"}
 
 
 def _clamp(x: float, lo: float = 0.0, hi: float = 1.0) -> float:
@@ -23,189 +39,145 @@ def _clamp(x: float, lo: float = 0.0, hi: float = 1.0) -> float:
 
 
 class ProfileAnalytics(BaseModel):
-    """Everything derivable from a profile with arithmetic alone."""
+    """Everything derivable from an investor profile and their book with arithmetic alone."""
 
     model_config = ConfigDict(extra="forbid")
 
     life_stage: LifeStage
-    net_worth: float
-    total_assets: float
-    liquid_assets: float
-    total_debt: float
+    horizon_years: float
+    horizon_band: HorizonBand
 
-    annual_savings: float
-    savings_rate: float = Field(description="Annual savings / annual gross income")
-    emergency_fund_months: float = Field(description="Liquid assets / monthly essential expenses")
-    debt_to_income: float = Field(description="Total debt / annual gross income")
-    debt_service_ratio: float = Field(description="Monthly debt minimums / monthly net income")
-    high_apr_debt_balance: float
-    weighted_avg_apr: float
-    annual_interest_cost: float
-    tax_advantaged_share: float = Field(description="Share of assets in tax-advantaged accounts")
-    years_of_expenses_covered: float
+    portfolio_value: float
+    investable_cash: float = Field(description="Account cash available to deploy")
+    total_capital: float = Field(description="Portfolio value plus deployable cash")
+
+    growth_asset_share: float = Field(
+        default=0.0, description="Share of the book in equity-like assets, 0..1"
+    )
+    cash_share: float = Field(default=0.0, description="Deployable cash over total capital")
+    taxable_share: float = Field(
+        default=0.0, description="Share of the book where a sale is a taxable event"
+    )
+    largest_position_weight: float = Field(default=0.0)
+    position_count: int = 0
 
     need_vector: NeedVector
     notable_findings: list[str] = Field(default_factory=list)
 
     def summary_lines(self) -> list[str]:
         """Compact, prompt-ready facts. Deterministic ordering."""
-        return [
-            f"Life stage: {self.life_stage.value}",
-            f"Net worth: {self.net_worth:,.0f}",
-            f"Savings rate: {self.savings_rate:.1%}",
-            f"Emergency fund: {self.emergency_fund_months:.1f} months of essential expenses",
-            f"Debt-to-income: {self.debt_to_income:.2f}x",
-            f"Debt service ratio: {self.debt_service_ratio:.1%} of net income",
-            f"High-APR debt (> {HIGH_APR_THRESHOLD:.0%}): {self.high_apr_debt_balance:,.0f}",
-            f"Annual interest cost: {self.annual_interest_cost:,.0f}",
-            f"Assets in tax-advantaged accounts: {self.tax_advantaged_share:.0%}",
-            f"Years of expenses covered by assets: {self.years_of_expenses_covered:.1f}",
+        lines = [
+            f"Age: {self.life_stage.value.replace('_', ' ')} ({self.horizon_band.label})",
+            f"Portfolio: {self.portfolio_value:,.0f} across {self.position_count} positions",
+            f"Deployable cash: {self.investable_cash:,.0f} ({self.cash_share:.0%} of capital)",
+            f"Growth assets: {self.growth_asset_share:.0%} of the book",
         ]
+        if self.largest_position_weight:
+            lines.append(f"Largest position: {self.largest_position_weight:.0%}")
+        if self.taxable_share:
+            lines.append(f"Held in taxable accounts: {self.taxable_share:.0%}")
+        return lines
 
 
 def analyze_profile(
     profile: FinancialProfile, portfolio: Portfolio | None = None
 ) -> ProfileAnalytics:
-    """Compute all deterministic profile metrics and the need vector."""
-    monthly_essential = max(profile.expenses.monthly_essential, 1e-9)
-    annual_gross = max(profile.income.annual_gross, 1e-9)
-    monthly_net = max(profile.income.effective_net / 12, 1e-9)
+    """Compute the deterministic investor metrics and the need vector."""
+    holdings = portfolio.holdings if portfolio else []
+    portfolio_value = sum(h.market_value for h in holdings)
+    cash = profile.investable_cash
+    total_capital = portfolio_value + cash
 
-    annual_savings = profile.income.effective_net - profile.expenses.annual_total
-    savings_rate = annual_savings / annual_gross
-    emergency_fund_months = profile.liquid_assets / monthly_essential
-    debt_to_income = profile.total_debt / annual_gross
-    debt_service_ratio = profile.monthly_minimum_debt_payment / monthly_net
+    # Aggregated by symbol, never per holding: the same stock in two accounts is one investment
+    # decision. `portfolio_analytics` uses the same convention, and two different answers to
+    # "how concentrated is this" would be worse than either.
+    by_symbol: dict[str, float] = {}
+    for holding in holdings:
+        symbol = holding.symbol.strip().upper()
+        if symbol:
+            by_symbol[symbol] = by_symbol.get(symbol, 0.0) + holding.market_value
 
-    high_apr_balance = sum(d.balance for d in profile.debts if d.apr > HIGH_APR_THRESHOLD)
-    annual_interest = sum(d.annual_interest_cost for d in profile.debts)
-    weighted_avg_apr = (annual_interest / profile.total_debt) if profile.total_debt > 0 else 0.0
-
-    tax_adv_value = sum(a.value for a in profile.assets if a.account_type.is_tax_advantaged)
-    tax_advantaged_share = tax_adv_value / profile.total_assets if profile.total_assets > 0 else 0.0
-    annual_expenses = max(profile.expenses.annual_total, 1e-9)
-    years_covered = profile.total_assets / annual_expenses
-
-    need = _build_need_vector(
-        profile=profile,
-        portfolio=portfolio,
-        emergency_fund_months=emergency_fund_months,
-        savings_rate=savings_rate,
-        debt_to_income=debt_to_income,
-        debt_service_ratio=debt_service_ratio,
-        high_apr_balance=high_apr_balance,
-        weighted_avg_apr=weighted_avg_apr,
-        tax_advantaged_share=tax_advantaged_share,
-        years_covered=years_covered,
+    largest = (
+        max(by_symbol.values()) / portfolio_value if portfolio_value > 0 and by_symbol else 0.0
     )
-
-    findings = _notable_findings(
-        profile, emergency_fund_months, savings_rate, high_apr_balance, weighted_avg_apr
+    growth = (
+        sum(h.market_value for h in holdings if h.asset_class.value in _GROWTH_CLASSES)
+        / portfolio_value
+        if portfolio_value > 0
+        else 0.0
     )
+    taxable = (
+        sum(h.market_value for h in holdings if h.account_type.value == "taxable") / portfolio_value
+        if portfolio_value > 0
+        else 0.0
+    )
+    cash_share = cash / total_capital if total_capital > 0 else 0.0
+
+    need = _need_vector(profile, growth, largest, taxable, cash_share, len(by_symbol))
 
     return ProfileAnalytics(
         life_stage=profile.life_stage,
-        net_worth=profile.net_worth,
-        total_assets=profile.total_assets,
-        liquid_assets=profile.liquid_assets,
-        total_debt=profile.total_debt,
-        annual_savings=annual_savings,
-        savings_rate=savings_rate,
-        emergency_fund_months=emergency_fund_months,
-        debt_to_income=debt_to_income,
-        debt_service_ratio=debt_service_ratio,
-        high_apr_debt_balance=high_apr_balance,
-        weighted_avg_apr=weighted_avg_apr,
-        annual_interest_cost=annual_interest,
-        tax_advantaged_share=tax_advantaged_share,
-        years_of_expenses_covered=years_covered,
+        horizon_years=profile.horizon_years,
+        horizon_band=profile.horizon_band,
+        portfolio_value=round(portfolio_value, 2),
+        investable_cash=round(cash, 2),
+        total_capital=round(total_capital, 2),
+        growth_asset_share=round(growth, 4),
+        cash_share=round(cash_share, 4),
+        taxable_share=round(taxable, 4),
+        largest_position_weight=round(largest, 4),
+        position_count=len(by_symbol),
         need_vector=need,
-        notable_findings=findings,
+        notable_findings=_notable_findings(profile, growth, largest, len(by_symbol)),
     )
 
 
-def _build_need_vector(
-    *,
+def _need_vector(
     profile: FinancialProfile,
-    portfolio: Portfolio | None,
-    emergency_fund_months: float,
-    savings_rate: float,
-    debt_to_income: float,
-    debt_service_ratio: float,
-    high_apr_balance: float,
-    weighted_avg_apr: float,
-    tax_advantaged_share: float,
-    years_covered: float,
+    growth_share: float,
+    largest: float,
+    taxable_share: float,
+    cash_share: float,
+    position_count: int,
 ) -> NeedVector:
-    # Liquidity: shortfall against the 6-month target, plus pressure from unstable income,
-    # dependents, and any near-term goal.
-    liquidity = _clamp(1.0 - emergency_fund_months / EMERGENCY_FUND_TARGET_MONTHS)
-    liquidity += (1.0 - profile.income.stability) * 0.3
-    liquidity += min(profile.dependents, 3) * 0.05
-    if any(g.is_short_horizon for g in profile.goals):
-        liquidity += 0.15
-    if savings_rate < 0:
-        liquidity += 0.2
+    """Where this investor most needs a view. Routing consumes this and nothing else."""
+    # The nearer the money is needed and the more risk the book carries, the more this matters.
+    horizon = 0.0
+    if profile.horizon_band is HorizonBand.near:
+        horizon = 0.5 + 0.5 * growth_share
+    elif profile.horizon_band is HorizonBand.medium:
+        horizon = 0.25 * growth_share
 
-    # Debt pressure: scaled by both leverage and rate.
-    debt = _clamp(debt_to_income / 2.0) * 0.5
-    debt += _clamp(debt_service_ratio / 0.36) * 0.3
-    if high_apr_balance > 0:
-        debt += 0.25 + _clamp(weighted_avg_apr / 0.25) * 0.15
+    # Cash that cannot cover a sensible purchase, or a book with nothing liquid in it.
+    liquidity = _clamp(1.0 - cash_share * 5) * (
+        0.6 if profile.horizon_band is HorizonBand.near else 0.3
+    )
 
-    # Concentration: from the portfolio when present, otherwise from illiquid asset skew.
-    concentration = 0.0
-    if portfolio and portfolio.total_value > 0:
-        weights = [h.market_value / portfolio.total_value for h in portfolio.holdings]
-        top = max(weights, default=0.0)
-        hhi = sum(w * w for w in weights)
-        concentration = _clamp(top / 0.35) * 0.6 + _clamp((hhi - 0.1) / 0.4) * 0.4
-    elif profile.total_assets > 0:
-        # No holdings supplied. Estimate from account-level skew, which is a weak proxy — an
-        # IRA is a wrapper, not a position — so cap the score to avoid overstating the signal.
-        largest = max((a.value for a in profile.assets), default=0.0)
-        concentration = min(0.6, _clamp((largest / profile.total_assets - 0.3) / 0.5))
+    concentration = _clamp((largest - 0.1) / 0.4)
 
-    # Valuation sensitivity: matters more when the horizon is short or the pot is already large
-    # relative to spending needs.
-    horizon = profile.shortest_goal_horizon
-    valuation = 0.3
-    if horizon is not None:
-        valuation += _clamp(1.0 - horizon / 10.0) * 0.5
-    valuation += _clamp((years_covered - 15) / 20) * 0.2
-    if profile.life_stage in (LifeStage.pre_retirement, LifeStage.retirement):
-        valuation += 0.15
+    # A concentrated growth book is where valuation matters most.
+    valuation = _clamp(growth_share * 0.6 + concentration * 0.4)
 
-    # Behavioral risk: inexperience, aggressive stance without experience, thin buffer.
-    behavioral = _clamp(1.0 - profile.self_reported_experience) * 0.5
-    behavioral += _clamp(profile.risk_tolerance.score - profile.self_reported_experience) * 0.3
-    if emergency_fund_months < 3:
-        behavioral += 0.2
+    # Inexperience and a concentrated book both push this up; so does a near-term need, because
+    # that is when people sell at the worst moment.
+    behavioral = _clamp(
+        (1.0 - profile.self_reported_experience) * 0.5
+        + concentration * 0.3
+        + (0.2 if profile.horizon_band is HorizonBand.near else 0.0)
+    )
 
-    # Tax complexity: taxable-heavy balance sheets, high income, many accounts.
-    tax = _clamp(1.0 - tax_advantaged_share) * 0.4
-    tax += _clamp((profile.income.annual_gross - 100_000) / 250_000) * 0.4
-    tax += _clamp((len({a.account_type for a in profile.assets}) - 1) / 4) * 0.2
+    # Selling in a taxable account has a cost that selling in an IRA does not.
+    tax = _clamp(taxable_share * (0.4 + 0.6 * concentration))
 
-    # Longevity: later life stages, retirement goals, thin coverage relative to spending.
-    longevity = {
-        LifeStage.early_career: 0.15,
-        LifeStage.accumulation: 0.3,
-        LifeStage.peak_earning: 0.45,
-        LifeStage.pre_retirement: 0.75,
-        LifeStage.retirement: 0.9,
-    }[profile.life_stage]
-    if any(g.goal_type is GoalType.retirement for g in profile.goals):
-        longevity += 0.1
-    if years_covered < 10 and profile.life_stage in (
-        LifeStage.pre_retirement,
-        LifeStage.retirement,
-    ):
-        longevity += 0.15
+    # A long horizon is where compounding and staying invested dominate.
+    longevity = _clamp(profile.horizon_years / 30.0)
+
+    if position_count and position_count < 4:
+        concentration = _clamp(concentration + 0.15)
 
     return NeedVector(
         liquidity_risk=_clamp(liquidity),
-        debt_pressure=_clamp(debt),
+        horizon_pressure=_clamp(horizon),
         concentration_risk=_clamp(concentration),
         valuation_sensitivity=_clamp(valuation),
         behavioral_risk=_clamp(behavioral),
@@ -215,30 +187,23 @@ def _build_need_vector(
 
 
 def _notable_findings(
-    profile: FinancialProfile,
-    emergency_fund_months: float,
-    savings_rate: float,
-    high_apr_balance: float,
-    weighted_avg_apr: float,
+    profile: FinancialProfile, growth_share: float, largest: float, position_count: int
 ) -> list[str]:
+    """Plain sentences a prompt can carry. Stated as observations, never as instructions."""
     out: list[str] = []
-    if emergency_fund_months < 3:
+
+    if profile.horizon_band is HorizonBand.near and growth_share > NEAR_TERM_EQUITY_CEILING:
         out.append(
-            f"Emergency fund covers only {emergency_fund_months:.1f} months of essential expenses."
+            f"Money is needed within three years while {growth_share:.0%} of the book sits in "
+            "growth assets."
         )
-    if savings_rate < 0:
-        out.append("Spending exceeds after-tax income; the profile is cash-flow negative.")
-    elif savings_rate > 0.3:
-        out.append(f"Savings rate of {savings_rate:.0%} is unusually strong.")
-    if high_apr_balance > 0:
+    if largest > CONCENTRATION_NOTABLE:
+        out.append(f"The largest single position is {largest:.0%} of the book.")
+    if position_count and position_count < 4:
         out.append(
-            f"{high_apr_balance:,.0f} of debt carries an APR above {HIGH_APR_THRESHOLD:.0%} "
-            f"(weighted average {weighted_avg_apr:.1%})."
+            f"The book holds {position_count} position{'s' if position_count != 1 else ''}, which "
+            "is a deliberate choice at best and an accident at worst."
         )
-    if profile.income.employer_match_pct > 0:
-        out.append(
-            f"Employer match of {profile.income.employer_match_pct:.0%} of salary is available."
-        )
-    if profile.income.stability < 0.5:
-        out.append("Income is self-reported as unstable, raising the required cash buffer.")
+    if profile.investable_cash <= 0:
+        out.append("There is no deployable cash, so anything bought has to be funded by a sale.")
     return out

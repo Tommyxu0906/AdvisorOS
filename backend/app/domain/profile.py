@@ -1,13 +1,31 @@
-"""Financial profile domain models.
+"""Investor profile domain models.
 
 Everything here is plain data with validation. No analytics, no LLM, no I/O.
+
+**Scope: the portfolio, and only the portfolio.** This product advises on an investment book. It
+does not ask about mortgages, credit cards, household expenses, or income, and it must not — a
+system that collects a person's whole balance sheet in order to comment on their equity
+allocation has taken on a much larger duty of care than it can discharge, and most of what it
+collected would never be used.
+
+What survives is what actually changes an investment recommendation:
+
+    age                   a rough proxy for how long the money can stay invested
+    horizon_years         when it is needed, which is the real constraint
+    risk_tolerance        how much drawdown is acceptable on the way
+    investable_cash       what is available to buy with, so "add to X" can be checked
+    experience            whether an explanation should assume any vocabulary
+
+`investable_cash` is deliberately named for what it is: money in the brokerage account that
+could be deployed. It is not a household cash position, and nothing here asks where it came
+from.
 """
 
 from __future__ import annotations
 
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class RiskTolerance(str, Enum):
@@ -37,17 +55,6 @@ class LifeStage(str, Enum):
     retirement = "retirement"
 
 
-class GoalType(str, Enum):
-    retirement = "retirement"
-    home_purchase = "home_purchase"
-    education = "education"
-    emergency_fund = "emergency_fund"
-    wealth_growth = "wealth_growth"
-    income = "income"
-    debt_payoff = "debt_payoff"
-    other = "other"
-
-
 class AccountType(str, Enum):
     taxable = "taxable"
     traditional_401k = "traditional_401k"
@@ -63,101 +70,48 @@ class AccountType(str, Enum):
         return self not in (AccountType.taxable, AccountType.cash, AccountType.other)
 
 
-class Income(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+class HorizonBand(str, Enum):
+    """When the money is needed. The single most load-bearing input this product takes."""
 
-    annual_gross: float = Field(ge=0, description="Annual pre-tax income")
-    annual_net: float | None = Field(default=None, ge=0, description="Annual after-tax income")
-    stability: float = Field(
-        default=0.8, ge=0, le=1, description="0 = highly variable, 1 = fully stable"
-    )
-    employer_match_pct: float = Field(
-        default=0.0, ge=0, le=1, description="Employer 401k match as fraction of salary"
-    )
-
-    @model_validator(mode="after")
-    def _net_not_above_gross(self) -> Income:
-        if self.annual_net is not None and self.annual_net > self.annual_gross:
-            raise ValueError("annual_net cannot exceed annual_gross")
-        return self
+    near = "near"  # under 3 years
+    medium = "medium"  # 3 to 10
+    long = "long"  # over 10
 
     @property
-    def effective_net(self) -> float:
-        """Net income, estimated at 75% of gross when not supplied."""
-        return self.annual_net if self.annual_net is not None else self.annual_gross * 0.75
-
-
-class Expenses(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    monthly_essential: float = Field(
-        ge=0, description="Housing, food, utilities, insurance, debt minimums"
-    )
-    monthly_discretionary: float = Field(default=0.0, ge=0)
-
-    @property
-    def monthly_total(self) -> float:
-        return self.monthly_essential + self.monthly_discretionary
-
-    @property
-    def annual_total(self) -> float:
-        return self.monthly_total * 12
-
-
-class Debt(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    name: str
-    balance: float = Field(ge=0)
-    apr: float = Field(ge=0, le=1, description="Annual rate as a fraction, e.g. 0.229 for 22.9%")
-    minimum_monthly_payment: float = Field(default=0.0, ge=0)
-    is_secured: bool = False
-
-    @property
-    def annual_interest_cost(self) -> float:
-        return self.balance * self.apr
-
-
-class Asset(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    name: str
-    value: float = Field(ge=0)
-    account_type: AccountType = AccountType.taxable
-    is_liquid: bool = True
-
-
-class Goal(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    name: str
-    goal_type: GoalType = GoalType.other
-    target_amount: float | None = Field(default=None, ge=0)
-    years_until_needed: float = Field(ge=0)
-    priority: int = Field(default=3, ge=1, le=5, description="1 = highest priority")
-
-    @property
-    def is_short_horizon(self) -> bool:
-        return self.years_until_needed < 3
+    def label(self) -> str:
+        return {
+            HorizonBand.near: "needed within three years",
+            HorizonBand.medium: "needed in three to ten years",
+            HorizonBand.long: "not needed for over ten years",
+        }[self]
 
 
 class FinancialProfile(BaseModel):
-    """A complete snapshot of a user's financial situation.
+    """What the product needs to know to advise on an investment book, and nothing more.
 
-    This is the only input the deterministic analytics layer needs.
+    Named `FinancialProfile` for continuity with the rest of the codebase; its scope is an
+    investor, not a household. See the module docstring on why the balance sheet is absent.
     """
 
     model_config = ConfigDict(extra="forbid")
 
     age: int = Field(ge=16, le=120)
-    dependents: int = Field(default=0, ge=0)
     currency: str = Field(default="USD", min_length=3, max_length=3)
 
-    income: Income
-    expenses: Expenses
-    debts: list[Debt] = Field(default_factory=list)
-    assets: list[Asset] = Field(default_factory=list)
-    goals: list[Goal] = Field(default_factory=list)
+    horizon_years: float = Field(
+        default=10.0,
+        ge=0,
+        le=60,
+        description="When this money is needed. Drives the only house-level hard constraint.",
+    )
+    investable_cash: float = Field(
+        default=0.0,
+        ge=0,
+        description=(
+            "Cash in the account available to deploy. Not a household cash position — nothing "
+            "here asks where it came from or what else it is for."
+        ),
+    )
 
     risk_tolerance: RiskTolerance = RiskTolerance.moderate
     self_reported_experience: float = Field(
@@ -170,34 +124,24 @@ class FinancialProfile(BaseModel):
     def _upper_currency(cls, v: str) -> str:
         return v.upper()
 
-    # --- Derived, purely arithmetic conveniences -------------------------------------
-
     @property
-    def total_assets(self) -> float:
-        return sum(a.value for a in self.assets)
-
-    @property
-    def liquid_assets(self) -> float:
-        return sum(a.value for a in self.assets if a.is_liquid)
-
-    @property
-    def total_debt(self) -> float:
-        return sum(d.balance for d in self.debts)
-
-    @property
-    def net_worth(self) -> float:
-        return self.total_assets - self.total_debt
-
-    @property
-    def monthly_minimum_debt_payment(self) -> float:
-        return sum(d.minimum_monthly_payment for d in self.debts)
+    def horizon_band(self) -> HorizonBand:
+        if self.horizon_years < 3:
+            return HorizonBand.near
+        if self.horizon_years <= 10:
+            return HorizonBand.medium
+        return HorizonBand.long
 
     @property
     def life_stage(self) -> LifeStage:
-        retired = any(
-            g.goal_type is GoalType.retirement and g.years_until_needed == 0 for g in self.goals
-        )
-        if retired or self.age >= 67:
+        """Age alone. It used to consult retirement goals, which this product no longer asks for.
+
+        Kept because it still shapes how an explanation is pitched, not because it is a strong
+        signal — a 60-year-old investing money they will not touch for twenty years is in a
+        different position from one spending it next year, and `horizon_band` is what carries
+        that distinction.
+        """
+        if self.age >= 67:
             return LifeStage.retirement
         if self.age >= 55:
             return LifeStage.pre_retirement
@@ -206,7 +150,3 @@ class FinancialProfile(BaseModel):
         if self.age >= 30:
             return LifeStage.accumulation
         return LifeStage.early_career
-
-    @property
-    def shortest_goal_horizon(self) -> float | None:
-        return min((g.years_until_needed for g in self.goals), default=None)

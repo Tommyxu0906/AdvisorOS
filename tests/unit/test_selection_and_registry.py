@@ -105,8 +105,8 @@ def test_guardrails_force_coverage(registry, analyzed) -> None:
     intent = UserQuestion(text="Should I buy more NVDA?").classify()
     sel = select_committee(registry.all_manifests(), analytics.need_vector, intent, rails)
 
-    assert "debt_pressure" in sel.mandatory_dimensions
-    assert "liquidity_risk" in sel.mandatory_dimensions
+    assert "concentration_risk" in sel.mandatory_dimensions
+    assert "horizon_pressure" in sel.mandatory_dimensions
     # Every mandatory dimension is covered by someone on the committee.
     chosen = [registry.manifest(i) for i in sel.advisor_ids]
     for dim in sel.mandatory_dimensions:

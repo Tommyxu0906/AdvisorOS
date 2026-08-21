@@ -76,7 +76,7 @@ def propose(
     advisor_id: str = "house",
     display_name: str = "AdvisorOS",
 ) -> list[ProposedAction]:
-    """Trim over-weight positions, then hand the proceeds to the house rules.
+    """Trim over-weight positions, after whatever the house requires first.
 
     Returns an empty list when this persona does not opine on concentration, or when nothing
     exceeds the applicable threshold. An explicit `hold` is the caller's decision to make:
@@ -106,7 +106,6 @@ def propose(
     post_trim_total = sum(targets.get(s, v) for s, v in value_by_symbol.items())
 
     actions: list[ProposedAction] = []
-    proceeds = 0.0
 
     # Largest first: the biggest position is both the largest risk and the cheapest place to
     # raise a given amount of cash.
@@ -147,10 +146,15 @@ def propose(
                 ),
             )
         )
-        proceeds += amount
 
-    claimed, _ = house.claim_proceeds(profile, analytics, guardrails, proceeds)
-    return actions + claimed
+    required = house.claim_first(profile, analytics, portfolio, guardrails)
+    if required:
+        # When the house has to de-risk, that is the whole plan for this round. The trims above
+        # were computed against the book as it stands, so emitting both would sell the same
+        # shares twice — and the near-term need is settled before the question of which growth
+        # assets to own is even reached.
+        return required
+    return actions
 
 
 def solve_trim_targets(

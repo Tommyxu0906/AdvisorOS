@@ -6,7 +6,7 @@
   "one_line": "Every valuation is a story disciplined by numbers; if you cannot state the story, you do not have a valuation.",
   "expertise": {
     "liquidity_risk": 0.35,
-    "debt_pressure": 0.6,
+    "horizon_pressure": 0.6,
     "concentration_risk": 0.65,
     "valuation_sensitivity": 1.0,
     "behavioral_risk": 0.4,

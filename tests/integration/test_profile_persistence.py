@@ -19,17 +19,7 @@ import pytest
 from app.db import pool
 from app.db.repositories import profiles as profiles_repo
 from app.domain.portfolio import AssetClass, Holding, Portfolio
-from app.domain.profile import (
-    AccountType,
-    Asset,
-    Debt,
-    Expenses,
-    FinancialProfile,
-    Goal,
-    GoalType,
-    Income,
-    RiskTolerance,
-)
+from app.domain.profile import FinancialProfile, RiskTolerance
 
 pytestmark = pytest.mark.skipif(
     not os.environ.get("DATABASE_URL"),
@@ -55,19 +45,6 @@ async def owner_id() -> str:
 def _profile(**overrides) -> FinancialProfile:
     base = dict(
         age=34,
-        dependents=1,
-        income=Income(annual_gross=145000, employer_match_pct=0.04),
-        expenses=Expenses(monthly_essential=4200, monthly_discretionary=1500),
-        debts=[Debt(name="credit card", balance=9000, apr=0.229, minimum_monthly_payment=280)],
-        assets=[Asset(name="savings", value=11000, account_type=AccountType.cash, is_liquid=True)],
-        goals=[
-            Goal(
-                name="house down payment",
-                goal_type=GoalType.home_purchase,
-                years_until_needed=2,
-                priority=1,
-            )
-        ],
         risk_tolerance=RiskTolerance.moderate_aggressive,
         self_reported_experience=0.35,
     )
@@ -76,12 +53,8 @@ def _profile(**overrides) -> FinancialProfile:
 
 
 async def test_profile_round_trips_with_children_in_order(owner_id):
-    profile = _profile(
-        debts=[
-            Debt(name="card", balance=9000, apr=0.229, minimum_monthly_payment=280),
-            Debt(name="student loan", balance=22000, apr=0.055, minimum_monthly_payment=310),
-        ]
-    )
+    # The profile itself no longer has child rows; holdings are what has to keep its order.
+    profile = _profile(horizon_years=2.0, investable_cash=4_000)
     portfolio = Portfolio(
         holdings=[
             Holding(
@@ -102,11 +75,8 @@ async def test_profile_round_trips_with_children_in_order(owner_id):
     got_profile, got_portfolio = loaded
     assert got_profile.age == profile.age
     assert got_profile.risk_tolerance is RiskTolerance.moderate_aggressive
-    assert got_profile.income.annual_gross == 145000
+    assert got_profile.horizon_years == 2.0
     # `position` is what preserves the order the user arranged the rows in.
-    assert [d.name for d in got_profile.debts] == ["card", "student loan"]
-    assert [a.name for a in got_profile.assets] == ["savings"]
-    assert got_profile.goals[0].goal_type is GoalType.home_purchase
 
     assert [h.symbol for h in got_portfolio.holdings] == ["NVDA", "VTI"]
     assert got_portfolio.holdings[0].quantity == 266.5
@@ -126,7 +96,6 @@ async def test_saving_twice_updates_rather_than_accumulating(owner_id):
     assert loaded is not None
     assert loaded[0].age == 35
     # Child rows are replaced wholesale, so a removed debt is actually gone.
-    assert loaded[0].debts == []
 
 
 async def test_notes_are_scrubbed_before_they_reach_the_database(owner_id):

@@ -45,9 +45,6 @@ class ActionKind(str, Enum):
     trim_position = "trim_position"
     add_position = "add_position"
     rebalance_to_target = "rebalance_to_target"
-    pay_down_debt = "pay_down_debt"
-    build_emergency_fund = "build_emergency_fund"
-    redirect_cashflow = "redirect_cashflow"
     hold = "hold"
 
     @property
@@ -57,11 +54,7 @@ class ActionKind(str, Enum):
 
     @property
     def spends_cash(self) -> bool:
-        return self in (
-            ActionKind.add_position,
-            ActionKind.pay_down_debt,
-            ActionKind.build_emergency_fund,
-        )
+        return self is ActionKind.add_position
 
 
 class InfeasibleReason(str, Enum):
@@ -382,13 +375,20 @@ class ActionSet(BaseModel):
         return problems
 
     def _check_rebalance_weights(self) -> list[Infeasibility]:
-        """Target weights in one rebalance must describe a whole portfolio, not part of one."""
+        """A rebalance *set* must describe a whole portfolio. A single cap need not.
+
+        Several rebalance actions together are an allocation — "40% here, 35% there, 25% cash" —
+        and one that sums to anything but 1.0 describes a portfolio that does not add up. A lone
+        rebalance is a different statement: a ceiling on one group, with no claim about how the
+        remainder is arranged. The house's near-term de-risking is exactly that, and requiring it
+        to sum to 1.0 would reject a plan whose only fault was not being an allocation.
+        """
         targets = [
             a
             for a in self.actions
             if a.kind is ActionKind.rebalance_to_target and a.target_weight is not None
         ]
-        if not targets:
+        if len(targets) < 2:
             return []
 
         total = sum(a.target_weight or 0.0 for a in targets)

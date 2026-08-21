@@ -284,7 +284,7 @@ class MockLLMProvider:
                 "one_line": "A distilled reasoning profile produced by the mock provider.",
                 "expertise": {
                     "liquidity_risk": 0.2,
-                    "debt_pressure": 0.3,
+                    "horizon_pressure": 0.3,
                     "concentration_risk": 0.5,
                     "valuation_sensitivity": 0.9,
                     "behavioral_risk": 0.4,

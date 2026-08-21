@@ -21,18 +21,6 @@ from app.main import app
 CONCENTRATED = {
     "profile": {
         "age": 34,
-        "dependents": 1,
-        "income": {"annual_gross": 145_000},
-        "expenses": {"monthly_essential": 4_200, "monthly_discretionary": 1_500},
-        "debts": [
-            {
-                "name": "credit card",
-                "balance": 9_000,
-                "apr": 0.229,
-                "minimum_monthly_payment": 280,
-            }
-        ],
-        "assets": [{"name": "savings", "value": 11_000, "account_type": "cash", "is_liquid": True}],
         "risk_tolerance": "moderate_aggressive",
     },
     "portfolio": {
@@ -93,8 +81,7 @@ def test_the_free_endpoint_returns_computed_actions_without_any_api_key(client):
     actions = _scenario(client)["action_set"]["actions"]
 
     kinds = {(a["kind"], a["sequence"]) for a in actions}
-    assert ("trim_position", 0) in kinds
-    assert ("pay_down_debt", 1) in kinds
+    assert ("trim_position", 10) in kinds
 
     trim = next(a for a in actions if a["symbol"] == "NVDA")
     assert trim["shares"] > 0
@@ -108,12 +95,22 @@ def test_no_api_key_is_present_on_the_request_that_produced_them(client):
 
 
 def test_house_actions_are_attributed_to_the_house(client):
-    """Emitting the debt paydown under an advisor's name would imply a view they never held."""
-    actions = _scenario(client)["action_set"]["actions"]
-    paydown = next(a for a in actions if a["kind"] == "pay_down_debt")
+    """A house rule must never be served under an advisor's name.
 
-    assert paydown["proposed_by"] == "house"
-    assert "AdvisorOS rule, not an advisor's view" in paydown["rationale"]
+    Uses a near-term horizon, because that is the only thing the house acts on now: the old
+    trigger was a credit-card balance, which this product no longer asks about.
+    """
+    payload = {
+        "profile": {**CONCENTRATED["profile"], "horizon_years": 1.5},
+        "portfolio": CONCENTRATED["portfolio"],
+    }
+    response = client.post("/api/profiles/analyze", json=payload)
+    assert response.status_code == 200
+
+    actions = response.json()["scenario"]["action_set"]["actions"]
+    house = [a for a in actions if a["proposed_by"] == "house"]
+    assert house, "a near-term need should produce a house action"
+    assert all("house rule, not an advisor's view" in a["rationale"] for a in house)
 
 
 def test_the_scenario_says_the_threshold_is_ours(client):
@@ -134,7 +131,9 @@ def test_the_client_is_told_whether_the_plan_survives_its_own_arithmetic(client)
 
     assert counterfactual["holds_up"] is True
     assert counterfactual["feasible"] is True
-    assert set(counterfactual["resolved_guardrails"]) >= {"HIGH_APR_DEBT", "EMERGENCY_FUND_THIN"}
+    # Nothing *blocking* fired on this book. What the trim resolves is the concentration
+    # caution, and it raises cash on the way, which clears the no-cash note too.
+    assert "POSITION_CONCENTRATION" in counterfactual["resolved_guardrails"]
 
 
 def test_before_and_after_numbers_arrive_with_their_direction(client):
@@ -146,7 +145,7 @@ def test_before_and_after_numbers_arrive_with_their_direction(client):
     assert largest["improved"] is True
 
     # Selling does not read as getting richer, and nothing claims a direction it does not have.
-    worth = next(c for c in changes.values() if c["label"].startswith("net worth"))
+    worth = changes["total capital"]
     assert worth["improved"] is None
 
 

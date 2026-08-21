@@ -82,7 +82,7 @@
 
   "expertise": {
     "liquidity_risk": 0.4,
-    "debt_pressure": 0.5,
+    "horizon_pressure": 0.5,
     "concentration_risk": 0.9,
     "valuation_sensitivity": 0.9,
     "behavioral_risk": 0.8,

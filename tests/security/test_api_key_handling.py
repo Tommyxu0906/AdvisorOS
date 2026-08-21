@@ -458,7 +458,4 @@ def test_scrub_for_storage_is_applied_to_run_payloads() -> None:
 def _minimal_profile() -> dict:
     return {
         "age": 34,
-        "income": {"annual_gross": 100_000},
-        "expenses": {"monthly_essential": 3_000},
-        "assets": [{"name": "cash", "value": 20_000, "account_type": "cash"}],
     }

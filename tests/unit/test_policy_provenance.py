@@ -23,7 +23,7 @@ from app.domain.policy import (
     Provenance,
 )
 from app.domain.portfolio import AssetClass, Holding, Portfolio
-from app.domain.profile import AccountType, Asset, Debt, Expenses, FinancialProfile, Income
+from app.domain.profile import FinancialProfile
 from app.policy import concentration, house
 
 NAME = PolicyParameterName.single_name_concentration
@@ -32,9 +32,6 @@ NAME = PolicyParameterName.single_name_concentration
 def _profile() -> FinancialProfile:
     return FinancialProfile(
         age=34,
-        income=Income(annual_gross=145_000),
-        expenses=Expenses(monthly_essential=4_200, monthly_discretionary=1_500),
-        assets=[Asset(name="savings", value=40_000, account_type=AccountType.cash)],
     )
 
 
@@ -208,16 +205,12 @@ def test_a_persona_that_declines_position_sizing_produces_nothing():
 
 def test_house_rules_are_attributed_to_the_house_not_the_advisor():
     profile = _profile()
-    profile.debts.append(
-        Debt(name="credit card", balance=9_000, apr=0.229, minimum_monthly_payment=280)
-    )
+    profile.horizon_years = 1.5  # near-term need is what the house acts on now
     analytics = analyze_profile(profile, _portfolio())
     pa = analyze_portfolio(_portfolio())
     rails = evaluate_guardrails(profile, analytics, _portfolio(), pa)
 
-    actions, remaining = house.claim_proceeds(profile, analytics, rails, 30_000)
+    actions = house.claim_first(profile, analytics, _portfolio(), rails)
 
     assert [a.proposed_by for a in actions] == ["house"]
-    assert "an AdvisorOS rule, not an advisor's view" in actions[0].rationale
-    # The surplus is handed back rather than allocated — that is a portfolio question.
-    assert remaining == 21_000
+    assert "a house rule, not an advisor's view" in actions[0].rationale
