@@ -32,6 +32,8 @@ import {
   toProfileInput,
 } from "./lib/draft";
 import { demoHoldings, demoProfile, DEMO_QUESTION } from "./lib/demo";
+import type { Conversation } from "./lib/conversations";
+import { historyFor, newConversation, titleFrom } from "./lib/conversations";
 import { navigate, useRoute } from "./lib/router";
 import { useQuotes } from "./lib/useQuotes";
 import { useSavedProfile } from "./lib/useSavedProfile";
@@ -61,7 +63,7 @@ const CONSULT_ADVISORS = ["buffett", "munger"];
 const DEMO_PLACEHOLDER_KEY = "sk-ant-" + "demo".repeat(12);
 
 export function App() {
-  const { model, withKey } = useAnthropicConnection();
+  const { model, withKey, isConnected } = useAnthropicConnection();
   const { user } = useAuth();
   const route = useRoute();
 
@@ -93,6 +95,13 @@ export function App() {
   // it the clearing effect below would throw away the very transcript the change is meant to be
   // compared against.
   const applying = useRef<AssumptionChange[] | null>(null);
+
+  // Conversations live for the session only — see lib/conversations.ts on why nothing persists.
+  const [conversations, setConversations] = useState<Conversation[]>(() => [newConversation()]);
+  const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [chatRunning, setChatRunning] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
+  const [chatCandidates, setChatCandidates] = useState<DecisionCandidate[]>([]);
 
   useEffect(() => {
     getHealth()
@@ -216,6 +225,101 @@ export function App() {
     setConsultError(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [question, JSON.stringify(profileInput), JSON.stringify(portfolioInput)]);
+
+  useEffect(() => {
+    if (activeChatId === null && conversations.length > 0) setActiveChatId(conversations[0].id);
+  }, [activeChatId, conversations]);
+
+  function onNewChat() {
+    const created = newConversation();
+    setConversations((prev) => [created, ...prev]);
+    setActiveChatId(created.id);
+    setChatCandidates([]);
+    setChatError(null);
+  }
+
+  function onDeleteChat(id: string) {
+    setConversations((prev) => {
+      const next = prev.filter((c) => c.id !== id);
+      if (id === activeChatId) setActiveChatId(next[0]?.id ?? null);
+      return next.length ? next : [newConversation()];
+    });
+  }
+
+  function onToggleChatAdvisor(conversationId: string, advisorId: string) {
+    setConversations((prev) =>
+      prev.map((c) =>
+        c.id !== conversationId
+          ? c
+          : {
+              ...c,
+              advisorIds: c.advisorIds.includes(advisorId)
+                ? c.advisorIds.filter((a) => a !== advisorId)
+                : [...c.advisorIds, advisorId],
+            },
+      ),
+    );
+  }
+
+  async function onChatAsk(text: string) {
+    const conversation = conversations.find((c) => c.id === activeChatId);
+    if (!conversation || !profileInput) return;
+
+    // The question lands in the transcript before the request goes out, so the thread reads in
+    // the order it happened rather than appearing all at once when the answer arrives.
+    const history = historyFor(conversation);
+    setConversations((prev) =>
+      prev.map((c) =>
+        c.id !== conversation.id
+          ? c
+          : {
+              ...c,
+              title: c.turns.length === 0 ? titleFrom(text) : c.title,
+              turns: [...c.turns, { role: "user", text, advisor_responses: [] }],
+            },
+      ),
+    );
+
+    setChatRunning(true);
+    setChatError(null);
+    try {
+      const call = (key: string) =>
+        consultCommittee(
+          key,
+          profileInput,
+          portfolioInput.holdings.length ? portfolioInput : null,
+          text,
+          conversation.advisorIds,
+          history,
+          model,
+        );
+      const response = mockLLM ? await call(DEMO_PLACEHOLDER_KEY) : await withKey(call);
+
+      setChatCandidates(response.candidates);
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id !== conversation.id
+            ? c
+            : {
+                ...c,
+                turns: [
+                  ...c.turns,
+                  {
+                    role: "committee",
+                    text: response.synthesis.headline,
+                    advisor_responses: response.responses,
+                    synthesis: response.synthesis,
+                  },
+                ],
+              },
+        ),
+      );
+    } catch (e) {
+      setChatError(e instanceof Error ? e.message : "The consultation failed.");
+    } finally {
+      setChatRunning(false);
+    }
+  }
 
   function onApplyAssumption(next: ProfileDraft, changes: AssumptionChange[]) {
     applying.current = changes;
@@ -366,6 +470,22 @@ export function App() {
           quotes={quotes}
           demo={demo}
           onHoldings={setHoldings}
+          chat={{
+            conversations,
+            activeId: activeChatId,
+            advisors,
+            running: chatRunning,
+            error: chatError,
+            candidates: chatCandidates,
+            mockLLM,
+            isConnected,
+            profileReady: missingFields(profile).length === 0,
+            onNewChat,
+            onSelectChat: setActiveChatId,
+            onDeleteChat,
+            onToggleAdvisor: onToggleChatAdvisor,
+            onAsk: onChatAsk,
+          }}
         />
       )}
 

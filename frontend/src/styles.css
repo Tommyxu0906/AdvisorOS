@@ -1941,3 +1941,127 @@ button.step-button {
   border-left: 3px solid var(--green-deep);
   padding: 8px 0 8px 14px;
 }
+
+/* ---- persona thresholds ---------------------------------------------------------------
+   A persona that carries numbers changes the arithmetic; one that carries none contributes
+   prose. Showing which is which is the difference between a lens and a voice. */
+.policy-strip { display: grid; gap: 5px; }
+.policy-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 10px;
+  align-items: center;
+  font-size: 13.5px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--hairline);
+}
+.policy-row:last-of-type { border-bottom: none; }
+.policy-name { color: var(--ink-soft); }
+.policy-value { font-variant-numeric: tabular-nums; font-weight: 600; }
+
+/* ---- portfolio + consultation split ---------------------------------------------------
+   The table is the subject and the chat is about it, so they share a row. The editor and the
+   data-source note stay full width underneath, where they are reference rather than task. */
+.portfolio-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  gap: 26px;
+  align-items: start;
+}
+/* A grid item defaults to min-width:auto and so refuses to shrink below its content — which
+   let the positions table overrun its column and slide under the chat panel. */
+.portfolio-split > * { min-width: 0; }
+
+.pchat {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--hairline-strong);
+  background: var(--paper-raised);
+  border-radius: var(--radius);
+  position: sticky;
+  top: 20px;
+  max-height: calc(100vh - 44px);
+  overflow: hidden;
+}
+
+.pchat-head {
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--hairline);
+  display: grid;
+  gap: 10px;
+  flex: none;
+}
+.pchat-title { font-size: 15px; margin: 0; font-family: var(--sans); font-weight: 600; }
+
+.pchat-convs { display: flex; gap: 6px; }
+.pchat-convs select { flex: 1; min-width: 0; font-size: 13px; padding: 6px 8px; min-height: 34px; }
+.pchat-new { padding: 6px 11px; min-height: 34px; font-size: 13px; flex: none; }
+
+.pchat-advisors { display: flex; flex-wrap: wrap; gap: 6px; }
+.pchat-advisors .advisor-chip { font-size: 12.5px; padding: 5px 10px; min-height: 32px; }
+
+.pchat-thread {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 16px;
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  min-height: 260px;
+}
+
+.pchat-empty { display: grid; gap: 4px; }
+.pchat-suggestions { display: grid; gap: 6px; margin-top: 4px; }
+.pchat-suggestion {
+  text-align: left;
+  font-size: 13px;
+  padding: 8px 11px;
+  background: var(--paper-sunk);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  cursor: pointer;
+  color: var(--ink);
+  min-height: 0;
+  line-height: 1.4;
+}
+.pchat-suggestion:hover { border-color: var(--hairline-strong); }
+
+.pchat-user { display: flex; justify-content: flex-end; }
+.pchat-user p {
+  background: var(--paper-sunk);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: 9px 12px;
+  margin: 0;
+  max-width: 88%;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.pchat-answer { display: grid; gap: 10px; }
+.pchat-synthesis {
+  padding: 10px 12px;
+  background: var(--paper-sunk);
+  border-left: 2px solid var(--ink);
+}
+.pchat-candidates { padding-top: 4px; border-top: 1px solid var(--hairline); }
+.pchat-thinking { font-size: 13.5px; color: var(--ink-soft); margin: 0; }
+
+.pchat-composer {
+  flex: none;
+  padding: 12px 16px 14px;
+  border-top: 1px solid var(--hairline);
+  background: var(--paper-raised);
+}
+.pchat-composer textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 56px;
+  font-size: 14px;
+}
+
+@media (max-width: 1100px) {
+  .portfolio-split { grid-template-columns: 1fr; }
+  .pchat { position: static; max-height: none; }
+  .pchat-thread { max-height: 460px; }
+}
