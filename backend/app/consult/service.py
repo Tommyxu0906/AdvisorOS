@@ -24,11 +24,17 @@ from app.consult.models import (
     AdvisorConsultResponse,
     ChatMessage,
     ConfidenceSignal,
+    ConsultDepth,
     ConsultSynthesis,
     DecisionCandidate,
     Stance,
 )
-from app.consult.prompts import consult_prompt
+from app.consult.prompts import (
+    CROSS_EXAMINATION_NOTE,
+    RISK_CHALLENGE_NOTE,
+    consult_prompt,
+    revision_user_prompt,
+)
 from app.consult.schemas import CONSULT_SCHEMA
 from app.core.run_context import RunContext
 from app.domain.advisor import AdvisorRuntimeProfile
@@ -68,30 +74,125 @@ async def consult(
     guardrails: list[Guardrail],
     history: list[ChatMessage],
     question: str,
+    depth: ConsultDepth = ConsultDepth.quick,
 ) -> ConsultResult:
     candidates = build_candidates(scenario, guardrails)
 
-    responses = await asyncio.gather(
-        *(
-            _ask_one(
-                provider=provider,
-                context=context,
-                advisor=advisor,
-                profile=profile,
-                analytics=analytics,
-                portfolio_analytics=portfolio_analytics,
-                scenario=scenario,
-                guardrails=guardrails,
-                candidates=candidates,
-                history=history,
-                question=question,
-            )
-            for advisor in advisors
+    async def round_one(advisor: AdvisorRuntimeProfile) -> AdvisorConsultResponse:
+        return await _ask_one(
+            provider=provider,
+            context=context,
+            advisor=advisor,
+            profile=profile,
+            analytics=analytics,
+            portfolio_analytics=portfolio_analytics,
+            scenario=scenario,
+            guardrails=guardrails,
+            candidates=candidates,
+            history=history,
+            question=question,
         )
-    )
+
+    responses = await asyncio.gather(*(round_one(a) for a in advisors))
+
+    # Later rounds re-ask the same lenses against what the others said. Every round is
+    # constrained before the next one sees it, so a peer can never be shown a preference the
+    # rules already refused — otherwise the committee would spend a round arguing about an
+    # option that was never on the table.
+    for note in _notes_for(depth):
+        seen = [apply_constraints(r, candidates) for r in responses]
+        responses = await asyncio.gather(
+            *(
+                _revise(
+                    provider=provider,
+                    context=context,
+                    advisor=advisor,
+                    profile=profile,
+                    analytics=analytics,
+                    portfolio_analytics=portfolio_analytics,
+                    scenario=scenario,
+                    guardrails=guardrails,
+                    candidates=candidates,
+                    history=history,
+                    question=question,
+                    peers=seen,
+                    note=note,
+                    previous=previous,
+                )
+                for advisor, previous in zip(advisors, responses, strict=True)
+            )
+        )
 
     constrained = [apply_constraints(r, candidates) for r in responses]
     return ConsultResult(constrained, candidates, synthesize(constrained, candidates))
+
+
+def _notes_for(depth: ConsultDepth) -> list[str]:
+    """The extra rounds this depth buys, in order."""
+    notes = []
+    if depth.rounds >= 2:
+        notes.append(CROSS_EXAMINATION_NOTE)
+    if depth.rounds >= 3:
+        notes.append(RISK_CHALLENGE_NOTE)
+    return notes
+
+
+async def _revise(
+    *,
+    provider: LLMProvider,
+    context: RunContext,
+    advisor: AdvisorRuntimeProfile,
+    profile,  # noqa: ANN001
+    analytics,  # noqa: ANN001
+    portfolio_analytics,  # noqa: ANN001
+    scenario: PortfolioScenario | None,
+    guardrails: list[Guardrail],
+    candidates: list[DecisionCandidate],
+    history: list[ChatMessage],
+    question: str,
+    peers: list[AdvisorConsultResponse],
+    note: str,
+    previous: AdvisorConsultResponse,
+) -> AdvisorConsultResponse:
+    """One more round for one lens. On any failure the previous answer stands.
+
+    Falling back rather than raising is deliberate: a committee that loses a member because a
+    later round timed out is worse than one whose member simply did not revise, and the earlier
+    answer was already valid.
+    """
+    stable, _ = consult_prompt(
+        advisor=advisor,
+        profile=profile,
+        analytics=analytics,
+        portfolio_analytics=portfolio_analytics,
+        scenario=scenario,
+        guardrails=guardrails,
+        candidates=candidates,
+        history=history,
+        question=question,
+    )
+    user = revision_user_prompt(
+        question=question,
+        history=history,
+        advisor_id=advisor.advisor_id,
+        peers=peers,
+        note=note,
+    )
+
+    try:
+        response = await provider.generate(
+            [Message(role="user", content=user)],
+            context,
+            system=stable,
+            schema=CONSULT_SCHEMA,
+            role="advisor_consult",
+            advisor_id=advisor.advisor_id,
+        )
+        revised = parse_response(response.text, advisor)
+    except Exception:  # noqa: BLE001 - a failed revision must not lose a valid answer
+        return previous
+
+    return previous if revised.parse_failed else revised
 
 
 async def _ask_one(

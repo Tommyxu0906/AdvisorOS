@@ -20,7 +20,6 @@ import { navigate } from "../lib/router";
 import { StatusBadge } from "../ui";
 
 const PRIMARY: { id: Route; label: string }[] = [
-  { id: "decision", label: "Decision" },
   { id: "portfolio", label: "Portfolio" },
   { id: "investors", label: "Investor library" },
   { id: "reports", label: "Reports" },
@@ -34,7 +33,6 @@ const SECONDARY: { id: Route; label: string }[] = [
 const TITLES: Record<Route, string> = {
   welcome: "Welcome",
   onboarding: "Set up",
-  decision: "Decision",
   portfolio: "Portfolio",
   investors: "Investor library",
   reports: "Reports",
@@ -70,7 +68,7 @@ export function AppShell({
       )}
 
       <nav className={`rail${drawer ? " open" : ""}`} aria-label="Main">
-        <button className="rail-brand" onClick={() => go("decision")}>
+        <button className="rail-brand" onClick={() => go("portfolio")}>
           <p className="wordmark">
             AdvisorOS
             <span className="wordmark-sub">Investment decision intelligence</span>

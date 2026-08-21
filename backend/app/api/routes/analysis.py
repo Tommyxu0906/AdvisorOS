@@ -44,7 +44,10 @@ def analyze_profile_endpoint(req: AnalyzeProfileRequest) -> AnalyzeProfileRespon
     pa: PortfolioAnalytics | None = analyze_portfolio(req.portfolio) if req.portfolio else None
     guardrails = evaluate_guardrails(req.profile, analytics, req.portfolio, pa)
     return AnalyzeProfileResponse(
-        analytics=analytics, portfolio_analytics=pa, guardrails=guardrails
+        scenario=compute_scenario(req.profile, analytics, req.portfolio, pa, guardrails),
+        analytics=analytics,
+        portfolio_analytics=pa,
+        guardrails=guardrails,
     )
 
 

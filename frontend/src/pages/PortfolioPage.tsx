@@ -17,8 +17,20 @@ import { humanAssetClass, money, percent } from "../lib/units";
 import { Advanced, Card, EmptyState, InlineAlert, SectionHeader, StatusBadge } from "../ui";
 import { HoldingsEditor } from "../components/HoldingsEditor";
 import { PortfolioChat } from "../components/PortfolioChat";
-import type { AdvisorSummary, DecisionCandidate } from "../types";
+import { ScenarioPanel } from "../components/ScenarioPanel";
+import { DecisionCard } from "../components/DecisionCard";
+import { AssumptionPanel } from "../components/AssumptionPanel";
+import type { AssumptionChange } from "../components/AssumptionPanel";
+import type {
+  AdvisorSummary,
+  AnalyzeProfileResponse,
+  ChatTurn,
+  ConsultDepth,
+  DecisionCandidate,
+  Guardrail,
+} from "../types";
 import type { Conversation } from "../lib/conversations";
+import type { ProfileDraft } from "../lib/draft";
 
 export function PortfolioPage({
   holdings,
@@ -26,6 +38,10 @@ export function PortfolioPage({
   demo,
   onHoldings,
   chat,
+  profile,
+  selection,
+  latestSynthesis,
+  onApplyAssumption,
 }: {
   holdings: HoldingDraft[];
   quotes: QuoteState;
@@ -34,7 +50,7 @@ export function PortfolioPage({
   /** Everything the side panel needs, grouped so this page's signature stays readable. */
   chat: {
     conversations: Conversation[];
-    activeId: string | null;
+    activeId: string;
     advisors: AdvisorSummary[];
     running: boolean;
     error: string | null;
@@ -47,7 +63,14 @@ export function PortfolioPage({
     onDeleteChat: (id: string) => void;
     onToggleAdvisor: (conversationId: string, advisorId: string) => void;
     onAsk: (question: string) => void;
+    depth: ConsultDepth;
+    onDepth: (d: ConsultDepth) => void;
   };
+  profile: ProfileDraft;
+  /** Recomputed on every keystroke by the free endpoint. Null until a profile exists. */
+  selection: AnalyzeProfileResponse | null;
+  latestSynthesis: ChatTurn | null;
+  onApplyAssumption: (next: ProfileDraft, changes: AssumptionChange[]) => void;
 }) {
   const total = holdings.reduce((sum, h) => sum + (h.market_value ?? 0), 0);
   const priced = holdings.filter((h) => quotes.quotes[h.symbol.trim().toUpperCase()]);
@@ -165,6 +188,24 @@ export function PortfolioPage({
       <PortfolioChat {...chat} />
       </div>
 
+      {latestSynthesis?.synthesis && (
+        <DecisionCard
+          synthesis={latestSynthesis.synthesis}
+          responses={latestSynthesis.advisor_responses}
+          candidates={chat.candidates}
+          scenario={selection?.scenario ?? null}
+          onViewCalculations={() =>
+            document.getElementById("computed-scenario")?.scrollIntoView({ block: "start" })
+          }
+        />
+      )}
+
+      {selection && <Guardrails guardrails={selection.guardrails} />}
+
+      <ScenarioPanel scenario={selection?.scenario ?? null} />
+
+      {selection && <AssumptionPanel profile={profile} onApply={onApplyAssumption} />}
+
       <section>
         <SectionHeader title="Edit positions" hint="Changes save automatically." />
         <Card>
@@ -185,5 +226,46 @@ export function PortfolioPage({
         </p>
       </Advanced>
     </>
+  );
+}
+
+
+/**
+ * Blocking conditions first, then cautions.
+ *
+ * Moved here with the scenario when the Decision page went away. It belongs beside the holdings
+ * for the same reason the consultation does: a guardrail about high-rate debt is the reason a
+ * concentration trim gets sequenced the way it does, and reading one without the other leaves
+ * the ordering looking arbitrary.
+ */
+function Guardrails({ guardrails }: { guardrails: Guardrail[] }) {
+  const blocking = guardrails.filter((g) => g.severity === "blocking");
+  const cautions = guardrails.filter((g) => g.severity !== "blocking");
+
+  if (guardrails.length === 0) {
+    return (
+      <InlineAlert tone="good" title="No guardrails triggered">
+        Nothing in your situation blocks an investment decision on the figures given.
+      </InlineAlert>
+    );
+  }
+
+  return (
+    <section>
+      <SectionHeader
+        title="What has to be dealt with first"
+        hint="Computed in code, and no advisor may contradict them."
+      />
+      {blocking.map((g) => (
+        <InlineAlert key={g.code} tone="risk" title={g.message}>
+          {g.detail}
+        </InlineAlert>
+      ))}
+      {cautions.map((g) => (
+        <InlineAlert key={g.code} tone="warn" title={g.message}>
+          {g.detail}
+        </InlineAlert>
+      ))}
+    </section>
   );
 }

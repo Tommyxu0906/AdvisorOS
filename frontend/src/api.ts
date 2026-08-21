@@ -7,10 +7,10 @@
  */
 
 import type {
+  AnalyzeProfileResponse,
+  ConsultDepth,
   ConsultResponse,
   AdvisorSummary,
-  AnalysisDepth,
-  EstimateResponse,
   PortfolioInput,
   ProfileInput,
   QuotesResponse,
@@ -18,7 +18,6 @@ import type {
   RunResponse,
   RunSummary,
   SavedProfile,
-  SelectResponse,
 } from "./types";
 
 // In dev, vite.config.ts proxies "/api" to localhost:8000. In production (e.g. frontend on
@@ -81,27 +80,6 @@ export function listAdvisors(): Promise<AdvisorSummary[]> {
   return postFree<AdvisorSummary[]>("/advisors");
 }
 
-export function selectCommittee(
-  profile: ProfileInput,
-  portfolio: PortfolioInput | null,
-  question: string,
-  depth: AnalysisDepth,
-): Promise<SelectResponse> {
-  return postFree<SelectResponse>("/committee/select", { profile, portfolio, question, depth });
-}
-
-export function estimateRun(
-  depth: AnalysisDepth,
-  advisorCount: number,
-  model: string,
-): Promise<EstimateResponse> {
-  return postFree<EstimateResponse>("/committee/estimate", {
-    depth,
-    advisor_count: advisorCount,
-    model,
-  });
-}
-
 /**
  * Delayed quotes from a free public feed. Free in both senses that matter here: no Anthropic key
  * and no account. Symbols the provider cannot resolve come back under `unpriced` rather than as
@@ -123,28 +101,17 @@ export async function validateKey(
   });
 }
 
-export function runCommittee(
-  apiKey: string,
-  profile: ProfileInput,
-  portfolio: PortfolioInput | null,
-  question: string,
-  depth: AnalysisDepth,
-  model: string,
-  advisorIds: string[] | null,
-): Promise<RunResponse> {
-  return postWithKey<RunResponse>("/committee/analyze", apiKey, {
-    profile,
-    portfolio,
-    question,
-    depth,
-    model,
-    advisor_ids: advisorIds,
-  });
-}
-
 // --- run history (session required, no Anthropic key involved) ------------------------
 
 /** One turn of the consultation. The whole history goes up each time — see ConsultRequest. */
+/** The free deterministic half: analytics, guardrails, and the computed scenario. No key. */
+export function analyzeProfile(
+  profile: ProfileInput,
+  portfolio: PortfolioInput | null,
+): Promise<AnalyzeProfileResponse> {
+  return postFree<AnalyzeProfileResponse>("/profiles/analyze", { profile, portfolio });
+}
+
 export function consultCommittee(
   apiKey: string,
   profile: ProfileInput,
@@ -153,6 +120,7 @@ export function consultCommittee(
   advisorIds: string[],
   history: { role: "user" | "committee"; text: string; advisor_responses: unknown[] }[],
   model: string,
+  depth: ConsultDepth = "quick",
 ): Promise<ConsultResponse> {
   return postWithKey<ConsultResponse>("/committee/consult", apiKey, {
     profile,
@@ -161,6 +129,7 @@ export function consultCommittee(
     advisor_ids: advisorIds,
     history,
     model,
+    depth,
   });
 }
 

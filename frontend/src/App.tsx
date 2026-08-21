@@ -14,11 +14,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   consultCommittee,
-  estimateRun,
   getHealth,
+  analyzeProfile,
   listAdvisors,
-  runCommittee,
-  selectCommittee,
 } from "./api";
 import { useAnthropicConnection } from "./context/AnthropicConnectionContext";
 import { useAuth } from "./context/AuthContext";
@@ -31,14 +29,13 @@ import {
   toPortfolioInput,
   toProfileInput,
 } from "./lib/draft";
-import { demoHoldings, demoProfile, DEMO_QUESTION } from "./lib/demo";
+import { demoHoldings, demoProfile } from "./lib/demo";
 import type { Conversation } from "./lib/conversations";
 import { historyFor, newConversation, titleFrom } from "./lib/conversations";
 import { navigate, useRoute } from "./lib/router";
 import { useQuotes } from "./lib/useQuotes";
 import { useSavedProfile } from "./lib/useSavedProfile";
 import { AppShell } from "./shell/AppShell";
-import { DecisionWorkspace } from "./pages/DecisionWorkspace";
 import { InvestorLibraryPage } from "./pages/InvestorLibraryPage";
 import { MethodologyPage } from "./pages/MethodologyPage";
 import { OnboardingFlow } from "./pages/OnboardingFlow";
@@ -48,17 +45,12 @@ import { HistoryPanel } from "./components/HistoryPanel";
 import { SettingsPage } from "./components/SettingsPage";
 import type {
   AdvisorSummary,
-  AnalysisDepth,
-  ChatTurn,
+  AnalyzeProfileResponse,
+  ConsultDepth,
   DecisionCandidate,
-  EstimateResponse,
-  RunResponse,
-  SelectResponse,
 } from "./types";
 
 /** The two lenses the demo convenes. Built-in manifests — nothing is distilled to answer. */
-const CONSULT_ADVISORS = ["buffett", "munger"];
-
 /** Never reaches Anthropic: only sent when the server reported it is serving canned answers. */
 const DEMO_PLACEHOLDER_KEY = "sk-ant-" + "demo".repeat(12);
 
@@ -69,25 +61,13 @@ export function App() {
 
   const [profile, setProfile] = useState<ProfileDraft>(EMPTY_PROFILE);
   const [holdings, setHoldings] = useState<HoldingDraft[]>(EMPTY_PORTFOLIO.holdings);
-  const [question, setQuestion] = useState("");
-  const [depth, setDepth] = useState<AnalysisDepth>("balanced");
   const [demo, setDemo] = useState(false);
 
   const [advisors, setAdvisors] = useState<AdvisorSummary[]>([]);
-  const [manualIds, setManualIds] = useState<Set<string> | null>(null);
 
-  const [selection, setSelection] = useState<SelectResponse | null>(null);
-  const [estimate, setEstimate] = useState<EstimateResponse | null>(null);
-  const [result, setResult] = useState<RunResponse | null>(null);
-  const [running, setRunning] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Consultation state lives here and nowhere else: no table, no migration, no persistence.
-  // It is discarded on refresh for the same reason the API key is.
-  const [turns, setTurns] = useState<ChatTurn[]>([]);
-  const [candidates, setCandidates] = useState<DecisionCandidate[]>([]);
-  const [consulting, setConsulting] = useState(false);
-  const [consultError, setConsultError] = useState<string | null>(null);
+  // The free deterministic half. Recomputed on every profile or portfolio edit, and the only
+  // source of the scenario, guardrails and analytics the Portfolio page renders.
+  const [selection, setSelection] = useState<AnalyzeProfileResponse | null>(null);
   // True when the server was started with AIFA_MOCK_LLM=1. It then answers with canned text and
   // needs no key — which the interface must state plainly rather than pass off as a real run.
   const [mockLLM, setMockLLM] = useState(false);
@@ -98,10 +78,14 @@ export function App() {
 
   // Conversations live for the session only — see lib/conversations.ts on why nothing persists.
   const [conversations, setConversations] = useState<Conversation[]>(() => [newConversation()]);
-  const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  // Seeded from the conversation that already exists rather than left null for an effect to
+  // fix up. There is always exactly one open consultation, so there is never a moment where the
+  // panel has no conversation to render and every control is disabled.
+  const [activeChatId, setActiveChatId] = useState<string>(conversations[0].id);
   const [chatRunning, setChatRunning] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
   const [chatCandidates, setChatCandidates] = useState<DecisionCandidate[]>([]);
+  const [chatDepth, setChatDepth] = useState<ConsultDepth>("quick");
 
   useEffect(() => {
     getHealth()
@@ -115,7 +99,9 @@ export function App() {
   useEffect(() => {
     listAdvisors()
       .then(setAdvisors)
-      .catch((e) => setError(e instanceof Error ? e.message : "Failed to load advisors."));
+      // The library page shows an empty roster if this fails; the consultation reports its own
+      // errors. There is no longer a page-level error banner for this to fill.
+      .catch(() => setAdvisors([]));
   }, []);
 
   const quotes = useQuotes(
@@ -144,55 +130,44 @@ export function App() {
     setDemo(true);
     setProfile(demoProfile());
     setHoldings(demoHoldings());
-    setQuestion(DEMO_QUESTION);
     setKnown(true);
-    navigate("decision");
+    navigate("portfolio");
   }
 
   function leaveDemo() {
     setDemo(false);
     setProfile(EMPTY_PROFILE);
     setHoldings([]);
-    setQuestion("");
-    setResult(null);
+    setSelection(null);
     navigate("onboarding");
   }
 
   const profileInput = toProfileInput(profile);
   const portfolioInput = toPortfolioInput(holdings);
 
-  // The deterministic half runs eagerly and for free, whether or not a key is connected.
+  // The deterministic half runs eagerly and for free, whether or not a key is connected. It
+  // needs a balance sheet and not a question, which is why this is the analysis endpoint rather
+  // than committee selection — the scenario is renderable before anyone has asked anything.
   const refreshAnalysis = useCallback(async () => {
-    if (!profileInput || !question.trim()) {
+    if (!profileInput) {
       setSelection(null);
-      setEstimate(null);
       return;
     }
-    setError(null);
     try {
-      const sel = await selectCommittee(
-        profileInput,
-        portfolioInput.holdings.length ? portfolioInput : null,
-        question,
-        depth,
+      setSelection(
+        await analyzeProfile(
+          profileInput,
+          portfolioInput.holdings.length ? portfolioInput : null,
+        ),
       );
-      setSelection(sel);
-      const count = manualIds ? manualIds.size : sel.selection.selected.length;
-      setEstimate(await estimateRun(depth, count, model));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Analysis failed.");
+    } catch {
+      // A failed recompute leaves the last good scenario on screen rather than blanking it.
+      // The figures are stale by one edit, which is better than a page that empties itself.
     }
     // profileInput/portfolioInput are rebuilt every render, so the deps are their JSON rather
     // than the objects themselves — otherwise this refetches on every keystroke anywhere.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    JSON.stringify(profileInput),
-    JSON.stringify(portfolioInput),
-    question,
-    depth,
-    model,
-    manualIds,
-  ]);
+  }, [JSON.stringify(profileInput), JSON.stringify(portfolioInput)]);
 
   useEffect(() => {
     const t = setTimeout(refreshAnalysis, 300);
@@ -201,64 +176,32 @@ export function App() {
 
   // A changed question or a changed balance sheet is a different decision, and carrying the old
   // transcript into it would have the committee answering about a scenario that no longer holds.
+  // Applying an assumption appends a marker to the open conversation rather than clearing it:
+  // the transcript before the change is exactly what the change is meant to be compared against.
   useEffect(() => {
     const pending = applying.current;
     applying.current = null;
+    if (!pending || !activeChatId) return;
 
-    if (pending) {
-      // Keep the conversation and record the move, so the next answers can be read against the
-      // earlier ones rather than appearing out of nowhere.
-      setTurns((prev) => [
-        ...prev,
-        {
-          role: "committee",
-          text: "",
-          advisor_responses: [],
-          assumption: pending,
-        },
-      ]);
-      return;
-    }
-
-    setTurns([]);
-    setCandidates([]);
-    setConsultError(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [question, JSON.stringify(profileInput), JSON.stringify(portfolioInput)]);
-
-  useEffect(() => {
-    if (activeChatId === null && conversations.length > 0) setActiveChatId(conversations[0].id);
-  }, [activeChatId, conversations]);
-
-  function onNewChat() {
-    const created = newConversation();
-    setConversations((prev) => [created, ...prev]);
-    setActiveChatId(created.id);
-    setChatCandidates([]);
-    setChatError(null);
-  }
-
-  function onDeleteChat(id: string) {
-    setConversations((prev) => {
-      const next = prev.filter((c) => c.id !== id);
-      if (id === activeChatId) setActiveChatId(next[0]?.id ?? null);
-      return next.length ? next : [newConversation()];
-    });
-  }
-
-  function onToggleChatAdvisor(conversationId: string, advisorId: string) {
     setConversations((prev) =>
       prev.map((c) =>
-        c.id !== conversationId
+        c.id !== activeChatId
           ? c
           : {
               ...c,
-              advisorIds: c.advisorIds.includes(advisorId)
-                ? c.advisorIds.filter((a) => a !== advisorId)
-                : [...c.advisorIds, advisorId],
+              turns: [
+                ...c.turns,
+                { role: "committee", text: "", advisor_responses: [], assumption: pending },
+              ],
             },
       ),
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(profileInput)]);
+
+  function onApplyAssumption(next: ProfileDraft, changes: AssumptionChange[]) {
+    applying.current = changes;
+    setProfile(next);
   }
 
   async function onChatAsk(text: string) {
@@ -292,7 +235,9 @@ export function App() {
           conversation.advisorIds,
           history,
           model,
+          chatDepth,
         );
+      // One call path either way: in demo mode the server ignores the key entirely.
       const response = mockLLM ? await call(DEMO_PLACEHOLDER_KEY) : await withKey(call);
 
       setChatCandidates(response.candidates);
@@ -321,92 +266,48 @@ export function App() {
     }
   }
 
-  function onApplyAssumption(next: ProfileDraft, changes: AssumptionChange[]) {
-    applying.current = changes;
-    setProfile(next);
+  const activeConversation = conversations.find((c) => c.id === activeChatId) ?? null;
+  // The latest round that produced a decision. Assumption markers carry no synthesis, so this
+  // skips them rather than blanking the card whenever the figures move.
+  const latestSynthesis =
+    [...(activeConversation?.turns ?? [])]
+      .reverse()
+      .find((t) => t.synthesis && t.advisor_responses.length > 0) ?? null;
+
+  function onNewChat() {
+    const created = newConversation();
+    setConversations((prev) => [created, ...prev]);
+    setActiveChatId(created.id);
+    setChatCandidates([]);
+    setChatError(null);
   }
 
-  async function onConsult(userQuestion: string) {
-    if (!profileInput) return;
-    setConsulting(true);
-    setConsultError(null);
-
-    // The user's turn lands immediately; the committee's arrives when it answers.
-    const asked: ChatTurn = { role: "user", text: userQuestion, advisor_responses: [] };
-    const priorHistory = turns.map((turn) => ({
-      role: turn.role,
-      text: turn.text,
-      advisor_responses: turn.advisor_responses,
-    }));
-    setTurns((prev) => [...prev, asked]);
-
-    try {
-      const call = (key: string) =>
-        consultCommittee(
-          key,
-          profileInput,
-          portfolioInput.holdings.length ? portfolioInput : null,
-          userQuestion,
-          CONSULT_ADVISORS,
-          priorHistory,
-          model,
-        );
-      // One call path either way: in demo mode the server ignores the key entirely.
-      const response = mockLLM ? await call(DEMO_PLACEHOLDER_KEY) : await withKey(call);
-      setCandidates(response.candidates);
-      setTurns((prev) => [
-        ...prev,
-        {
-          role: "committee",
-          text: "",
-          advisor_responses: response.responses,
-          synthesis: response.synthesis,
-        },
-      ]);
-    } catch (e) {
-      setConsultError(e instanceof Error ? e.message : "The consultation failed.");
-    } finally {
-      setConsulting(false);
-    }
-  }
-
-  async function onRun() {
-    if (!profileInput) return;
-    setRunning(true);
-    setError(null);
-    setResult(null);
-    try {
-      const response = await withKey((key) =>
-        runCommittee(
-          key,
-          profileInput,
-          portfolioInput.holdings.length ? portfolioInput : null,
-          question,
-          depth,
-          model,
-          manualIds ? Array.from(manualIds) : null,
-        ),
-      );
-      setResult(response);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "The committee run failed.");
-    } finally {
-      setRunning(false);
-    }
-  }
-
-  function toggleAdvisor(advisorId: string) {
-    setManualIds((prev) => {
-      const next = new Set(prev ?? []);
-      if (next.has(advisorId)) next.delete(advisorId);
-      else next.add(advisorId);
-      return next.size === 0 ? null : next;
+  function onDeleteChat(id: string) {
+    setConversations((prev) => {
+      const next = prev.filter((c) => c.id !== id);
+      const replacement = next.length ? next : [newConversation()];
+      if (id === activeChatId) setActiveChatId(replacement[0].id);
+      return replacement;
     });
+  }
+
+  function onToggleChatAdvisor(conversationId: string, advisorId: string) {
+    setConversations((prev) =>
+      prev.map((c) =>
+        c.id !== conversationId
+          ? c
+          : {
+              ...c,
+              advisorIds: c.advisorIds.includes(advisorId)
+                ? c.advisorIds.filter((a) => a !== advisorId)
+                : [...c.advisorIds, advisorId],
+            },
+      ),
+    );
   }
 
   function onDistilled(advisor: AdvisorSummary) {
     setAdvisors((prev) => [...prev.filter((a) => a.advisor_id !== advisor.advisor_id), advisor]);
-    setManualIds((prev) => new Set(prev ?? []).add(advisor.advisor_id));
   }
 
   // Welcome and onboarding are deliberately outside the shell: a navigation rail offering five
@@ -427,7 +328,7 @@ export function App() {
         onHoldings={setHoldings}
         onDone={() => {
           setKnown(true);
-          navigate("decision");
+          navigate("portfolio");
         }}
       />
     );
@@ -435,35 +336,6 @@ export function App() {
 
   return (
     <AppShell route={route} demo={demo} onExitDemo={demo ? leaveDemo : undefined}>
-      {route === "decision" && (
-        <DecisionWorkspace
-          profile={profile}
-          holdings={holdings}
-          question={question}
-          depth={depth}
-          selection={selection}
-          estimate={estimate}
-          advisors={advisors}
-          manualIds={manualIds}
-          result={result}
-          running={running}
-          error={error}
-          demo={demo}
-          onQuestion={setQuestion}
-          onDepth={setDepth}
-          onToggleAdvisor={toggleAdvisor}
-          onResetAdvisors={() => setManualIds(null)}
-          onRun={onRun}
-          turns={turns}
-          candidates={candidates}
-          consulting={consulting}
-          consultError={consultError}
-          onConsult={onConsult}
-          mockLLM={mockLLM}
-          onApplyAssumption={onApplyAssumption}
-        />
-      )}
-
       {route === "portfolio" && (
         <PortfolioPage
           holdings={holdings}
@@ -485,7 +357,13 @@ export function App() {
             onDeleteChat,
             onToggleAdvisor: onToggleChatAdvisor,
             onAsk: onChatAsk,
+            depth: chatDepth,
+            onDepth: setChatDepth,
           }}
+          profile={profile}
+          selection={selection}
+          latestSynthesis={latestSynthesis}
+          onApplyAssumption={onApplyAssumption}
         />
       )}
 

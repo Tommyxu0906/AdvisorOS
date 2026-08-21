@@ -248,6 +248,7 @@ async def consult_committee(
             guardrails=guardrails,
             history=req.history,
             question=req.question,
+            depth=req.depth,
         )
     except Exception as exc:  # noqa: BLE001 - sanitized before it reaches the client
         raise deps.provider_error(exc) from exc

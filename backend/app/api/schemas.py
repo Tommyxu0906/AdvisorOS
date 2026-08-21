@@ -16,6 +16,7 @@ from app.analytics.profile_analytics import ProfileAnalytics
 from app.consult.models import (
     AdvisorConsultResponse,
     ChatMessage,
+    ConsultDepth,
     ConsultSynthesis,
     DecisionCandidate,
 )
@@ -74,6 +75,10 @@ class AnalyzeProfileResponse(BaseModel):
     analytics: ProfileAnalytics
     portfolio_analytics: PortfolioAnalytics | None = None
     guardrails: list[Guardrail]
+    # The deterministic decision layer. Carried here, and not only on the committee-selection
+    # response, because computing what the thresholds imply needs a balance sheet and not a
+    # question — and the interface renders it before anyone has asked anything.
+    scenario: PortfolioScenario | None = None
     requires_api_key: bool = False
 
 
@@ -341,6 +346,8 @@ class ConsultRequest(CredentialedRequest):
     profile: FinancialProfile
     portfolio: Portfolio | None = None
     question: str = Field(min_length=1, max_length=4000)
+    # More rounds mean more calls, on the user's key. Defaults to the cheapest.
+    depth: ConsultDepth = ConsultDepth.quick
     advisor_ids: list[str] = Field(
         default_factory=lambda: ["buffett", "munger"],
         min_length=1,
