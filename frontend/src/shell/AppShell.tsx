@@ -21,6 +21,7 @@ import { StatusBadge } from "../ui";
 
 const PRIMARY: { id: Route; label: string }[] = [
   { id: "decision", label: "Decision" },
+  { id: "chat", label: "Consult" },
   { id: "portfolio", label: "Portfolio" },
   { id: "investors", label: "Investor library" },
   { id: "reports", label: "Reports" },
@@ -35,6 +36,7 @@ const TITLES: Record<Route, string> = {
   welcome: "Welcome",
   onboarding: "Set up",
   decision: "Decision",
+  chat: "Consult the committee",
   portfolio: "Portfolio",
   investors: "Investor library",
   reports: "Reports",

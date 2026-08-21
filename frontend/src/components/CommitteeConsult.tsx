@@ -194,7 +194,7 @@ export function CommitteeConsult({
 }
 
 /** The choice set, so a reader can see what is actually on the table — including what is not. */
-function CandidateStrip({ candidates }: { candidates: DecisionCandidate[] }) {
+export function CandidateStrip({ candidates }: { candidates: DecisionCandidate[] }) {
   return (
     <Card tone="quiet">
       <p className="metric-label" style={{ marginBottom: 10 }}>
@@ -221,7 +221,7 @@ function CandidateStrip({ candidates }: { candidates: DecisionCandidate[] }) {
   );
 }
 
-function LensCard({ response }: { response: AdvisorConsultResponse }) {
+export function LensCard({ response }: { response: AdvisorConsultResponse }) {
   if (response.parse_failed) {
     return (
       <Card as="article" tone="sunk">

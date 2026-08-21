@@ -16,6 +16,7 @@ export type Route =
   | "welcome"
   | "onboarding"
   | "decision"
+  | "chat"
   | "portfolio"
   | "investors"
   | "reports"
@@ -26,6 +27,7 @@ const ROUTES: Route[] = [
   "welcome",
   "onboarding",
   "decision",
+  "chat",
   "portfolio",
   "investors",
   "reports",
