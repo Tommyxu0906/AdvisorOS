@@ -335,6 +335,32 @@ class SavedProfileResponse(BaseModel):
 # --- advisory consultation -------------------------------------------------------------
 
 
+class ConsultationSummary(BaseModel):
+    """One saved conversation, as the Reports list shows it."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    conversation_id: str
+    title: str
+    advisor_ids: list[str]
+    model: str
+    depth: str
+    question_count: int
+    #: The standing conclusion after the most recent round. Empty until one has completed.
+    conclusion: str = ""
+    unresolved: bool = False
+    created_at: str
+    updated_at: str
+
+
+class ConsultationDetail(ConsultationSummary):
+    """The full transcript, for reading one back."""
+
+    turns: list[dict] = Field(default_factory=list)
+    synthesis: dict | None = None
+    candidates: list[dict] = Field(default_factory=list)
+
+
 class ConsultRequest(CredentialedRequest):
     """One turn of the consultation.
 
@@ -348,6 +374,11 @@ class ConsultRequest(CredentialedRequest):
     question: str = Field(min_length=1, max_length=4000)
     # More rounds mean more calls, on the user's key. Defaults to the cheapest.
     depth: ConsultDepth = ConsultDepth.quick
+    # Identity of the conversation this turn belongs to, generated in the browser so the
+    # server can upsert the transcript without a round trip to learn a row id first. Optional:
+    # an anonymous caller consults exactly as before and nothing is saved.
+    conversation_id: str = Field(default="", max_length=64)
+    conversation_title: str = Field(default="", max_length=200)
     advisor_ids: list[str] = Field(
         default_factory=lambda: ["buffett", "munger"],
         min_length=1,

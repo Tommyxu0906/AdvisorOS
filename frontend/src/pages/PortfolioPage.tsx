@@ -59,8 +59,7 @@ export function PortfolioPage({
     isConnected: boolean;
     profileReady: boolean;
     onNewChat: () => void;
-    onSelectChat: (id: string) => void;
-    onDeleteChat: (id: string) => void;
+    signedIn: boolean;
     onToggleAdvisor: (conversationId: string, advisorId: string) => void;
     onAsk: (question: string) => void;
     depth: ConsultDepth;

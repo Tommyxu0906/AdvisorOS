@@ -1,6 +1,10 @@
 /**
  * The consultation, sitting beside the holdings it is about.
  *
+ * One conversation is open at a time and there is no picker for the others: every completed
+ * round is written to the user's Reports, which is where past conversations are read. A dropdown
+ * would have been a second, worse history — shorter, unlabelled, and gone on refresh.
+ *
  * Putting it here rather than on its own page is the whole point: the question is almost always
  * about a specific row in the table to the left, and having both on screen means the answer can
  * be checked against the position without navigating away.
@@ -54,9 +58,8 @@ export function PortfolioChat({
   mockLLM,
   isConnected,
   profileReady,
+  signedIn,
   onNewChat,
-  onSelectChat,
-  onDeleteChat,
   onToggleAdvisor,
   onAsk,
   depth,
@@ -72,8 +75,7 @@ export function PortfolioChat({
   isConnected: boolean;
   profileReady: boolean;
   onNewChat: () => void;
-  onSelectChat: (id: string) => void;
-  onDeleteChat: (id: string) => void;
+  signedIn: boolean;
   onToggleAdvisor: (conversationId: string, advisorId: string) => void;
   onAsk: (question: string) => void;
   depth: ConsultDepth;
@@ -111,40 +113,19 @@ export function PortfolioChat({
         </div>
 
         <div className="pchat-convs">
-          <label className="visually-hidden" htmlFor="pchat-conv">
-            Conversation
-          </label>
-          <select
-            id="pchat-conv"
-            value={activeId}
-            onChange={(e) => onSelectChat(e.target.value)}
-            disabled={running}
-          >
-            {conversations.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.title}
-              </option>
-            ))}
-          </select>
+          <span className="tiny muted" style={{ flex: 1, minWidth: 0 }}>
+            {signedIn
+              ? "Saved to Reports as you go."
+              : "Sign in to keep this in your Reports."}
+          </span>
           <button
             type="button"
             className="secondary pchat-new"
             onClick={onNewChat}
             disabled={running}
           >
-            New
+            New chat
           </button>
-          {conversations.length > 1 && active && (
-            <button
-              type="button"
-              className="secondary pchat-new"
-              onClick={() => onDeleteChat(active.id)}
-              disabled={running}
-              aria-label={`Delete ${active.title}`}
-            >
-              Delete
-            </button>
-          )}
         </div>
 
         <Advanced label={`Advisors in this chat — ${selected.length} selected`}>

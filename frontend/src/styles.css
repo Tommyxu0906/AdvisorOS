@@ -2069,3 +2069,14 @@ button.step-button {
 .pchat-controls { display: flex; gap: 8px; margin-top: 8px; }
 .pchat-controls select { flex: 1; min-width: 0; font-size: 13px; padding: 6px 8px; min-height: 36px; }
 .pchat-controls .primary { flex: none; min-height: 36px; padding: 6px 16px; }
+
+/* ---- saved consultations --------------------------------------------------------------- */
+.consult-history { display: grid; gap: 14px; }
+.consult-title {
+  font-size: 16px;
+  margin: 0;
+  font-family: var(--sans);
+  font-weight: 600;
+  line-height: 1.3;
+}
+.consult-transcript { display: grid; gap: 14px; margin-top: 6px; }

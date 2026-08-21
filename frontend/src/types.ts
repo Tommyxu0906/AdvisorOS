@@ -172,6 +172,26 @@ export interface AnalyzeProfileResponse {
   requires_api_key: boolean;
 }
 
+export interface ConsultationSummary {
+  conversation_id: string;
+  title: string;
+  advisor_ids: string[];
+  model: string;
+  depth: string;
+  question_count: number;
+  /** The standing conclusion after the most recent round. Empty until one has completed. */
+  conclusion: string;
+  unresolved: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ConsultationDetail extends ConsultationSummary {
+  turns: ChatTurn[];
+  synthesis: ConsultSynthesis | null;
+  candidates: DecisionCandidate[];
+}
+
 export type ConsultDepth = "quick" | "balanced" | "deep";
 
 export interface PolicyParameterSummary {

@@ -31,6 +31,7 @@ from app.committee.orchestrator import CommitteeError, CommitteeOrchestrator
 from app.consult.service import consult as run_consult
 from app.core.run_context import RunContext
 from app.core.supabase_auth import AuthUser, current_user_optional
+from app.db.repositories.consultations import save_consultation_best_effort
 from app.db.repositories.runs import save_run_best_effort
 from app.domain.question import UserQuestion
 from app.market_data import service as market_data
@@ -209,6 +210,7 @@ async def distill_advisor(req: DistillRequest) -> DistillResponse:
 async def consult_committee(
     req: ConsultRequest,
     registry=Depends(deps.registry),
+    user: AuthUser | None = Depends(current_user_optional),
 ) -> ConsultResponse:
     """One turn of a multi-turn consultation over the *computed* scenario.
 
@@ -255,6 +257,32 @@ async def consult_committee(
         )
     except Exception as exc:  # noqa: BLE001 - sanitized before it reaches the client
         raise deps.provider_error(exc) from exc
+
+    # History, after the answer the user is waiting for is already assembled. Anonymous callers
+    # consult exactly as before and nothing is written; there is no anonymous history to read.
+    if user is not None and req.conversation_id:
+        turns = [m.model_dump(mode="json") for m in req.history]
+        turns.append({"role": "user", "text": req.question, "advisor_responses": []})
+        turns.append(
+            {
+                "role": "committee",
+                "text": result.synthesis.headline,
+                "advisor_responses": [r.model_dump(mode="json") for r in result.responses],
+                "synthesis": result.synthesis.model_dump(mode="json"),
+            }
+        )
+        await save_consultation_best_effort(
+            owner_user_id=user.id,
+            client_id=req.conversation_id,
+            title=req.conversation_title or req.question[:120],
+            advisor_ids=list(req.advisor_ids),
+            model=req.model,
+            depth=req.depth.value,
+            turns=turns,
+            synthesis=result.synthesis.model_dump(mode="json"),
+            candidates=[c.model_dump(mode="json") for c in result.candidates],
+            question_count=sum(1 for t in turns if t.get("role") == "user"),
+        )
 
     return ConsultResponse(
         responses=result.responses,

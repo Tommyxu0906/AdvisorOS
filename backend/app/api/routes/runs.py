@@ -9,9 +9,10 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.api.schemas import RunDetail, RunSummary
+from app.api.schemas import ConsultationDetail, ConsultationSummary, RunDetail, RunSummary
 from app.core.supabase_auth import AuthUser, current_user_required
 from app.db.pool import StorageUnavailable
+from app.db.repositories import consultations as consultations_repo
 from app.db.repositories import runs as runs_repo
 
 router = APIRouter(prefix="/runs", tags=["runs"])
@@ -90,4 +91,66 @@ async def get_my_run(run_id: str, user: AuthUser = Depends(current_user_required
         guardrails=row["guardrails"],
         selection=row["selection"],
         report=row["report"],
+    )
+
+
+@router.get("/consultations", response_model=list[ConsultationSummary])
+async def list_my_consultations(
+    user: AuthUser = Depends(current_user_required),
+) -> list[ConsultationSummary]:
+    """Every conversation this user has had, most recently active first."""
+    try:
+        rows = await consultations_repo.list_consultations(user.id)
+    except StorageUnavailable as exc:
+        raise _storage_unavailable() from exc
+
+    return [
+        ConsultationSummary(
+            conversation_id=r["client_id"],
+            title=r["title"],
+            advisor_ids=list(r["advisor_ids"]),
+            model=r["model"],
+            depth=r["depth"],
+            question_count=r["question_count"],
+            conclusion=(r["synthesis"] or {}).get("headline", ""),
+            unresolved=(r["synthesis"] or {}).get("unresolved_disagreement", False),
+            created_at=r["created_at"].isoformat(),
+            updated_at=r["updated_at"].isoformat(),
+        )
+        for r in rows
+    ]
+
+
+@router.get("/consultations/{conversation_id}", response_model=ConsultationDetail)
+async def get_my_consultation(
+    conversation_id: str,
+    user: AuthUser = Depends(current_user_required),
+) -> ConsultationDetail:
+    try:
+        row = await consultations_repo.get_consultation(user.id, conversation_id)
+    except StorageUnavailable as exc:
+        raise _storage_unavailable() from exc
+
+    if row is None:
+        # Scoped by owner in the query, so a miss and a wrong owner are the same answer — which
+        # is the point: this must not confirm that someone else's consultation exists.
+        raise HTTPException(
+            status_code=404,
+            detail={"code": "not_found", "message": "No such consultation."},
+        )
+
+    return ConsultationDetail(
+        conversation_id=row["client_id"],
+        title=row["title"],
+        advisor_ids=list(row["advisor_ids"]),
+        model=row["model"],
+        depth=row["depth"],
+        question_count=row["question_count"],
+        conclusion=(row["synthesis"] or {}).get("headline", ""),
+        unresolved=(row["synthesis"] or {}).get("unresolved_disagreement", False),
+        created_at=row["created_at"].isoformat(),
+        updated_at=row["updated_at"].isoformat(),
+        turns=row["turns"],
+        synthesis=row["synthesis"],
+        candidates=row["candidates"],
     )

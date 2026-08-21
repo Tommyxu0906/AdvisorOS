@@ -8,6 +8,8 @@
 
 import type {
   AnalyzeProfileResponse,
+  ConsultationDetail,
+  ConsultationSummary,
   ConsultDepth,
   ConsultResponse,
   AdvisorSummary,
@@ -121,6 +123,8 @@ export function consultCommittee(
   history: { role: "user" | "committee"; text: string; advisor_responses: unknown[] }[],
   model: string,
   depth: ConsultDepth = "quick",
+  conversationId = "",
+  conversationTitle = "",
 ): Promise<ConsultResponse> {
   return postWithKey<ConsultResponse>("/committee/consult", apiKey, {
     profile,
@@ -130,7 +134,23 @@ export function consultCommittee(
     history,
     model,
     depth,
+    conversation_id: conversationId,
+    conversation_title: conversationTitle,
   });
+}
+
+export function listConsultations(accessToken: string): Promise<ConsultationSummary[]> {
+  return getWithSession<ConsultationSummary[]>("/runs/consultations", accessToken);
+}
+
+export function getConsultation(
+  accessToken: string,
+  conversationId: string,
+): Promise<ConsultationDetail> {
+  return getWithSession<ConsultationDetail>(
+    `/runs/consultations/${encodeURIComponent(conversationId)}`,
+    accessToken,
+  );
 }
 
 export function listRuns(accessToken: string): Promise<RunSummary[]> {

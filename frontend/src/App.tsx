@@ -36,12 +36,14 @@ import { navigate, useRoute } from "./lib/router";
 import { useQuotes } from "./lib/useQuotes";
 import { useSavedProfile } from "./lib/useSavedProfile";
 import { AppShell } from "./shell/AppShell";
+import { Advanced } from "./ui";
 import { InvestorLibraryPage } from "./pages/InvestorLibraryPage";
 import { MethodologyPage } from "./pages/MethodologyPage";
 import { OnboardingFlow } from "./pages/OnboardingFlow";
 import { PortfolioPage } from "./pages/PortfolioPage";
 import { WelcomePage } from "./pages/WelcomePage";
 import { HistoryPanel } from "./components/HistoryPanel";
+import { ConsultationHistory } from "./components/ConsultationHistory";
 import { SettingsPage } from "./components/SettingsPage";
 import type {
   AdvisorSummary,
@@ -236,6 +238,8 @@ export function App() {
           history,
           model,
           chatDepth,
+          conversation.id,
+          conversation.title,
         );
       // One call path either way: in demo mode the server ignores the key entirely.
       const response = mockLLM ? await call(DEMO_PLACEHOLDER_KEY) : await withKey(call);
@@ -282,14 +286,6 @@ export function App() {
     setChatError(null);
   }
 
-  function onDeleteChat(id: string) {
-    setConversations((prev) => {
-      const next = prev.filter((c) => c.id !== id);
-      const replacement = next.length ? next : [newConversation()];
-      if (id === activeChatId) setActiveChatId(replacement[0].id);
-      return replacement;
-    });
-  }
 
   function onToggleChatAdvisor(conversationId: string, advisorId: string) {
     setConversations((prev) =>
@@ -353,8 +349,7 @@ export function App() {
             isConnected,
             profileReady: missingFields(profile).length === 0,
             onNewChat,
-            onSelectChat: setActiveChatId,
-            onDeleteChat,
+            signedIn: Boolean(user),
             onToggleAdvisor: onToggleChatAdvisor,
             onAsk: onChatAsk,
             depth: chatDepth,
@@ -376,14 +371,20 @@ export function App() {
           <div className="page-head">
             <h1>Reports</h1>
             <p className="lede">
-              Every committee run you made while signed in — the question, the brief, and what it
-              cost. Nothing about your Anthropic key is ever part of a saved run.
+              Every consultation you have had while signed in — when it was, who was in the room,
+              and where it landed. Nothing about your Anthropic key is ever part of a saved
+              record.
             </p>
           </div>
           {user ? (
-            <HistoryPanel />
+            <>
+              <ConsultationHistory />
+              <Advanced label="Older one-shot committee reports">
+                <HistoryPanel />
+              </Advanced>
+            </>
           ) : (
-            <p className="muted">Sign in to keep a history of your runs.</p>
+            <p className="muted">Sign in to keep a history of your consultations.</p>
           )}
         </>
       )}
