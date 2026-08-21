@@ -22,6 +22,7 @@ import { useAnthropicConnection } from "../context/AnthropicConnectionContext";
 import type { AdvisorSummary } from "../types";
 import { EvidenceBadge } from "../components/CommitteeSetup";
 import { Advanced, Card, InlineAlert, Overlay, SectionHeader, StatusBadge } from "../ui";
+import { percent } from "../lib/units";
 import { ConnectKeyButton } from "../components/ConnectKeyButton";
 
 const DISTILL_DEPTHS = [
@@ -166,6 +167,73 @@ function AdvisorCard({ advisor }: { advisor: AdvisorSummary }) {
           </div>
         </>
       )}
+
+      {advisor.policy_parameters.length > 0 ? (
+        <div className="policy-strip">
+          <p className="metric-label" style={{ margin: "12px 0 6px" }}>
+            Thresholds it brings to the computation
+          </p>
+          {advisor.policy_parameters.map((p) => (
+            <div key={p.name} className="policy-row">
+              <span className="policy-name">{p.name.replace(/_/g, " ")}</span>
+              <span className="policy-value">
+                {p.value == null
+                  ? "—"
+                  : p.name.includes("months")
+                    ? `${p.value} months`
+                    : percent(p.value, 0)}
+              </span>
+              <StatusBadge tone={p.provenance === "direct" ? "good" : "neutral"}>
+                {p.provenance === "derived" ? "read from behaviour" : p.provenance}
+              </StatusBadge>
+            </div>
+          ))}
+          <p className="tiny muted" style={{ margin: "6px 0 0" }}>
+            These replace the house defaults when this lens drives the scenario, so two lenses
+            produce differently sized trims over the same holdings.
+          </p>
+        </div>
+      ) : (
+        <p className="tiny muted" style={{ marginTop: 12 }}>
+          Carries no thresholds of its own — it contributes reasoning, and the computation runs on
+          AdvisorOS house numbers that say so.
+        </p>
+      )}
+
+      <Advanced label="How it reasons">
+        {advisor.mental_models.length > 0 && (
+          <>
+            <p className="metric-label">Mental models it applies</p>
+            <ul className="bullet-list" style={{ fontSize: 14 }}>
+              {advisor.mental_models.map((m) => (
+                <li key={m}>{m}</li>
+              ))}
+            </ul>
+          </>
+        )}
+        {advisor.reasoning_rules.length > 0 && (
+          <>
+            <p className="metric-label" style={{ marginTop: 12 }}>
+              Rules that govern its reasoning
+            </p>
+            <ul className="bullet-list" style={{ fontSize: 14 }}>
+              {advisor.reasoning_rules.map((r) => (
+                <li key={r}>{r}</li>
+              ))}
+            </ul>
+          </>
+        )}
+        {advisor.provenance && (
+          <>
+            <p className="metric-label" style={{ marginTop: 12 }}>
+              Where this came from
+            </p>
+            <p className="small" style={{ margin: 0 }}>
+              {advisor.provenance}
+            </p>
+          </>
+        )}
+      </Advanced>
 
       {advisor.honest_boundaries.length > 0 && (
         <Advanced label="Declared limits">

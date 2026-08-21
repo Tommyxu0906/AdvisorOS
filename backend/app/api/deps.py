@@ -75,10 +75,28 @@ def advisor_summary_payload(manifest: AdvisorManifest) -> dict:
         "one_line": manifest.one_line,
         "expertise": manifest.expertise,
         "topic_affinity": [t.value for t in manifest.topic_affinity],
+        "mental_models": manifest.mental_models,
+        "heuristics": manifest.heuristics,
+        "reasoning_rules": manifest.reasoning_rules,
         "blind_spots": manifest.blind_spots,
         "honest_boundaries": manifest.honest_boundaries,
+        "disagrees_with": manifest.disagrees_with,
         "runtime_profile_tokens": manifest.to_runtime_profile().approx_tokens(),
         "provenance": manifest.provenance,
+        "policy_parameters": [
+            {
+                "name": name.value,
+                "value": p.value,
+                "low": p.low,
+                "high": p.high,
+                "direction": p.direction.value,
+                "provenance": p.provenance.value,
+                "confidence": p.confidence,
+                "source_labels": list(p.source_labels),
+                "note": p.note,
+            }
+            for name, p in manifest.policy.parameters.items()
+        ],
     }
 
 

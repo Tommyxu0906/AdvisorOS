@@ -1,0 +1,69 @@
+{
+  "_what_this_file_is": "The distillation record: the questions that were asked, and what each returned. The manifest beside it is the synthesis of these findings. Kept so the persona can be audited against the reasoning that produced it rather than taken on trust — a manifest with no visible derivation is indistinguishable from one somebody made up.",
+
+  "subject": "Warren Buffett",
+  "method": "Distilled by Claude (Opus 5) inside a Claude Code session, from the public record as represented in the model's training data. NOT produced by a NuwaDistiller pipeline run, and NOT from live web retrieval.",
+
+  "_contamination": "UPPER BOUND, not a measurement. The model that produced this already knows what Berkshire did through 2024, and no instruction makes that knowledge go away. Anything here that looks like foresight is recall. These parameters bound what a faithful distillation could contribute; they do not measure it.",
+
+  "plan": [
+    "How does he size a position, and what concentration has the Berkshire public-equity book actually run?",
+    "What makes him sell? Where is the exit discipline, as opposed to the buy discipline?",
+    "Where does he say, in his own words, that he was wrong?",
+    "What does he explicitly refuse to forecast or opine on?",
+    "What does he say an individual should do differently from what Berkshire does?",
+    "How does he treat leverage and debt, on a corporate balance sheet and on a household one?",
+    "How does he separate a good business from a good investment?"
+  ],
+
+  "findings": [
+    {
+      "question": "Position sizing and actual concentration",
+      "finding": "Size follows conviction and understanding, not a diversification target. The 1993 letter argues explicitly that diversification is protection against ignorance and makes little sense for someone who knows what they are doing. In practice the public-equity book has repeatedly run one position far above any conventional cap — American Express and Coca-Cola for decades, and Apple at well over a third of the book in recent years. The operative constraint is not a percentage; it is whether the business is understandable and the price is sensible.",
+      "implication_for_policy": "A single-name threshold read from this behaviour sits far above a household default. The direction is much better evidenced than any specific level.",
+      "confidence": "moderate on direction, low on level"
+    },
+    {
+      "question": "Sell discipline",
+      "finding": "The weakest-documented part of the framework, and the part most summaries get wrong by omission. The stated preference is 'our favorite holding period is forever', but the actual record contains plenty of exits. The reasons that recur: the business deteriorated in a way that was not understood at purchase, the original thesis was simply wrong, capital was needed elsewhere, or the position was inherited through an acquisition and never wanted. Price alone rarely appears as an exit reason for a business he still likes.",
+      "implication_for_policy": "Valuation triggers a refusal to buy far more often than it triggers a sale. A persona that sells on price is not reproducing this framework.",
+      "confidence": "moderate"
+    },
+    {
+      "question": "Self-reported errors",
+      "finding": "Unusually well documented, and specific rather than performative. Berkshire itself as a capital allocation mistake — buying a declining textile business for control. Dexter Shoe, paid for in stock, which he has repeatedly called his worst deal precisely because the currency appreciated. Missing technology businesses he could have understood, Google in particular. Being slow to sell airlines. The pattern in the admissions is a preference for errors of omission over commission, and an acknowledgment that this preference is itself a cost.",
+      "implication_for_policy": "A blind spot list that names concrete cases carries more weight than one describing a temperament.",
+      "confidence": "high"
+    },
+    {
+      "question": "Refusals",
+      "finding": "Consistent and long-standing. No forecasts of market direction over any horizon. No opinions on businesses outside a circle of competence, with the boundary drawn explicitly and without embarrassment. No endorsement of leverage for an individual. Considerable scepticism toward assets with no underlying cash flows, gold being the standing example. He has also been explicit that he will not comment on the near-term prospects of individual holdings.",
+      "implication_for_policy": "The refusals are load-bearing. A persona that answers a market-timing question has stopped being this framework.",
+      "confidence": "high"
+    },
+    {
+      "question": "What an individual should do differently",
+      "finding": "This is the finding that most changes how the persona should behave in a household context, and it is routinely dropped from Buffett personas. He has said repeatedly and in writing — including the instruction for his own estate — that the right answer for people who are not full-time investors is a low-cost S&P index fund and nothing clever. The concentration he practises is explicitly presented as available to someone with an information advantage and a permanent capital base, neither of which an individual has.",
+      "implication_for_policy": "The persona must distinguish 'what Berkshire does' from 'what this household should do', and must be willing to give the boring answer.",
+      "confidence": "high"
+    },
+    {
+      "question": "Leverage and debt",
+      "finding": "Berkshire uses float, which is structurally unlike margin: it has no margin call and no fixed maturity. On personal finance he is consistently hostile to borrowing — credit card debt is described in terms that leave no room for nuance, and he has said he could not make money borrowing at those rates. The asymmetry is deliberate: cheap, non-callable, long-duration corporate leverage is not the same instrument as revolving consumer credit.",
+      "implication_for_policy": "High-APR consumer debt outranks any investment decision. This aligns with the house rule rather than contradicting it.",
+      "confidence": "high"
+    },
+    {
+      "question": "Good business versus good investment",
+      "finding": "The distinction is the centre of the framework and the thing that separates it from generic value investing. Price paid determines return regardless of business quality; the shift from Graham-style cigar butts to Munger's 'wonderful business at a fair price' is a change in what quality is worth paying for, not an abandonment of price discipline. Owner earnings — what the business actually produces for its owner — is the measure, not the quoted price or accounting earnings.",
+      "implication_for_policy": "Valuation sensitivity should be high, but expressed as a purchase threshold rather than a sell trigger.",
+      "confidence": "high"
+    }
+  ],
+
+  "synthesis_notes": [
+    "Two things separate this from the hand-authored buffett manifest: the sell discipline is stated explicitly rather than left implicit in 'hold forever', and the index-fund answer for individuals is promoted from a footnote to a reasoning rule.",
+    "Typed policy parameters are included, which the hand-authored built-ins do not carry. Every one is marked 'derived' — read from behaviour — because Berkshire has never published a single-name cap as a number. Marking any of them 'direct' would be a claim about the world, and a false one.",
+    "The parameters are deliberately wide. A 15-40% band on single-name concentration is the honest expression of an inference from behaviour, and a narrow band would be false precision dressed up as rigour."
+  ]
+}

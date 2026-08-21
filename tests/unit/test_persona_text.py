@@ -112,9 +112,14 @@ def test_ordinary_investing_language_is_not_mistaken_for_an_attack(text: str):
 
 
 def test_every_built_in_manifest_passes_its_own_gate():
-    """If the six hand-authored personas cannot clear the filter, the filter is wrong."""
+    """If a persona that ships with the product cannot clear the filter, the filter is wrong.
+
+    The count is a floor rather than an equality: adding a persona is a normal thing to do, and a
+    test that had to be edited each time would train people to edit it without reading it. What
+    must not happen is the glob silently matching nothing and the loop below passing vacuously.
+    """
     paths = sorted(BUILTIN_DIR.glob("*/manifest.json"))
-    assert len(paths) == 6
+    assert len(paths) >= 6, "built-in personas are missing — the glob matched almost nothing"
     for path in paths:
         AdvisorManifest.model_validate(json.loads(path.read_text()))
 

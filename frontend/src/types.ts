@@ -163,6 +163,18 @@ export interface RunResponse {
   portfolio_analytics: PortfolioAnalytics | null;
 }
 
+export interface PolicyParameterSummary {
+  name: string;
+  value: number | null;
+  low: number | null;
+  high: number | null;
+  direction: string;
+  provenance: string;
+  confidence: number;
+  source_labels: string[];
+  note: string;
+}
+
 export interface AdvisorSummary {
   advisor_id: string;
   display_name: string;
@@ -173,6 +185,13 @@ export interface AdvisorSummary {
   blind_spots: string[];
   honest_boundaries: string[];
   runtime_profile_tokens: number;
+  mental_models: string[];
+  heuristics: string[];
+  reasoning_rules: string[];
+  disagrees_with: string[];
+  policy_parameters: PolicyParameterSummary[];
+  /** Sent by the API since the beginning; the type simply never declared it. */
+  provenance: string;
 }
 
 /** The shape the form collects and posts. */

@@ -83,6 +83,27 @@ class AnalyzePortfolioRequest(BaseModel):
     portfolio: Portfolio
 
 
+class PolicyParameterSummary(BaseModel):
+    """One threshold a persona carries, with where it came from.
+
+    Flattened rather than exposing PolicyParameter whole: the interface needs the number, the
+    band, and the provenance label, and shipping the internal shape would make every future
+    change to it an API change.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    name: str
+    value: float | None = None
+    low: float | None = None
+    high: float | None = None
+    direction: str
+    provenance: str
+    confidence: float
+    source_labels: list[str] = Field(default_factory=list)
+    note: str = ""
+
+
 class AdvisorSummary(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -93,10 +114,17 @@ class AdvisorSummary(BaseModel):
     one_line: str
     expertise: ExpertiseVector
     topic_affinity: list[str]
+    mental_models: list[str]
+    heuristics: list[str]
+    reasoning_rules: list[str]
     blind_spots: list[str]
     honest_boundaries: list[str]
+    disagrees_with: list[str]
     runtime_profile_tokens: int
     provenance: str
+    # Typed thresholds, when the persona carries any. A persona with none contributes prose and
+    # nothing to the arithmetic, and the interface should be able to say which it is.
+    policy_parameters: list[PolicyParameterSummary] = Field(default_factory=list)
 
 
 class SelectCommitteeRequest(BaseModel):

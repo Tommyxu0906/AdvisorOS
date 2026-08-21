@@ -2076,3 +2076,20 @@ button.step-button {
   .chat-list { grid-auto-flow: column; grid-auto-columns: minmax(150px, 1fr); overflow-x: auto; }
   .chat-delete { display: none; }
 }
+
+/* ---- persona thresholds ---------------------------------------------------------------
+   A persona that carries numbers changes the arithmetic; one that carries none contributes
+   prose. Showing which is which is the difference between a lens and a voice. */
+.policy-strip { display: grid; gap: 5px; }
+.policy-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 10px;
+  align-items: center;
+  font-size: 13.5px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--hairline);
+}
+.policy-row:last-of-type { border-bottom: none; }
+.policy-name { color: var(--ink-soft); }
+.policy-value { font-variant-numeric: tabular-nums; font-weight: 600; }
