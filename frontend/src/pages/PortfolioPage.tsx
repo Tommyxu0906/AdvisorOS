@@ -16,17 +16,38 @@ import type { QuoteState } from "../lib/useQuotes";
 import { humanAssetClass, money, percent } from "../lib/units";
 import { Advanced, Card, EmptyState, InlineAlert, SectionHeader, StatusBadge } from "../ui";
 import { HoldingsEditor } from "../components/HoldingsEditor";
+import { PortfolioChat } from "../components/PortfolioChat";
+import type { AdvisorSummary, DecisionCandidate } from "../types";
+import type { Conversation } from "../lib/conversations";
 
 export function PortfolioPage({
   holdings,
   quotes,
   demo,
   onHoldings,
+  chat,
 }: {
   holdings: HoldingDraft[];
   quotes: QuoteState;
   demo: boolean;
   onHoldings: (h: HoldingDraft[]) => void;
+  /** Everything the side panel needs, grouped so this page's signature stays readable. */
+  chat: {
+    conversations: Conversation[];
+    activeId: string | null;
+    advisors: AdvisorSummary[];
+    running: boolean;
+    error: string | null;
+    candidates: DecisionCandidate[];
+    mockLLM: boolean;
+    isConnected: boolean;
+    profileReady: boolean;
+    onNewChat: () => void;
+    onSelectChat: (id: string) => void;
+    onDeleteChat: (id: string) => void;
+    onToggleAdvisor: (conversationId: string, advisorId: string) => void;
+    onAsk: (question: string) => void;
+  };
 }) {
   const total = holdings.reduce((sum, h) => sum + (h.market_value ?? 0), 0);
   const priced = holdings.filter((h) => quotes.quotes[h.symbol.trim().toUpperCase()]);
@@ -51,6 +72,7 @@ export function PortfolioPage({
         </InlineAlert>
       )}
 
+      <div className="portfolio-split">
       <section>
         <SectionHeader
           title="Positions"
@@ -139,6 +161,9 @@ export function PortfolioPage({
           </Card>
         )}
       </section>
+
+      <PortfolioChat {...chat} />
+      </div>
 
       <section>
         <SectionHeader title="Edit positions" hint="Changes save automatically." />

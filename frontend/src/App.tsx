@@ -43,7 +43,6 @@ import { InvestorLibraryPage } from "./pages/InvestorLibraryPage";
 import { MethodologyPage } from "./pages/MethodologyPage";
 import { OnboardingFlow } from "./pages/OnboardingFlow";
 import { PortfolioPage } from "./pages/PortfolioPage";
-import { ChatPage } from "./pages/ChatPage";
 import { WelcomePage } from "./pages/WelcomePage";
 import { HistoryPanel } from "./components/HistoryPanel";
 import { SettingsPage } from "./components/SettingsPage";
@@ -465,31 +464,28 @@ export function App() {
         />
       )}
 
-      {route === "chat" && (
-        <ChatPage
-          conversations={conversations}
-          activeId={activeChatId}
-          advisors={advisors}
-          profile={profile}
-          running={chatRunning}
-          error={chatError}
-          candidates={chatCandidates}
-          mockLLM={mockLLM}
-          isConnected={isConnected}
-          onNewChat={onNewChat}
-          onSelectChat={setActiveChatId}
-          onDeleteChat={onDeleteChat}
-          onToggleAdvisor={onToggleChatAdvisor}
-          onAsk={onChatAsk}
-        />
-      )}
-
       {route === "portfolio" && (
         <PortfolioPage
           holdings={holdings}
           quotes={quotes}
           demo={demo}
           onHoldings={setHoldings}
+          chat={{
+            conversations,
+            activeId: activeChatId,
+            advisors,
+            running: chatRunning,
+            error: chatError,
+            candidates: chatCandidates,
+            mockLLM,
+            isConnected,
+            profileReady: missingFields(profile).length === 0,
+            onNewChat,
+            onSelectChat: setActiveChatId,
+            onDeleteChat,
+            onToggleAdvisor: onToggleChatAdvisor,
+            onAsk: onChatAsk,
+          }}
         />
       )}
 
