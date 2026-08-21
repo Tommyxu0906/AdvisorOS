@@ -17,7 +17,12 @@ from __future__ import annotations
 from app.analytics.portfolio_analytics import PortfolioAnalytics
 from app.analytics.profile_analytics import ProfileAnalytics
 from app.committee.prompts import COMMITTEE_CHARTER, render_profile_facts
-from app.consult.models import ChatMessage, ChatRole, DecisionCandidate
+from app.consult.models import (
+    AdvisorConsultResponse,
+    ChatMessage,
+    ChatRole,
+    DecisionCandidate,
+)
 from app.domain.advisor import AdvisorRuntimeProfile
 from app.domain.profile import FinancialProfile
 from app.domain.report import Guardrail
@@ -172,3 +177,70 @@ def consult_prompt(
     parts = [render_history(history, advisor.advisor_id), f"The person asks: {question}"]
     user = "\n\n".join(p for p in parts if p)
     return stable, user
+
+
+# --- depth: extra rounds, and what each is for ---------------------------------------------
+
+CROSS_EXAMINATION_NOTE = """\
+The other frameworks on this committee have now answered the same question. Their positions are \
+below.
+
+Revise your own position only if one of them raises something you had not accounted for. \
+Agreeing because a peer disagreed is worse than holding a view they argued against — a committee \
+that converges under social pressure has stopped being several frameworks and become one. If \
+nothing they said bears on your reasoning, return the same stance and say so plainly in the \
+rationale.
+
+You may not adopt a candidate the constraints forbid, whatever a peer argued.\
+"""
+
+RISK_CHALLENGE_NOTE = """\
+Now argue against the position you just took.
+
+State the strongest case that your own recommendation is wrong for this household, and what \
+would have to be true for that case to hold. If the case against is strong enough to change your \
+stance, change it. If it is not, keep the stance and record the case anyway in \
+`risks_or_missing_information` — a reader is better served by knowing what the objection was \
+than by a position that never met one.\
+"""
+
+
+def render_peer_positions(peers: list[AdvisorConsultResponse], *, exclude_advisor_id: str) -> str:
+    """Peer answers, for the cross-examination round.
+
+    Excludes the advisor's own prior answer: it is already in their context, and repeating it
+    invites the model to treat its own words as an external opinion to defer to.
+    """
+    others = [p for p in peers if p.advisor_id != exclude_advisor_id and not p.parse_failed]
+    if not others:
+        return ""
+
+    lines = ["What the others said:"]
+    for peer in others:
+        lines.append(f"\n{peer.display_name} — stance: {peer.stance.value}")
+        if peer.preferred_candidate_id:
+            lines.append(f"  prefers: {peer.preferred_candidate_id}")
+        if peer.rationale:
+            lines.append(f"  reasoning: {peer.rationale}")
+        for risk in peer.risks_or_missing_information[:2]:
+            lines.append(f"  flags: {risk}")
+    return "\n".join(lines)
+
+
+def revision_user_prompt(
+    *,
+    question: str,
+    history: list[ChatMessage],
+    advisor_id: str,
+    peers: list[AdvisorConsultResponse],
+    note: str,
+) -> str:
+    """The volatile half for a second or third round. The stable prefix is unchanged, so the
+    cached portion of the conversation still holds."""
+    parts = [
+        render_history(history, advisor_id),
+        f"The person asks: {question}",
+        render_peer_positions(peers, exclude_advisor_id=advisor_id),
+        note,
+    ]
+    return "\n\n".join(p for p in parts if p)

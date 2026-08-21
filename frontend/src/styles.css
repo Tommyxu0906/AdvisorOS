@@ -2065,3 +2065,7 @@ button.step-button {
   .pchat { position: static; max-height: none; }
   .pchat-thread { max-height: 460px; }
 }
+
+.pchat-controls { display: flex; gap: 8px; margin-top: 8px; }
+.pchat-controls select { flex: 1; min-width: 0; font-size: 13px; padding: 6px 8px; min-height: 36px; }
+.pchat-controls .primary { flex: none; min-height: 36px; padding: 6px 16px; }

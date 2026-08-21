@@ -15,7 +15,6 @@ import { useEffect, useState } from "react";
 export type Route =
   | "welcome"
   | "onboarding"
-  | "decision"
   | "portfolio"
   | "investors"
   | "reports"
@@ -25,7 +24,6 @@ export type Route =
 const ROUTES: Route[] = [
   "welcome",
   "onboarding",
-  "decision",
   "portfolio",
   "investors",
   "reports",
@@ -35,7 +33,7 @@ const ROUTES: Route[] = [
 
 function parse(hash: string): Route {
   const cleaned = hash.replace(/^#\/?/, "").split("?")[0];
-  return (ROUTES as string[]).includes(cleaned) ? (cleaned as Route) : "decision";
+  return (ROUTES as string[]).includes(cleaned) ? (cleaned as Route) : "portfolio";
 }
 
 export function navigate(route: Route) {

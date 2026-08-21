@@ -163,6 +163,17 @@ export interface RunResponse {
   portfolio_analytics: PortfolioAnalytics | null;
 }
 
+/** More rounds mean more calls on the user's key — see ConsultDepth in the backend. */
+export interface AnalyzeProfileResponse {
+  analytics: ProfileAnalytics;
+  portfolio_analytics: PortfolioAnalytics | null;
+  guardrails: Guardrail[];
+  scenario: PortfolioScenario | null;
+  requires_api_key: boolean;
+}
+
+export type ConsultDepth = "quick" | "balanced" | "deep";
+
 export interface PolicyParameterSummary {
   name: string;
   value: number | null;

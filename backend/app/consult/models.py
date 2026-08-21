@@ -95,6 +95,39 @@ class DecisionCandidate(BaseModel):
         return self
 
 
+class ConsultDepth(str, Enum):
+    """How many rounds the committee runs, and therefore what a turn costs.
+
+    Each level adds real model calls rather than only changing the wording of one, so the cost
+    difference the interface implies is a cost difference that actually happens:
+
+        quick     one pass per lens                          n calls
+        balanced  plus a cross-examination round             2n calls
+        deep      plus a self-challenge round                3n calls
+
+    Cross-examination is where a committee earns its name — until the lenses have seen each
+    other's answers they are parallel monologues. The prompt for that round is deliberately
+    written to discourage converging under peer pressure, because a committee that agrees after
+    being shown a disagreement has produced one opinion at n times the price.
+    """
+
+    quick = "quick"
+    balanced = "balanced"
+    deep = "deep"
+
+    @property
+    def rounds(self) -> int:
+        return {ConsultDepth.quick: 1, ConsultDepth.balanced: 2, ConsultDepth.deep: 3}[self]
+
+    @property
+    def description(self) -> str:
+        return {
+            ConsultDepth.quick: "each framework answers independently",
+            ConsultDepth.balanced: "plus one round after they have read each other",
+            ConsultDepth.deep: "plus a round arguing against their own position",
+        }[self]
+
+
 class AdvisorConsultResponse(BaseModel):
     """One lens's structured contribution. Prose alone would not be rankable."""
 

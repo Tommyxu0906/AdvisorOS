@@ -19,11 +19,24 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import type { AdvisorSummary, ChatTurn, DecisionCandidate } from "../types";
+import type { AdvisorSummary, ChatTurn, ConsultDepth, DecisionCandidate } from "../types";
 import type { Conversation } from "../lib/conversations";
 import { Advanced, InlineAlert, StatusBadge } from "../ui";
 import { ConnectKeyButton } from "./ConnectKeyButton";
-import { LensCard } from "./CommitteeConsult";
+import { LensCard } from "./LensCard";
+
+/** Each level adds a real round of model calls, so the ordering is also a cost ordering. */
+const DEPTH_OPTIONS: { id: ConsultDepth; label: string; calls: string }[] = [
+  { id: "quick", label: "Quick", calls: "1 round" },
+  { id: "balanced", label: "Balanced", calls: "2 rounds" },
+  { id: "deep", label: "Deep", calls: "3 rounds" },
+];
+
+const DEPTH_HINT: Record<ConsultDepth, string> = {
+  quick: "Each framework answers independently",
+  balanced: "They then read each other and may revise",
+  deep: "They also argue against their own position",
+};
 
 const SUGGESTIONS = [
   "Is this portfolio too concentrated?",
@@ -46,9 +59,11 @@ export function PortfolioChat({
   onDeleteChat,
   onToggleAdvisor,
   onAsk,
+  depth,
+  onDepth,
 }: {
   conversations: Conversation[];
-  activeId: string | null;
+  activeId: string;
   advisors: AdvisorSummary[];
   running: boolean;
   error: string | null;
@@ -61,6 +76,8 @@ export function PortfolioChat({
   onDeleteChat: (id: string) => void;
   onToggleAdvisor: (conversationId: string, advisorId: string) => void;
   onAsk: (question: string) => void;
+  depth: ConsultDepth;
+  onDepth: (d: ConsultDepth) => void;
 }) {
   const active = conversations.find((c) => c.id === activeId) ?? null;
   const [draft, setDraft] = useState("");
@@ -99,7 +116,7 @@ export function PortfolioChat({
           </label>
           <select
             id="pchat-conv"
-            value={activeId ?? ""}
+            value={activeId}
             onChange={(e) => onSelectChat(e.target.value)}
             disabled={running}
           >
@@ -228,14 +245,32 @@ export function PortfolioChat({
               aria-label="Your question"
               disabled={!profileReady || running}
             />
-            <div className="row-between" style={{ marginTop: 6 }}>
-              <span className="tiny muted">
-                {selected.length === 0 ? "No advisor selected" : "Enter to send"}
-              </span>
+            <div className="pchat-controls">
+              <label className="visually-hidden" htmlFor="pchat-depth">
+                How many rounds
+              </label>
+              <select
+                id="pchat-depth"
+                value={depth}
+                onChange={(e) => onDepth(e.target.value as ConsultDepth)}
+                disabled={running}
+                title={DEPTH_HINT[depth]}
+              >
+                {DEPTH_OPTIONS.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.label} · {d.calls}
+                  </option>
+                ))}
+              </select>
               <button type="button" className="primary" onClick={send} disabled={!canSend}>
                 {running ? "Asking…" : "Ask"}
               </button>
             </div>
+            <p className="tiny muted" style={{ margin: "6px 0 0" }}>
+              {selected.length === 0
+                ? "No advisor selected"
+                : `${DEPTH_HINT[depth]} · Enter to send`}
+            </p>
           </>
         )}
       </div>
